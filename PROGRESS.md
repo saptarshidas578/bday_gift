@@ -4,7 +4,7 @@ Agent: update this at the end of every task, then commit. Keep it terse. Legend:
 
 ## Next step
 
-A07: Time tab: clock styles, timer, schedules, sleep
+A08: Device tab, onboarding, permissions, pairing UI
 
 ## Phases
 
@@ -18,7 +18,7 @@ A07: Time tab: clock styles, timer, schedules, sleep
 - [x] A04 Brightness, favorites, palettes, scenes row, mini matrix preview
 - [x] A05 Effects browser from effects.json
 - [x] A06 Magic tab: birthday, message, draw, music (UI)
-- [ ] A07 Time tab: clock styles, timer, schedules, sleep
+- [x] A07 Time tab: clock styles, timer, schedules, sleep
 - [ ] A08 Device tab, onboarding, permissions, pairing UI
 - [ ] A09 Polish pass 1: states, motion, accessibility, icon, splash
 

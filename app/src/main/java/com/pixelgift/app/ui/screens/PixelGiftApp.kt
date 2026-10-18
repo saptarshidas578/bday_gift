@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -24,6 +25,7 @@ import com.pixelgift.app.ui.effects.EffectsViewModel
 import com.pixelgift.app.ui.magic.MagicViewModel
 import com.pixelgift.app.ui.navigation.Screen
 import com.pixelgift.app.ui.studio.StudioViewModel
+import com.pixelgift.app.ui.time.TimeViewModel
 
 @Composable
 fun PixelGiftApp(
@@ -50,6 +52,17 @@ fun PixelGiftApp(
         )
     }
     val magicViewModel = remember { MagicViewModel(viewModel.transport) }
+    val timeViewModel = remember { TimeViewModel(viewModel.transport) }
+
+    LaunchedEffect(statusSnapshot) {
+        timeViewModel.updateFromSnapshot(statusSnapshot)
+    }
+
+    LaunchedEffect(connectionState) {
+        if (connectionState is com.pixelgift.app.transport.ConnectionState.Connected) {
+            timeViewModel.autoSyncOnConnect()
+        }
+    }
 
     val studioSelectedColor by studioViewModel.selectedColor.collectAsState()
     val studioCommittedColor by studioViewModel.committedColor.collectAsState()
@@ -150,7 +163,7 @@ fun PixelGiftApp(
                 )
             }
             composable(Screen.Magic.route) { MagicScreen(viewModel = magicViewModel) }
-            composable(Screen.Time.route) { TimeScreen() }
+            composable(Screen.Time.route) { TimeScreen(viewModel = timeViewModel) }
             composable(Screen.Device.route) {
                 DeviceScreen(
                     connectionState = connectionState,

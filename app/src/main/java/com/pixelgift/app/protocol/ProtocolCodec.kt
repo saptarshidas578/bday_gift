@@ -395,4 +395,54 @@ object ProtocolCodec {
         val b3 = (bytes[offset + 3].toLong() and 0xFF) shl 24
         return b3 or b2 or b1 or b0
     }
+
+    /**
+     * Splits text into up to 14-byte ASCII SET_TEXT chunks per SPEC 7.4.
+     * Target: 0 (message), 1 (birthday name), 2 (birthday greeting).
+     */
+    fun chunkText(target: Int, text: String): List<Command.SetText> {
+        require(target in 0..2) { "Target must be 0..2, got $target" }
+        for (c in text) {
+            require(c.code in 0..127) { "Character '$c' is not valid ASCII" }
+        }
+
+        val asciiBytes = text.toByteArray(StandardCharsets.US_ASCII)
+        if (asciiBytes.isEmpty()) {
+            return listOf(Command.SetText(target = target, idx = 0, total = 1, text = ""))
+        }
+
+        val chunkSize = 14
+        val chunks = mutableListOf<String>()
+        var offset = 0
+        while (offset < asciiBytes.size) {
+            val length = minOf(chunkSize, asciiBytes.size - offset)
+            val chunkStr = String(asciiBytes, offset, length, StandardCharsets.US_ASCII)
+            chunks.add(chunkStr)
+            offset += length
+        }
+
+        val total = chunks.size
+        return chunks.mapIndexed { idx, chunkStr ->
+            Command.SetText(target = target, idx = idx, total = total, text = chunkStr)
+        }
+    }
+
+    /**
+     * Splits a 243-byte RGB frame (9x9 = 81 pixels * 3 bytes) into 14-byte DRAW_CHUNK commands.
+     */
+    fun chunkDrawFrame(frameRgb: ByteArray): List<Command.DrawChunk> {
+        require(frameRgb.size == 243) { "Frame RGB must be exactly 243 bytes, got ${frameRgb.size}" }
+        val chunkSize = 14
+        val result = mutableListOf<Command.DrawChunk>()
+        var offset = 0
+        while (offset < frameRgb.size) {
+            val len = minOf(chunkSize, frameRgb.size - offset)
+            val chunkData = ByteArray(len)
+            System.arraycopy(frameRgb, offset, chunkData, 0, len)
+            result.add(Command.DrawChunk(offset = offset, data = chunkData))
+            offset += len
+        }
+        return result
+    }
 }
+

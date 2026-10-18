@@ -21,6 +21,7 @@ import com.pixelgift.app.ui.MainViewModel
 import com.pixelgift.app.ui.components.PixelGiftBottomBar
 import com.pixelgift.app.ui.components.PixelGiftTopBar
 import com.pixelgift.app.ui.effects.EffectsViewModel
+import com.pixelgift.app.ui.magic.MagicViewModel
 import com.pixelgift.app.ui.navigation.Screen
 import com.pixelgift.app.ui.studio.StudioViewModel
 
@@ -48,6 +49,7 @@ fun PixelGiftApp(
             appDataRepository = appDataRepository
         )
     }
+    val magicViewModel = remember { MagicViewModel(viewModel.transport) }
 
     val studioSelectedColor by studioViewModel.selectedColor.collectAsState()
     val studioCommittedColor by studioViewModel.committedColor.collectAsState()
@@ -147,7 +149,7 @@ fun PixelGiftApp(
                     availablePalettes = studioPalettes
                 )
             }
-            composable(Screen.Magic.route) { MagicScreen() }
+            composable(Screen.Magic.route) { MagicScreen(viewModel = magicViewModel) }
             composable(Screen.Time.route) { TimeScreen() }
             composable(Screen.Device.route) {
                 DeviceScreen(

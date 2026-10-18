@@ -1,0 +1,17 @@
+# PlatformIO
+.pio/
+
+# Android / Gradle / Build
+build/
+.gradle/
+local.properties
+*.jks
+*.keystore
+
+# Secrets
+firmware/include/secrets.h
+
+# IDEs
+.idea/
+.vscode/
+*.iml

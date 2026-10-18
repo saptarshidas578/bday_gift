@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "service": {
+    "uuid": "7a1c0001-5d3e-4b8a-9c21-8f6d2e4a1b00",
+    "name": "PixelGiftService"
+  },
+  "characteristics": {
+    "command": {
+      "uuid": "7a1c0002-5d3e-4b8a-9c21-8f6d2e4a1b00",
+      "name": "Command",
+      "properties": ["write", "write_without_response"]
+    },
+    "status": {
+      "uuid": "7a1c0003-5d3e-4b8a-9c21-8f6d2e4a1b00",
+      "name": "Status",
+      "properties": ["read", "notify"]
+    }
+  },
+  "notifications": {
+    "headerAck": 160,
+    "headerSnapshot": 161
+  },
+  "flags": {
+    "FLAG_MUTED": 1,
+    "FLAG_TIME_SYNCED": 2,
+    "FLAG_TIMER_RUNNING": 4,
+    "FLAG_SHOW_RUNNING": 8,
+    "FLAG_POWER_CAPPED": 16
+  },
+  "errorCodes": {
+    "OK": 0,
+    "UNKNOWN_OP": 1,
+    "BAD_LEN": 2,
+    "BAD_VALUE": 3,
+    "BUSY": 4,
+    "UNSUPPORTED": 5,
+    "STORAGE_ERR": 6
+  },
+  "opcodes": {
+    "SET_COLOR": { "code": 1, "name": "SET_COLOR", "payload": "r g b" },
+    "SET_BRIGHTNESS": { "code": 2, "name": "SET_BRIGHTNESS", "payload": "v u8" },
+    "SET_EFFECT": { "code": 3, "name": "SET_EFFECT", "payload": "base u8, speed u8, dir u8, mirror u8, colorMode u8, c1 rgb, c2 rgb" },
+    "SET_PALETTE": { "code": 4, "name": "SET_PALETTE", "payload": "count u8 (1-8), then count x rgb" },
+    "SET_MODE": { "code": 5, "name": "SET_MODE", "payload": "mode u8" },
+    "SYNC_TIME": { "code": 6, "name": "SYNC_TIME", "payload": "epoch u32, tzMinutes i16" },
+    "SET_CLOCK_STYLE": { "code": 7, "name": "SET_CLOCK_STYLE", "payload": "style u8" },
+    "START_TIMER": { "code": 8, "name": "START_TIMER", "payload": "seconds u32" },
+    "CANCEL_TIMER": { "code": 9, "name": "CANCEL_TIMER", "payload": "none" },
+    "PLAY_BIRTHDAY": { "code": 10, "name": "PLAY_BIRTHDAY", "payload": "none" },
+    "STOP_SHOW": { "code": 11, "name": "STOP_SHOW", "payload": "none" },
+    "SET_TEXT": { "code": 12, "name": "SET_TEXT", "payload": "target u8, idx u8, total u8, up to 14 ASCII bytes" },
+    "SHOW_MESSAGE": { "code": 13, "name": "SHOW_MESSAGE", "payload": "speed u8" },
+    "SAVE_SCENE": { "code": 14, "name": "SAVE_SCENE", "payload": "slot u8 (0-7)" },
+    "LOAD_SCENE": { "code": 15, "name": "LOAD_SCENE", "payload": "slot u8" },
+    "SET_SCHEDULE": { "code": 16, "name": "SET_SCHEDULE", "payload": "slot u8, enabled u8, dayMask u8, hh u8, mm u8, action u8, arg u8" },
+    "SET_SLEEP_TIMER": { "code": 17, "name": "SET_SLEEP_TIMER", "payload": "minutes u16 (0 cancels)" },
+    "DRAW_CHUNK": { "code": 18, "name": "DRAW_CHUNK", "payload": "offset u16, up to 14 bytes rgb chunk" },
+    "DRAW_COMMIT": { "code": 19, "name": "DRAW_COMMIT", "payload": "none" },
+    "MUSIC_LEVELS": { "code": 20, "name": "MUSIC_LEVELS", "payload": "9 bytes, one per column" },
+    "SET_MUTE": { "code": 21, "name": "SET_MUTE", "payload": "u8" },
+    "GET_STATUS": { "code": 22, "name": "GET_STATUS", "payload": "none" },
+    "CLEAR_BONDS": { "code": 23, "name": "CLEAR_BONDS", "payload": "none" },
+    "FACTORY_RESET": { "code": 24, "name": "FACTORY_RESET", "payload": "magic 0xA5 0x5A" },
+    "OTA_BEGIN": { "code": 25, "name": "OTA_BEGIN", "payload": "decided in task B10" }
+  },
+  "enums": {
+    "mode": {
+      "SOLID": 0,
+      "EFFECT": 1,
+      "CLOCK": 2,
+      "TIMER": 3,
+      "BIRTHDAY": 4,
+      "MESSAGE": 5,
+      "DRAW": 6,
+      "MUSIC": 7,
+      "OFF": 8
+    },
+    "direction": {
+      "LEFT": 0,
+      "RIGHT": 1,
+      "UP": 2,
+      "DOWN": 3,
+      "IN": 4,
+      "OUT": 5
+    },
+    "colorMode": {
+      "SINGLE": 0,
+      "DUAL": 1,
+      "PALETTE": 2,
+      "RAINBOW": 3
+    },
+    "scheduleAction": {
+      "ON": 0,
+      "OFF": 1,
+      "LOAD_SCENE": 2,
+      "SUNRISE_ALARM": 3
+    },
+    "textTarget": {
+      "MESSAGE": 0,
+      "BIRTHDAY_NAME": 1,
+      "BIRTHDAY_GREETING": 2
+    }
+  }
+}

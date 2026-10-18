@@ -1,0 +1,72 @@
+[
+  {
+    "id": 1,
+    "name": "Solid",
+    "category": "Static/glow",
+    "supports": { "dir": false, "mirror": false, "colors": true, "palette": false },
+    "defaults": { "speed": 0, "dir": 0, "mirror": 0, "colorMode": 0 }
+  },
+  {
+    "id": 2,
+    "name": "Breathing",
+    "category": "Static/glow",
+    "supports": { "dir": false, "mirror": false, "colors": true, "palette": true },
+    "defaults": { "speed": 50, "dir": 0, "mirror": 0, "colorMode": 0 }
+  },
+  {
+    "id": 3,
+    "name": "Pulse",
+    "category": "Static/glow",
+    "supports": { "dir": false, "mirror": false, "colors": true, "palette": false },
+    "defaults": { "speed": 60, "dir": 0, "mirror": 0, "colorMode": 0 }
+  },
+  {
+    "id": 4,
+    "name": "Heartbeat",
+    "category": "Static/glow",
+    "supports": { "dir": false, "mirror": false, "colors": true, "palette": false },
+    "defaults": { "speed": 70, "dir": 0, "mirror": 0, "colorMode": 0 }
+  },
+  {
+    "id": 5,
+    "name": "Candle",
+    "category": "Static/glow",
+    "supports": { "dir": false, "mirror": false, "colors": true, "palette": false },
+    "defaults": { "speed": 40, "dir": 0, "mirror": 0, "colorMode": 0 }
+  },
+  {
+    "id": 6,
+    "name": "Rainbow Wave",
+    "category": "Rainbow/gradient",
+    "supports": { "dir": true, "mirror": true, "colors": false, "palette": false },
+    "defaults": { "speed": 50, "dir": 1, "mirror": 0, "colorMode": 3 }
+  },
+  {
+    "id": 7,
+    "name": "Rainbow Cycle",
+    "category": "Rainbow/gradient",
+    "supports": { "dir": true, "mirror": false, "colors": false, "palette": false },
+    "defaults": { "speed": 45, "dir": 0, "mirror": 0, "colorMode": 3 }
+  },
+  {
+    "id": 8,
+    "name": "Scanner",
+    "category": "Motion",
+    "supports": { "dir": true, "mirror": false, "colors": true, "palette": false },
+    "defaults": { "speed": 65, "dir": 0, "mirror": 0, "colorMode": 0 }
+  },
+  {
+    "id": 9,
+    "name": "Sparkle",
+    "category": "Particles",
+    "supports": { "dir": false, "mirror": false, "colors": true, "palette": true },
+    "defaults": { "speed": 55, "dir": 0, "mirror": 0, "colorMode": 0 }
+  },
+  {
+    "id": 10,
+    "name": "Fire",
+    "category": "Nature/fire",
+    "supports": { "dir": true, "mirror": false, "colors": false, "palette": true },
+    "defaults": { "speed": 60, "dir": 2, "mirror": 0, "colorMode": 2 }
+  }
+]

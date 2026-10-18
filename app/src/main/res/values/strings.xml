@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PixelGift</string>
+
+    <!-- Navigation item titles -->
+    <string name="nav_studio">Studio</string>
+    <string name="nav_effects">Effects</string>
+    <string name="nav_magic">Magic</string>
+    <string name="nav_time">Time</string>
+    <string name="nav_device">Device</string>
+
+    <!-- Content descriptions for navigation -->
+    <string name="cd_nav_studio">Navigate to Studio tab</string>
+    <string name="cd_nav_effects">Navigate to Effects tab</string>
+    <string name="cd_nav_magic">Navigate to Magic tab</string>
+    <string name="cd_nav_time">Navigate to Time tab</string>
+    <string name="cd_nav_device">Navigate to Device tab</string>
+
+    <!-- Screen placeholders -->
+    <string name="studio_title">Studio</string>
+    <string name="studio_subtitle">Color wheel, live matrix preview, and scene presets</string>
+    <string name="effects_title">Effects</string>
+    <string name="effects_subtitle">Over 500 dynamic illumination and animation looks</string>
+    <string name="magic_title">Magic</string>
+    <string name="magic_subtitle">Birthday show, custom scrolling message, draw, and music sync</string>
+    <string name="time_title">Time</string>
+    <string name="time_subtitle">Digital clock, timers, schedules, and sleep mode</string>
+    <string name="device_title">Device</string>
+    <string name="device_subtitle">Connection manager, device status, and preferences</string>
+
+    <!-- Connection chip strings -->
+    <string name="status_connected">Connected</string>
+    <string name="status_reconnecting">Reconnecting…</string>
+    <string name="status_offline">Offline</string>
+    <string name="status_connecting">Connecting…</string>
+    <string name="cd_connection_chip">Device connection status: %1$s. Tap to retry connection.</string>
+    <string name="action_retry_connection">Retry</string>
+
+    <!-- Accessibility descriptions -->
+    <string name="cd_app_logo">PixelGift Logo</string>
+    <string name="placeholder_ready">Module scaffold ready for Task A02</string>
+</resources>

@@ -4,7 +4,7 @@ Agent: update this at the end of every task, then commit. Keep it terse. Legend:
 
 ## Next step
 
-A01: Android scaffold, theme, navigation shell
+A02: DeviceTransport, FakeDevice, protocol codec + unit tests
 
 ## Phases
 
@@ -12,7 +12,7 @@ A01: Android scaffold, theme, navigation shell
 - [x] P00 repo, folders, .gitignore, first commit, tag v0.0-init
 
 ### Track A: App on a fake device (no hardware needed)
-- [ ] A01 Android scaffold, theme, navigation shell
+- [x] A01 Android scaffold, theme, navigation shell
 - [ ] A02 DeviceTransport, FakeDevice, protocol codec + unit tests
 - [ ] A03 Studio: paint-style color wheel + OK, HEX/RGB, recents
 - [ ] A04 Brightness, favorites, palettes, scenes row, mini matrix preview

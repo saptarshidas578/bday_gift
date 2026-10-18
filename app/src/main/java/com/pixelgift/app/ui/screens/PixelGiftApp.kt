@@ -4,10 +4,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -15,19 +14,22 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.pixelgift.app.ui.components.DeviceConnectionStatus
+import com.pixelgift.app.ui.MainViewModel
 import com.pixelgift.app.ui.components.PixelGiftBottomBar
 import com.pixelgift.app.ui.components.PixelGiftTopBar
 import com.pixelgift.app.ui.navigation.Screen
 
 @Composable
-fun PixelGiftApp() {
+fun PixelGiftApp(
+    viewModel: MainViewModel = remember { MainViewModel() }
+) {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: Screen.Studio.route
 
-    // Connection state placeholder (defaults to OFFLINE until BLE transport in track A02/C01)
-    var connectionStatus by remember { mutableStateOf(DeviceConnectionStatus.OFFLINE) }
+    val connectionStatus by viewModel.uiConnectionStatus.collectAsState()
+    val connectionState by viewModel.connectionState.collectAsState()
+    val statusSnapshot by viewModel.statusSnapshot.collectAsState()
 
     val currentScreen = Screen.bottomNavItems.find { it.route == currentRoute } ?: Screen.Studio
     val currentTitle = stringResource(currentScreen.titleRes)
@@ -38,13 +40,7 @@ fun PixelGiftApp() {
                 title = currentTitle,
                 connectionStatus = connectionStatus,
                 onRetryConnection = {
-                    // Placeholder retry toggle for verifying states
-                    connectionStatus = when (connectionStatus) {
-                        DeviceConnectionStatus.OFFLINE -> DeviceConnectionStatus.CONNECTING
-                        DeviceConnectionStatus.CONNECTING -> DeviceConnectionStatus.CONNECTED
-                        DeviceConnectionStatus.CONNECTED -> DeviceConnectionStatus.RECONNECTING
-                        DeviceConnectionStatus.RECONNECTING -> DeviceConnectionStatus.OFFLINE
-                    }
+                    viewModel.onConnectionChipClicked()
                 }
             )
         },
@@ -75,7 +71,15 @@ fun PixelGiftApp() {
             composable(Screen.Effects.route) { EffectsScreen() }
             composable(Screen.Magic.route) { MagicScreen() }
             composable(Screen.Time.route) { TimeScreen() }
-            composable(Screen.Device.route) { DeviceScreen() }
+            composable(Screen.Device.route) {
+                DeviceScreen(
+                    connectionState = connectionState,
+                    statusSnapshot = statusSnapshot,
+                    onConnectToggle = { viewModel.onConnectionChipClicked() },
+                    onSendColor = { r, g, b -> viewModel.sendTestColor(r, g, b) },
+                    onToggleRandomDisconnect = { enabled -> viewModel.toggleRandomDisconnects(enabled) }
+                )
+            }
         }
     }
 }

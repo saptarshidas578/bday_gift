@@ -52,12 +52,13 @@ sealed class Screen(
     )
 
     companion object {
-        val bottomNavItems: List<Screen> = listOf(
-            Studio,
-            Effects,
-            Magic,
-            Time,
-            Device
-        )
+        val bottomNavItems: List<Screen>
+            get() = listOf(
+                Studio,
+                Effects,
+                Magic,
+                Time,
+                Device
+            )
     }
 }

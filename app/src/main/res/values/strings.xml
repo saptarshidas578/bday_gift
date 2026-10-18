@@ -38,5 +38,17 @@
 
     <!-- Accessibility descriptions -->
     <string name="cd_app_logo">PixelGift Logo</string>
-    <string name="placeholder_ready">Module scaffold ready for Task A02</string>
+    <string name="placeholder_ready">Module scaffold ready for Task A03</string>
+
+    <!-- Testing & Diagnostics -->
+    <string name="test_device_status_header">FakeDevice Hardware Simulator</string>
+    <string name="test_device_connect">Connect Simulator (1s delay)</string>
+    <string name="test_device_disconnect">Disconnect Simulator</string>
+    <string name="test_send_amber_color">Send Amber Color Command</string>
+    <string name="test_send_cyan_color">Send Cyan Color Command</string>
+    <string name="test_random_disconnect_label">Simulate Random Disconnects</string>
+    <string name="test_mode_label">Active Mode: %1$s</string>
+    <string name="test_color_label">Live Color: RGB(%1$d, %2$d, %3$d)</string>
+    <string name="test_brightness_label">Brightness: %1$d/255</string>
+    <string name="test_flags_label">Flags: 0x%1$02X (Synced: %2$s, Show: %3$s)</string>
 </resources>

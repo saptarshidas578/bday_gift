@@ -56,3 +56,4 @@ A03: Studio: paint-style color wheel + OK, HEX/RGB, recents
 ## Debug notes
 
 (only non-obvious findings, 2 lines max each)
+- Sealed class companion `val` lists cause JVM circular initialization NPE; use custom getter `get() = listOf(...)`.

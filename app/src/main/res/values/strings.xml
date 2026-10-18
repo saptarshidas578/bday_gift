@@ -68,4 +68,23 @@
     <string name="cd_b_input">Blue channel 0 to 255</string>
     <string name="cd_action_cancel">Cancel and revert color</string>
     <string name="cd_action_ok">OK: commit color with haptic confirmation</string>
+
+    <!-- Task A04 Strings -->
+    <string name="studio_brightness_title">Brightness</string>
+    <string name="studio_brightness_slider_cd">Matrix brightness slider %1$d percent</string>
+    <string name="studio_scenes_title">Scenes (8 Hardware Slots)</string>
+    <string name="studio_scene_chip_cd">Scene %1$d. Tap to load, long press to save current look.</string>
+    <string name="studio_favorites_title">Favorites</string>
+    <string name="studio_palettes_title">Named Palettes</string>
+    <string name="studio_btn_new_palette">New Palette</string>
+    <string name="studio_btn_export_import">JSON Sync</string>
+    <string name="studio_dialog_create_palette">Create Palette</string>
+    <string name="studio_dialog_palette_name">Palette Name</string>
+    <string name="studio_dialog_rename_palette">Rename Palette</string>
+    <string name="studio_dialog_export_title">JSON Export / Import</string>
+    <string name="studio_btn_export">Copy Export JSON</string>
+    <string name="studio_btn_import">Import JSON</string>
+    <string name="studio_btn_save">Save</string>
+    <string name="studio_btn_delete">Delete</string>
+    <string name="studio_btn_add_to_palette">+ Add Current Color</string>
 </resources>

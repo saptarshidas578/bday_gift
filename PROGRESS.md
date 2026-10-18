@@ -4,7 +4,7 @@ Agent: update this at the end of every task, then commit. Keep it terse. Legend:
 
 ## Next step
 
-A04: Brightness, favorites, palettes, scenes row, mini matrix preview
+A05: Effects browser from effects.json
 
 ## Phases
 
@@ -15,7 +15,7 @@ A04: Brightness, favorites, palettes, scenes row, mini matrix preview
 - [x] A01 Android scaffold, theme, navigation shell
 - [x] A02 DeviceTransport, FakeDevice, protocol codec + unit tests
 - [x] A03 Studio: paint-style color wheel + OK, HEX/RGB, recents
-- [ ] A04 Brightness, favorites, palettes, scenes row, mini matrix preview
+- [x] A04 Brightness, favorites, palettes, scenes row, mini matrix preview
 - [ ] A05 Effects browser from effects.json
 - [ ] A06 Magic tab: birthday, message, draw, music (UI)
 - [ ] A07 Time tab: clock styles, timer, schedules, sleep
@@ -58,4 +58,6 @@ A04: Brightness, favorites, palettes, scenes row, mini matrix preview
 (only non-obvious findings, 2 lines max each)
 - Sealed class companion `val` lists cause JVM circular initialization NPE; use custom getter `get() = listOf(...)`.
 - Inject optional CoroutineScope into ViewModels to avoid unmocked Looper crashes in pure JVM unit tests.
+- Avoid collecting infinite flows in ViewModel init when tests use runBlocking; use immediate StateFlow updates.
+
 

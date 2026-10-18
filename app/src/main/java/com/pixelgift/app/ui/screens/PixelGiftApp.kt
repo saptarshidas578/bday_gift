@@ -8,12 +8,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.pixelgift.app.data.repository.DataStoreAppDataRepository
 import com.pixelgift.app.ui.MainViewModel
 import com.pixelgift.app.ui.components.PixelGiftBottomBar
 import com.pixelgift.app.ui.components.PixelGiftTopBar
@@ -24,6 +26,7 @@ import com.pixelgift.app.ui.studio.StudioViewModel
 fun PixelGiftApp(
     viewModel: MainViewModel = remember { MainViewModel() }
 ) {
+    val context = LocalContext.current.applicationContext
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: Screen.Studio.route
@@ -32,10 +35,17 @@ fun PixelGiftApp(
     val connectionState by viewModel.connectionState.collectAsState()
     val statusSnapshot by viewModel.statusSnapshot.collectAsState()
 
-    val studioViewModel = remember { StudioViewModel(viewModel.transport) }
+    val appDataRepository = remember { DataStoreAppDataRepository(context) }
+    val studioViewModel = remember { StudioViewModel(viewModel.transport, appDataRepository) }
+
     val studioSelectedColor by studioViewModel.selectedColor.collectAsState()
     val studioCommittedColor by studioViewModel.committedColor.collectAsState()
+    val studioBrightness by studioViewModel.brightness.collectAsState()
+    val studioFavoriteColors by studioViewModel.favoriteColors.collectAsState()
     val studioRecentColors by studioViewModel.recentColors.collectAsState()
+    val studioPalettes by studioViewModel.palettes.collectAsState()
+    val studioActiveScene by studioViewModel.activeScene.collectAsState()
+    val studioSceneFeedback by studioViewModel.sceneFeedback.collectAsState()
     val studioHexInput by studioViewModel.hexInput.collectAsState()
     val studioRInput by studioViewModel.rInput.collectAsState()
     val studioGInput by studioViewModel.gInput.collectAsState()
@@ -81,15 +91,41 @@ fun PixelGiftApp(
                 StudioScreen(
                     selectedColor = studioSelectedColor,
                     committedColor = studioCommittedColor,
+                    brightness = studioBrightness,
+                    favoriteColors = studioFavoriteColors,
                     recentColors = studioRecentColors,
+                    palettes = studioPalettes,
+                    activeScene = studioActiveScene,
+                    sceneFeedback = studioSceneFeedback,
                     hexInput = studioHexInput,
                     rInput = studioRInput,
                     gInput = studioGInput,
                     bInput = studioBInput,
                     onColorDragged = { studioViewModel.onColorDragged(it) },
+                    onBrightnessChanged = { studioViewModel.onBrightnessChanged(it) },
                     onHexChanged = { studioViewModel.onHexChanged(it) },
                     onRgbChanged = { r, g, b -> studioViewModel.onRgbChannelChanged(r, g, b) },
                     onRecentColorSelected = { studioViewModel.onRecentColorSelected(it) },
+                    onFavoriteSelected = { studioViewModel.onFavoriteSelected(it) },
+                    onToggleFavorite = {
+                        if (studioViewModel.isFavorite()) {
+                            studioViewModel.onRemoveFavorite(studioSelectedColor)
+                        } else {
+                            studioViewModel.onAddFavorite(studioSelectedColor)
+                        }
+                    },
+                    isFavorite = studioViewModel.isFavorite(studioSelectedColor),
+                    onLoadScene = { studioViewModel.onLoadScene(it) },
+                    onSaveScene = { studioViewModel.onSaveScene(it) },
+                    onClearSceneFeedback = { studioViewModel.clearSceneFeedback() },
+                    onPaletteSelected = { studioViewModel.onPaletteSelected(it) },
+                    onCreatePalette = { name, colors -> studioViewModel.onCreatePalette(name, colors) },
+                    onRenamePalette = { id, newName -> studioViewModel.onRenamePalette(id, newName) },
+                    onDeletePalette = { studioViewModel.onDeletePalette(it) },
+                    onReorderPalettes = { studioViewModel.onReorderPalettes(it) },
+                    onAddColorToPalette = { studioViewModel.onAddColorToPalette(it) },
+                    onExportJson = { studioViewModel.exportJson() },
+                    onImportJson = { studioViewModel.importJson(it) },
                     onCancel = { studioViewModel.onCancel() },
                     onOk = { studioViewModel.onCommitOk() }
                 )

@@ -4,7 +4,7 @@ Agent: update this at the end of every task, then commit. Keep it terse. Legend:
 
 ## Next step
 
-A05: Effects browser from effects.json
+A06: Magic tab: birthday, message, draw, music (UI)
 
 ## Phases
 
@@ -16,7 +16,7 @@ A05: Effects browser from effects.json
 - [x] A02 DeviceTransport, FakeDevice, protocol codec + unit tests
 - [x] A03 Studio: paint-style color wheel + OK, HEX/RGB, recents
 - [x] A04 Brightness, favorites, palettes, scenes row, mini matrix preview
-- [ ] A05 Effects browser from effects.json
+- [x] A05 Effects browser from effects.json
 - [ ] A06 Magic tab: birthday, message, draw, music (UI)
 - [ ] A07 Time tab: clock styles, timer, schedules, sleep
 - [ ] A08 Device tab, onboarding, permissions, pairing UI

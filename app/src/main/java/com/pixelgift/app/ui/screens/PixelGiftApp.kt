@@ -15,10 +15,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.pixelgift.app.data.repository.AssetEffectCatalogRepository
 import com.pixelgift.app.data.repository.DataStoreAppDataRepository
 import com.pixelgift.app.ui.MainViewModel
 import com.pixelgift.app.ui.components.PixelGiftBottomBar
 import com.pixelgift.app.ui.components.PixelGiftTopBar
+import com.pixelgift.app.ui.effects.EffectsViewModel
 import com.pixelgift.app.ui.navigation.Screen
 import com.pixelgift.app.ui.studio.StudioViewModel
 
@@ -37,6 +39,15 @@ fun PixelGiftApp(
 
     val appDataRepository = remember { DataStoreAppDataRepository(context) }
     val studioViewModel = remember { StudioViewModel(viewModel.transport, appDataRepository) }
+
+    val effectCatalogRepository = remember { AssetEffectCatalogRepository(context) }
+    val effectsViewModel = remember {
+        EffectsViewModel(
+            transport = viewModel.transport,
+            catalogRepository = effectCatalogRepository,
+            appDataRepository = appDataRepository
+        )
+    }
 
     val studioSelectedColor by studioViewModel.selectedColor.collectAsState()
     val studioCommittedColor by studioViewModel.committedColor.collectAsState()
@@ -130,7 +141,12 @@ fun PixelGiftApp(
                     onOk = { studioViewModel.onCommitOk() }
                 )
             }
-            composable(Screen.Effects.route) { EffectsScreen() }
+            composable(Screen.Effects.route) {
+                EffectsScreen(
+                    viewModel = effectsViewModel,
+                    availablePalettes = studioPalettes
+                )
+            }
             composable(Screen.Magic.route) { MagicScreen() }
             composable(Screen.Time.route) { TimeScreen() }
             composable(Screen.Device.route) {

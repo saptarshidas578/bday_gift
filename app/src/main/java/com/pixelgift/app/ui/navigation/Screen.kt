@@ -51,6 +51,20 @@ sealed class Screen(
         icon = Icons.Outlined.Devices
     )
 
+    data object Onboarding : Screen(
+        route = "onboarding",
+        titleRes = R.string.nav_device,
+        contentDescriptionRes = R.string.cd_nav_device,
+        icon = Icons.Outlined.Devices
+    )
+
+    data object Pair : Screen(
+        route = "pair",
+        titleRes = R.string.nav_device,
+        contentDescriptionRes = R.string.cd_nav_device,
+        icon = Icons.Outlined.Devices
+    )
+
     companion object {
         val bottomNavItems: List<Screen>
             get() = listOf(

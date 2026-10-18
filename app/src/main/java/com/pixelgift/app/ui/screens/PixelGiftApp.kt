@@ -21,6 +21,7 @@ import com.pixelgift.app.data.repository.DataStoreAppDataRepository
 import com.pixelgift.app.ui.MainViewModel
 import com.pixelgift.app.ui.components.PixelGiftBottomBar
 import com.pixelgift.app.ui.components.PixelGiftTopBar
+import com.pixelgift.app.ui.device.DeviceViewModel
 import com.pixelgift.app.ui.effects.EffectsViewModel
 import com.pixelgift.app.ui.magic.MagicViewModel
 import com.pixelgift.app.ui.navigation.Screen
@@ -53,6 +54,7 @@ fun PixelGiftApp(
     }
     val magicViewModel = remember { MagicViewModel(viewModel.transport) }
     val timeViewModel = remember { TimeViewModel(viewModel.transport) }
+    val deviceViewModel = remember { DeviceViewModel(viewModel.transport) }
 
     LaunchedEffect(statusSnapshot) {
         timeViewModel.updateFromSnapshot(statusSnapshot)
@@ -166,11 +168,21 @@ fun PixelGiftApp(
             composable(Screen.Time.route) { TimeScreen(viewModel = timeViewModel) }
             composable(Screen.Device.route) {
                 DeviceScreen(
-                    connectionState = connectionState,
-                    statusSnapshot = statusSnapshot,
-                    onConnectToggle = { viewModel.onConnectionChipClicked() },
-                    onSendColor = { r, g, b -> viewModel.sendTestColor(r, g, b) },
-                    onToggleRandomDisconnect = { enabled -> viewModel.toggleRandomDisconnects(enabled) }
+                    viewModel = deviceViewModel,
+                    onNavigateToPair = { navController.navigate(Screen.Pair.route) },
+                    onNavigateToOnboarding = { navController.navigate(Screen.Onboarding.route) }
+                )
+            }
+            composable(Screen.Onboarding.route) {
+                OnboardingScreen(
+                    viewModel = deviceViewModel,
+                    onFinishOnboarding = { navController.navigate(Screen.Pair.route) }
+                )
+            }
+            composable(Screen.Pair.route) {
+                PairScreen(
+                    viewModel = deviceViewModel,
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
         }

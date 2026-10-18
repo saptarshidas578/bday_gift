@@ -4,7 +4,7 @@ Agent: update this at the end of every task, then commit. Keep it terse. Legend:
 
 ## Next step
 
-A08: Device tab, onboarding, permissions, pairing UI
+A09 Polish pass 1: states, motion, accessibility, icon, splash
 
 ## Phases
 
@@ -19,7 +19,7 @@ A08: Device tab, onboarding, permissions, pairing UI
 - [x] A05 Effects browser from effects.json
 - [x] A06 Magic tab: birthday, message, draw, music (UI)
 - [x] A07 Time tab: clock styles, timer, schedules, sleep
-- [ ] A08 Device tab, onboarding, permissions, pairing UI
+- [x] A08 Device tab, onboarding, permissions, pairing UI
 - [ ] A09 Polish pass 1: states, motion, accessibility, icon, splash
 
 ### Track B: Firmware

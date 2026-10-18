@@ -4,7 +4,7 @@ Agent: update this at the end of every task, then commit. Keep it terse. Legend:
 
 ## Next step
 
-A02: DeviceTransport, FakeDevice, protocol codec + unit tests
+A03: Studio: paint-style color wheel + OK, HEX/RGB, recents
 
 ## Phases
 
@@ -13,7 +13,7 @@ A02: DeviceTransport, FakeDevice, protocol codec + unit tests
 
 ### Track A: App on a fake device (no hardware needed)
 - [x] A01 Android scaffold, theme, navigation shell
-- [ ] A02 DeviceTransport, FakeDevice, protocol codec + unit tests
+- [x] A02 DeviceTransport, FakeDevice, protocol codec + unit tests
 - [ ] A03 Studio: paint-style color wheel + OK, HEX/RGB, recents
 - [ ] A04 Brightness, favorites, palettes, scenes row, mini matrix preview
 - [ ] A05 Effects browser from effects.json

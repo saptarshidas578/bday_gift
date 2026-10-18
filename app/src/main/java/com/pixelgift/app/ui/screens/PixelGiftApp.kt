@@ -18,6 +18,7 @@ import com.pixelgift.app.ui.MainViewModel
 import com.pixelgift.app.ui.components.PixelGiftBottomBar
 import com.pixelgift.app.ui.components.PixelGiftTopBar
 import com.pixelgift.app.ui.navigation.Screen
+import com.pixelgift.app.ui.studio.StudioViewModel
 
 @Composable
 fun PixelGiftApp(
@@ -30,6 +31,15 @@ fun PixelGiftApp(
     val connectionStatus by viewModel.uiConnectionStatus.collectAsState()
     val connectionState by viewModel.connectionState.collectAsState()
     val statusSnapshot by viewModel.statusSnapshot.collectAsState()
+
+    val studioViewModel = remember { StudioViewModel(viewModel.transport) }
+    val studioSelectedColor by studioViewModel.selectedColor.collectAsState()
+    val studioCommittedColor by studioViewModel.committedColor.collectAsState()
+    val studioRecentColors by studioViewModel.recentColors.collectAsState()
+    val studioHexInput by studioViewModel.hexInput.collectAsState()
+    val studioRInput by studioViewModel.rInput.collectAsState()
+    val studioGInput by studioViewModel.gInput.collectAsState()
+    val studioBInput by studioViewModel.bInput.collectAsState()
 
     val currentScreen = Screen.bottomNavItems.find { it.route == currentRoute } ?: Screen.Studio
     val currentTitle = stringResource(currentScreen.titleRes)
@@ -67,7 +77,23 @@ fun PixelGiftApp(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            composable(Screen.Studio.route) { StudioScreen() }
+            composable(Screen.Studio.route) {
+                StudioScreen(
+                    selectedColor = studioSelectedColor,
+                    committedColor = studioCommittedColor,
+                    recentColors = studioRecentColors,
+                    hexInput = studioHexInput,
+                    rInput = studioRInput,
+                    gInput = studioGInput,
+                    bInput = studioBInput,
+                    onColorDragged = { studioViewModel.onColorDragged(it) },
+                    onHexChanged = { studioViewModel.onHexChanged(it) },
+                    onRgbChanged = { r, g, b -> studioViewModel.onRgbChannelChanged(r, g, b) },
+                    onRecentColorSelected = { studioViewModel.onRecentColorSelected(it) },
+                    onCancel = { studioViewModel.onCancel() },
+                    onOk = { studioViewModel.onCommitOk() }
+                )
+            }
             composable(Screen.Effects.route) { EffectsScreen() }
             composable(Screen.Magic.route) { MagicScreen() }
             composable(Screen.Time.route) { TimeScreen() }

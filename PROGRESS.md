@@ -4,7 +4,7 @@ Agent: update this at the end of every task, then commit. Keep it terse. Legend:
 
 ## Next step
 
-A03: Studio: paint-style color wheel + OK, HEX/RGB, recents
+A04: Brightness, favorites, palettes, scenes row, mini matrix preview
 
 ## Phases
 
@@ -14,7 +14,7 @@ A03: Studio: paint-style color wheel + OK, HEX/RGB, recents
 ### Track A: App on a fake device (no hardware needed)
 - [x] A01 Android scaffold, theme, navigation shell
 - [x] A02 DeviceTransport, FakeDevice, protocol codec + unit tests
-- [ ] A03 Studio: paint-style color wheel + OK, HEX/RGB, recents
+- [x] A03 Studio: paint-style color wheel + OK, HEX/RGB, recents
 - [ ] A04 Brightness, favorites, palettes, scenes row, mini matrix preview
 - [ ] A05 Effects browser from effects.json
 - [ ] A06 Magic tab: birthday, message, draw, music (UI)
@@ -57,3 +57,5 @@ A03: Studio: paint-style color wheel + OK, HEX/RGB, recents
 
 (only non-obvious findings, 2 lines max each)
 - Sealed class companion `val` lists cause JVM circular initialization NPE; use custom getter `get() = listOf(...)`.
+- Inject optional CoroutineScope into ViewModels to avoid unmocked Looper crashes in pure JVM unit tests.
+

@@ -51,4 +51,21 @@
     <string name="test_color_label">Live Color: RGB(%1$d, %2$d, %3$d)</string>
     <string name="test_brightness_label">Brightness: %1$d/255</string>
     <string name="test_flags_label">Flags: 0x%1$02X (Synced: %2$s, Show: %3$s)</string>
+
+    <!-- Studio Screen Color Picker -->
+    <string name="studio_color_preview_label">Live Color Preview</string>
+    <string name="studio_hex_label">HEX</string>
+    <string name="studio_r_label">R</string>
+    <string name="studio_g_label">G</string>
+    <string name="studio_b_label">B</string>
+    <string name="studio_recent_colors_title">Recent Colors</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_ok">OK</string>
+    <string name="cd_color_chip">Select color %1$s</string>
+    <string name="cd_hex_input">HEX color input field</string>
+    <string name="cd_r_input">Red channel 0 to 255</string>
+    <string name="cd_g_input">Green channel 0 to 255</string>
+    <string name="cd_b_input">Blue channel 0 to 255</string>
+    <string name="cd_action_cancel">Cancel and revert color</string>
+    <string name="cd_action_ok">OK: commit color with haptic confirmation</string>
 </resources>

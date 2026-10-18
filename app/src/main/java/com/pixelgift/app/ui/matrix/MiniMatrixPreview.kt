@@ -39,8 +39,8 @@ import com.pixelgift.app.ui.color.ColorMath
 @Composable
 fun MiniMatrixPreview(
     color: Rgb,
-    brightness: Int = 255,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    brightness: Int = 255
 ) {
     val composeColor = ColorMath.rgbToComposeColor(color)
     val factor = (brightness.coerceIn(0, 255) / 255f)

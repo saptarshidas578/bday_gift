@@ -1,16 +1,20 @@
 package com.pixelgift.app.ui.screens
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -108,82 +112,89 @@ fun PixelGiftApp(
         },
         modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = Screen.Studio.route,
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
+                .padding(innerPadding),
+            contentAlignment = Alignment.TopCenter
         ) {
-            composable(Screen.Studio.route) {
-                StudioScreen(
-                    selectedColor = studioSelectedColor,
-                    committedColor = studioCommittedColor,
-                    brightness = studioBrightness,
-                    favoriteColors = studioFavoriteColors,
-                    recentColors = studioRecentColors,
-                    palettes = studioPalettes,
-                    activeScene = studioActiveScene,
-                    sceneFeedback = studioSceneFeedback,
-                    hexInput = studioHexInput,
-                    rInput = studioRInput,
-                    gInput = studioGInput,
-                    bInput = studioBInput,
-                    onColorDragged = { studioViewModel.onColorDragged(it) },
-                    onBrightnessChanged = { studioViewModel.onBrightnessChanged(it) },
-                    onHexChanged = { studioViewModel.onHexChanged(it) },
-                    onRgbChanged = { r, g, b -> studioViewModel.onRgbChannelChanged(r, g, b) },
-                    onRecentColorSelected = { studioViewModel.onRecentColorSelected(it) },
-                    onFavoriteSelected = { studioViewModel.onFavoriteSelected(it) },
-                    onToggleFavorite = {
-                        if (studioViewModel.isFavorite()) {
-                            studioViewModel.onRemoveFavorite(studioSelectedColor)
-                        } else {
-                            studioViewModel.onAddFavorite(studioSelectedColor)
-                        }
-                    },
-                    isFavorite = studioViewModel.isFavorite(studioSelectedColor),
-                    onLoadScene = { studioViewModel.onLoadScene(it) },
-                    onSaveScene = { studioViewModel.onSaveScene(it) },
-                    onClearSceneFeedback = { studioViewModel.clearSceneFeedback() },
-                    onPaletteSelected = { studioViewModel.onPaletteSelected(it) },
-                    onCreatePalette = { name, colors -> studioViewModel.onCreatePalette(name, colors) },
-                    onRenamePalette = { id, newName -> studioViewModel.onRenamePalette(id, newName) },
-                    onDeletePalette = { studioViewModel.onDeletePalette(it) },
-                    onReorderPalettes = { studioViewModel.onReorderPalettes(it) },
-                    onAddColorToPalette = { studioViewModel.onAddColorToPalette(it) },
-                    onExportJson = { studioViewModel.exportJson() },
-                    onImportJson = { studioViewModel.importJson(it) },
-                    onCancel = { studioViewModel.onCancel() },
-                    onOk = { studioViewModel.onCommitOk() }
-                )
-            }
-            composable(Screen.Effects.route) {
-                EffectsScreen(
-                    viewModel = effectsViewModel,
-                    availablePalettes = studioPalettes
-                )
-            }
-            composable(Screen.Magic.route) { MagicScreen(viewModel = magicViewModel) }
-            composable(Screen.Time.route) { TimeScreen(viewModel = timeViewModel) }
-            composable(Screen.Device.route) {
-                DeviceScreen(
-                    viewModel = deviceViewModel,
-                    onNavigateToPair = { navController.navigate(Screen.Pair.route) },
-                    onNavigateToOnboarding = { navController.navigate(Screen.Onboarding.route) }
-                )
-            }
-            composable(Screen.Onboarding.route) {
-                OnboardingScreen(
-                    viewModel = deviceViewModel,
-                    onFinishOnboarding = { navController.navigate(Screen.Pair.route) }
-                )
-            }
-            composable(Screen.Pair.route) {
-                PairScreen(
-                    viewModel = deviceViewModel,
-                    onNavigateBack = { navController.popBackStack() }
-                )
+            NavHost(
+                navController = navController,
+                startDestination = Screen.Studio.route,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .widthIn(max = 840.dp)
+            ) {
+                composable(Screen.Studio.route) {
+                    StudioScreen(
+                        selectedColor = studioSelectedColor,
+                        committedColor = studioCommittedColor,
+                        brightness = studioBrightness,
+                        favoriteColors = studioFavoriteColors,
+                        recentColors = studioRecentColors,
+                        palettes = studioPalettes,
+                        activeScene = studioActiveScene,
+                        sceneFeedback = studioSceneFeedback,
+                        hexInput = studioHexInput,
+                        rInput = studioRInput,
+                        gInput = studioGInput,
+                        bInput = studioBInput,
+                        onColorDragged = { studioViewModel.onColorDragged(it) },
+                        onBrightnessChanged = { studioViewModel.onBrightnessChanged(it) },
+                        onHexChanged = { studioViewModel.onHexChanged(it) },
+                        onRgbChanged = { r, g, b -> studioViewModel.onRgbChannelChanged(r, g, b) },
+                        onRecentColorSelected = { studioViewModel.onRecentColorSelected(it) },
+                        onFavoriteSelected = { studioViewModel.onFavoriteSelected(it) },
+                        onToggleFavorite = {
+                            if (studioViewModel.isFavorite()) {
+                                studioViewModel.onRemoveFavorite(studioSelectedColor)
+                            } else {
+                                studioViewModel.onAddFavorite(studioSelectedColor)
+                            }
+                        },
+                        isFavorite = studioViewModel.isFavorite(studioSelectedColor),
+                        onLoadScene = { studioViewModel.onLoadScene(it) },
+                        onSaveScene = { studioViewModel.onSaveScene(it) },
+                        onClearSceneFeedback = { studioViewModel.clearSceneFeedback() },
+                        onPaletteSelected = { studioViewModel.onPaletteSelected(it) },
+                        onCreatePalette = { name, colors -> studioViewModel.onCreatePalette(name, colors) },
+                        onRenamePalette = { id, newName -> studioViewModel.onRenamePalette(id, newName) },
+                        onDeletePalette = { studioViewModel.onDeletePalette(it) },
+                        onReorderPalettes = { studioViewModel.onReorderPalettes(it) },
+                        onAddColorToPalette = { studioViewModel.onAddColorToPalette(it) },
+                        onExportJson = { studioViewModel.exportJson() },
+                        onImportJson = { studioViewModel.importJson(it) },
+                        onCancel = { studioViewModel.onCancel() },
+                        onOk = { studioViewModel.onCommitOk() }
+                    )
+                }
+                composable(Screen.Effects.route) {
+                    EffectsScreen(
+                        viewModel = effectsViewModel,
+                        availablePalettes = studioPalettes
+                    )
+                }
+                composable(Screen.Magic.route) { MagicScreen(viewModel = magicViewModel) }
+                composable(Screen.Time.route) { TimeScreen(viewModel = timeViewModel) }
+                composable(Screen.Device.route) {
+                    DeviceScreen(
+                        viewModel = deviceViewModel,
+                        onNavigateToPair = { navController.navigate(Screen.Pair.route) },
+                        onNavigateToOnboarding = { navController.navigate(Screen.Onboarding.route) }
+                    )
+                }
+                composable(Screen.Onboarding.route) {
+                    OnboardingScreen(
+                        viewModel = deviceViewModel,
+                        onFinishOnboarding = { navController.navigate(Screen.Pair.route) }
+                    )
+                }
+                composable(Screen.Pair.route) {
+                    PairScreen(
+                        viewModel = deviceViewModel,
+                        onNavigateBack = { navController.popBackStack() }
+                    )
+                }
             }
         }
     }

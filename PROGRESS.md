@@ -4,7 +4,7 @@ Agent: update this at the end of every task, then commit. Keep it terse. Legend:
 
 ## Next step
 
-A09 Polish pass 1: states, motion, accessibility, icon, splash
+B01 [H] PlatformIO project + pixel walk + color order + pin confirm
 
 ## Phases
 
@@ -20,7 +20,7 @@ A09 Polish pass 1: states, motion, accessibility, icon, splash
 - [x] A06 Magic tab: birthday, message, draw, music (UI)
 - [x] A07 Time tab: clock styles, timer, schedules, sleep
 - [x] A08 Device tab, onboarding, permissions, pairing UI
-- [ ] A09 Polish pass 1: states, motion, accessibility, icon, splash
+- [x] A09 Polish pass 1: states, motion, accessibility, icon, splash
 
 ### Track B: Firmware
 - [ ] B01 [H] PlatformIO project + pixel walk + color order + pin confirm

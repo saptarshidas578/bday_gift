@@ -4,7 +4,7 @@ Agent: update this at the end of every task, then commit. Keep it terse. Legend:
 
 ## Next step
 
-B01 [H] PlatformIO project + pixel walk + color order + pin confirm
+B02 Matrix mapping, brightness and current cap
 
 ## Phases
 
@@ -23,7 +23,7 @@ B01 [H] PlatformIO project + pixel walk + color order + pin confirm
 - [x] A09 Polish pass 1: states, motion, accessibility, icon, splash
 
 ### Track B: Firmware
-- [ ] B01 [H] PlatformIO project + pixel walk + color order + pin confirm
+- [x] B01 [H] PlatformIO project + pixel walk + color order + pin confirm
 - [ ] B02 Matrix mapping, brightness and current cap
 - [ ] B03 Effect engine + first 10 effects + native tests
 - [ ] B04 Remaining effects to 60 bases + effects.json complete
@@ -46,11 +46,11 @@ B01 [H] PlatformIO project + pixel walk + color order + pin confirm
 - Assumed Android only, no RTC, timer cancelled on power loss. Confirm or change in SPEC section 2.
 
 ## Hardware facts (fill in as measured)
-- Board:
-- Data pin / buzzer pin:
-- Matrix order (serpentine?):
-- Color order (GRB?):
-- Supply rating:
+- Board: ESP32 DevKit V1 (esp32dev)
+- Data pin / buzzer pin: GPIO 27 (Data, confirmed) / GPIO 18 (Buzzer default)
+- Matrix order (serpentine?): Yes, serpentine (row 0 L->R, row 1 R->L, row 2 L->R...)
+- Color order (GRB?): GRB (accurate on RGB color cycle test)
+- Supply rating: 5V regulated (FastLED capped at 2500 mA, brightness safe 30/255)
 - Passkey card written: no
 
 ## Debug notes

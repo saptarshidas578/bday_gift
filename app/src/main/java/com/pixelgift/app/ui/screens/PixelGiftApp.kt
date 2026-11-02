@@ -34,31 +34,45 @@ import com.pixelgift.app.ui.time.TimeViewModel
 
 @Composable
 fun PixelGiftApp(
-    viewModel: MainViewModel = remember { MainViewModel() }
+    viewModel: MainViewModel? = null
 ) {
     val context = LocalContext.current.applicationContext
+    val transport = remember {
+        try {
+            val adapter = android.bluetooth.BluetoothAdapter.getDefaultAdapter()
+            if (adapter != null) {
+                com.pixelgift.app.transport.BleTransport(context)
+            } else {
+                com.pixelgift.app.transport.FakeDevice()
+            }
+        } catch (e: Exception) {
+            com.pixelgift.app.transport.FakeDevice()
+        }
+    }
+    val activeViewModel = viewModel ?: remember { MainViewModel(transport) }
+
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route ?: Screen.Studio.route
 
-    val connectionStatus by viewModel.uiConnectionStatus.collectAsState()
-    val connectionState by viewModel.connectionState.collectAsState()
-    val statusSnapshot by viewModel.statusSnapshot.collectAsState()
+    val connectionStatus by activeViewModel.uiConnectionStatus.collectAsState()
+    val connectionState by activeViewModel.connectionState.collectAsState()
+    val statusSnapshot by activeViewModel.statusSnapshot.collectAsState()
 
     val appDataRepository = remember { DataStoreAppDataRepository(context) }
-    val studioViewModel = remember { StudioViewModel(viewModel.transport, appDataRepository) }
+    val studioViewModel = remember { StudioViewModel(activeViewModel.transport, appDataRepository) }
 
     val effectCatalogRepository = remember { AssetEffectCatalogRepository(context) }
     val effectsViewModel = remember {
         EffectsViewModel(
-            transport = viewModel.transport,
+            transport = activeViewModel.transport,
             catalogRepository = effectCatalogRepository,
             appDataRepository = appDataRepository
         )
     }
-    val magicViewModel = remember { MagicViewModel(viewModel.transport) }
-    val timeViewModel = remember { TimeViewModel(viewModel.transport) }
-    val deviceViewModel = remember { DeviceViewModel(viewModel.transport) }
+    val magicViewModel = remember { MagicViewModel(activeViewModel.transport) }
+    val timeViewModel = remember { TimeViewModel(activeViewModel.transport) }
+    val deviceViewModel = remember { DeviceViewModel(activeViewModel.transport) }
 
     LaunchedEffect(statusSnapshot) {
         timeViewModel.updateFromSnapshot(statusSnapshot)
@@ -92,7 +106,7 @@ fun PixelGiftApp(
                 title = currentTitle,
                 connectionStatus = connectionStatus,
                 onRetryConnection = {
-                    viewModel.onConnectionChipClicked()
+                    activeViewModel.onConnectionChipClicked()
                 }
             )
         },

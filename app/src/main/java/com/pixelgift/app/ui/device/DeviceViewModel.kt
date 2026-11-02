@@ -9,6 +9,7 @@ import com.pixelgift.app.protocol.Command
 import com.pixelgift.app.protocol.DeviceNotification
 import com.pixelgift.app.transport.ConnectionState
 import com.pixelgift.app.transport.DeviceTransport
+import com.pixelgift.app.transport.BleTransport
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -85,10 +86,21 @@ class DeviceViewModel(
         _pairingState.value = PairingUiState.Scanning
 
         scanJob = scope.launch {
-            // Simulate scan delay (500ms)
-            delay(500L)
-            _discoveredDevices.value = SIMULATED_SCAN_RESULTS
-            _pairingState.value = PairingUiState.Discovered(SIMULATED_SCAN_RESULTS)
+            if (transport is BleTransport) {
+                try {
+                    transport.scanDevices().collect { devices ->
+                        _discoveredDevices.value = devices
+                        _pairingState.value = PairingUiState.Discovered(devices)
+                    }
+                } catch (e: Exception) {
+                    _pairingState.value = PairingUiState.Failed(null, e.message ?: "Scan failed")
+                }
+            } else {
+                // Simulate scan delay (500ms) for FakeDevice or unit testing
+                delay(500L)
+                _discoveredDevices.value = SIMULATED_SCAN_RESULTS
+                _pairingState.value = PairingUiState.Discovered(SIMULATED_SCAN_RESULTS)
+            }
         }
     }
 
@@ -111,9 +123,14 @@ class DeviceViewModel(
     fun confirmPairing(device: DiscoveredDevice, passkey: String) {
         _selectedDeviceForPasskey.value = null
 
-        if (passkey.length != 6 || !passkey.all { it.isDigit() }) {
-            _pairingState.value = PairingUiState.Failed(device, "Passkey must be exactly 6 digits")
-            return
+        if (passkey.isNotBlank()) {
+            if (passkey.length != 6 || !passkey.all { it.isDigit() }) {
+                _pairingState.value = PairingUiState.Failed(device, "Passkey must be exactly 6 digits")
+                return
+            }
+            if (transport is BleTransport) {
+                transport.setPendingPasskey(passkey)
+            }
         }
 
         _pairingState.value = PairingUiState.Connecting(device)
@@ -122,7 +139,7 @@ class DeviceViewModel(
             try {
                 transport.connect(device.address)
                 _pairingState.value = PairingUiState.Success(device)
-                _feedback.value = "Successfully bonded with ${device.name}"
+                _feedback.value = "Successfully connected with ${device.name}"
             } catch (e: Exception) {
                 _pairingState.value = PairingUiState.Failed(device, e.message ?: "Failed to connect to device")
             }
@@ -158,6 +175,9 @@ class DeviceViewModel(
 
     fun onToggleAutoReconnect(enabled: Boolean) {
         _autoReconnect.value = enabled
+        if (transport is BleTransport) {
+            transport.setAutoReconnect(enabled)
+        }
         _feedback.value = if (enabled) "Auto-reconnect enabled" else "Auto-reconnect disabled"
     }
 

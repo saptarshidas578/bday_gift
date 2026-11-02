@@ -4,7 +4,7 @@ Agent: update this at the end of every task, then commit. Keep it terse. Legend:
 
 ## Next step
 
-C01 Real BLE transport in app, pairing with passkey
+C02 [H] Integration checklist (SPEC section 13) and bug fixes
 
 ## Phases
 
@@ -36,7 +36,7 @@ C01 Real BLE transport in app, pairing with passkey
 - [x] B10 OTA
 
 ### Track C: Integration
-- [ ] C01 [H] Real BLE transport in app, pairing with passkey
+- [x] C01 [H] Real BLE transport in app, pairing with passkey
 - [ ] C02 [H] Integration checklist (SPEC section 13) and bug fixes
 - [ ] C03 App polish pass 2, widget, quick-settings tile
 - [ ] C04 [H] Enclosure test, final power validation, signed release APK, tag v1.0-gift
@@ -44,6 +44,7 @@ C01 Real BLE transport in app, pairing with passkey
 ## Decisions
 
 (date, decision, why)
+- 2026-11-02: Implemented BleTransport using Nordic Android BLE library (ble-ktx 2.7.5 + scanner 1.6.0) with MTU 185, write queue + ACK timeout, exponential auto-reconnect, and state sync on connect.
 - 2026-11-02: Pure BLE streaming OTA with min_spiffs dual-partition rollback and monotonic version check (Option B).
 - 2026-11-02: No piezo buzzer yet. Defer all audio to B07b. Birthday show runs lights-only; timer uses visual alert. App shows audio controls disabled with 'Speaker not connected'.
 - 2026-11-02: Hardware matrix changed to 100 LEDs (10x10) connected to GPIO 5 (D5).

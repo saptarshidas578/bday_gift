@@ -4,21 +4,110 @@
 #include "matrix.h"
 #include "effects.h"
 #include "storage.h"
+#include "ble_server.h"
 
 static uint32_t lastRenderTime = 0;
 static const uint32_t FRAME_INTERVAL_MS = 16; // ~60 FPS
 
-// Demo state machine for Task B05 verification
-enum DemoPhase {
-    PHASE_BOOT_RESTORE,
-    PHASE_RAPID_CHANGES,
-    PHASE_WAIT_DEBOUNCE,
-    PHASE_NORMAL_RUN
-};
+// Boot button detection for factory/bond reset (hold 5s)
+static uint32_t bootBtnPressStart = 0;
+static bool bootBtnPressed = false;
 
-static DemoPhase demoPhase = PHASE_BOOT_RESTORE;
-static uint32_t phaseStartTime = 0;
-static uint8_t changeCount = 0;
+void checkBootButton() {
+    bool isDown = (digitalRead(BOOT_BUTTON_PIN) == LOW);
+    uint32_t now = millis();
+
+    if (isDown && !bootBtnPressed) {
+        bootBtnPressed = true;
+        bootBtnPressStart = now;
+    } else if (isDown && bootBtnPressed) {
+        if (now - bootBtnPressStart >= 5000) {
+            Serial.println("\n[RECOVERY] BOOT button held 5s! Clearing BLE bonds...");
+            bleClearBonds();
+            bootBtnPressStart = now + 10000; // prevent repeat
+        }
+    } else if (!isDown && bootBtnPressed) {
+        bootBtnPressed = false;
+    }
+}
+
+void processIncomingCommand(const ParsedCommand& cmd) {
+    Serial.printf("[CMD] Dispatching opcode 0x%02X (seq %u, len %u)\n",
+                  cmd.opcode, cmd.seq, cmd.payloadLen);
+
+    switch (cmd.opcode) {
+        case OP_SET_COLOR: {
+            state.color = CRGB(cmd.payload[0], cmd.payload[1], cmd.payload[2]);
+            state.mode = MODE_SOLID;
+            storageMarkDirty();
+            Serial.printf("  SET_COLOR: RGB(%u, %u, %u)\n", state.color.r, state.color.g, state.color.b);
+            break;
+        }
+
+        case OP_SET_BRIGHTNESS: {
+            state.brightness = cmd.payload[0];
+            matrixSetBrightness(state.brightness);
+            storageMarkDirty();
+            Serial.printf("  SET_BRIGHTNESS: %u / 255\n", state.brightness);
+            break;
+        }
+
+        case OP_SET_EFFECT: {
+            state.effect.base = cmd.payload[0];
+            state.effect.speed = cmd.payload[1];
+            state.effect.dir = cmd.payload[2];
+            state.effect.mirror = cmd.payload[3];
+            state.effect.colorMode = cmd.payload[4];
+            state.effect.c1 = CRGB(cmd.payload[5], cmd.payload[6], cmd.payload[7]);
+            state.effect.c2 = CRGB(cmd.payload[8], cmd.payload[9], cmd.payload[10]);
+            state.mode = MODE_EFFECT;
+            storageMarkDirty();
+            Serial.printf("  SET_EFFECT: Base=%u, Speed=%u, Dir=%u, CMode=%u\n",
+                          state.effect.base, state.effect.speed, state.effect.dir, state.effect.colorMode);
+            break;
+        }
+
+        case OP_SET_PALETTE: {
+            state.paletteCount = cmd.payload[0];
+            for (uint8_t i = 0; i < state.paletteCount && i < 8; i++) {
+                state.palette[i] = CRGB(cmd.payload[1 + i * 3],
+                                        cmd.payload[2 + i * 3],
+                                        cmd.payload[3 + i * 3]);
+            }
+            storageMarkDirty();
+            Serial.printf("  SET_PALETTE: %u colors updated\n", state.paletteCount);
+            break;
+        }
+
+        case OP_SET_MODE: {
+            state.mode = cmd.payload[0];
+            storageMarkDirty();
+            Serial.printf("  SET_MODE: %u\n", state.mode);
+            break;
+        }
+
+        case OP_GET_STATUS: {
+            Serial.println("  GET_STATUS: Sending snapshot notification.");
+            bleSendSnapshot();
+            break;
+        }
+
+        case OP_CLEAR_BONDS: {
+            bleClearBonds();
+            break;
+        }
+
+        case OP_FACTORY_RESET: {
+            storageFactoryReset();
+            bleClearBonds();
+            break;
+        }
+
+        default:
+            Serial.printf("  Opcode 0x%02X acknowledged.\n", cmd.opcode);
+            break;
+    }
+}
 
 void setup() {
     Serial.begin(115200);
@@ -29,92 +118,43 @@ void setup() {
 
     Serial.println();
     Serial.println("==================================================");
-    Serial.println("  PixelGift NVS Persistence & Debounce (Task B05) ");
+    Serial.println("  PixelGift BLE Server & Dispatcher (Task B06)   ");
     Serial.println("==================================================");
 
-    matrixInit();
-    effectsInit();
-    storageInit(); // Loads state from NVS
-
+    pinMode(BOOT_BUTTON_PIN, INPUT_PULLUP);
     pinMode(BUZZER_PIN, OUTPUT);
     digitalWrite(BUZZER_PIN, LOW);
 
-    // Apply restored state to hardware
+    matrixInit();
+    effectsInit();
+    storageInit();
+
+    // Set restored hardware brightness
     matrixSetBrightness(state.brightness);
 
-    demoPhase = PHASE_BOOT_RESTORE;
-    phaseStartTime = millis();
+    // Initialize BLE Server with LE Secure Connections & Passkey
+    bleInit();
+
     lastRenderTime = millis();
-    Serial.println("[B05] Initial state active. Beginning debounce verification in 3s...");
+    Serial.println("[SYSTEM] Ready! Awaiting BLE connections / commands.\n");
 }
 
 void loop() {
     uint32_t now = millis();
 
-    // 1. Non-blocking storage debounced flush (runs continuously)
-    storageLoop();
+    // 1. Process boot button for clearing bonds (hold 5s)
+    checkBootButton();
 
-    // 2. Automated Task B05 Debounce Demonstration
-    switch (demoPhase) {
-        case PHASE_BOOT_RESTORE: {
-            if (now - phaseStartTime >= 3000) {
-                demoPhase = PHASE_RAPID_CHANGES;
-                phaseStartTime = now;
-                changeCount = 0;
-                Serial.println("\n[B05] Simulating rapid parameter adjustments (should NOT write to NVS immediately)...");
-            }
-            break;
-        }
-
-        case PHASE_RAPID_CHANGES: {
-            static uint32_t lastChangeTime = 0;
-            if (now - lastChangeTime >= 350) { // change every 350ms (faster than 2s debounce)
-                lastChangeTime = now;
-                changeCount++;
-
-                if (changeCount == 1) {
-                    state.brightness = 35;
-                    matrixSetBrightness(state.brightness);
-                    storageMarkDirty();
-                    Serial.println("  [Change 1] Brightness set to 35. storageMarkDirty() called.");
-                } else if (changeCount == 2) {
-                    state.color = CRGB::Cyan;
-                    storageMarkDirty();
-                    Serial.println("  [Change 2] Color set to Cyan. storageMarkDirty() called.");
-                } else if (changeCount == 3) {
-                    state.effect.base = 2; // Breathing
-                    state.effect.c1 = CRGB(255, 40, 180);
-                    state.effect.speed = 60;
-                    storageMarkDirty();
-                    Serial.println("  [Change 3] Effect set to Breathing (ID 2). storageMarkDirty() called.");
-                } else if (changeCount == 4) {
-                    state.mode = MODE_EFFECT;
-                    storageMarkDirty();
-                    Serial.println("  [Change 4] Mode set to EFFECT. Changes complete. Awaiting 2s debounce window...");
-                    demoPhase = PHASE_WAIT_DEBOUNCE;
-                    phaseStartTime = now;
-                }
-            }
-            break;
-        }
-
-        case PHASE_WAIT_DEBOUNCE: {
-            // Exactly 2000 ms after change 4, storageLoop() will trigger and print:
-            // "[STORAGE] Persisted debounced state to NVS successfully."
-            if (now - phaseStartTime >= 3000) {
-                demoPhase = PHASE_NORMAL_RUN;
-                Serial.println("[B05] Debounce verification finished! Operating normally in restored mode.\n");
-            }
-            break;
-        }
-
-        case PHASE_NORMAL_RUN: {
-            // Normal operation rendering active effect / mode
-            break;
-        }
+    // 2. Dispatch queued BLE commands to main loop
+    ParsedCommand cmd;
+    while (blePopCommand(cmd)) {
+        processIncomingCommand(cmd);
     }
 
-    // 3. Render loop (~60 FPS non-blocking)
+    // 3. Periodic NVS debounced flush
+    storageLoop();
+
+    // 4. Render loop (~60 FPS non-blocking)
     if (now - lastRenderTime >= FRAME_INTERVAL_MS) {
         lastRenderTime = now;
 
@@ -125,7 +165,6 @@ void loop() {
         } else if (state.mode == MODE_OFF) {
             matrixClear();
         } else {
-            // Default render
             effectsRender(now, state.effect, matrixGetLeds());
         }
 

@@ -4,7 +4,7 @@ Agent: update this at the end of every task, then commit. Keep it terse. Legend:
 
 ## Next step
 
-B10 OTA
+C01 Real BLE transport in app, pairing with passkey
 
 ## Phases
 
@@ -33,7 +33,7 @@ B10 OTA
 - [ ] B07b Audio when buzzer arrives (melody player, beeps, mute)
 - [x] B08 [H] Text engine, clock, timer
 - [x] B09 [H] Scenes, schedules, sleep timer, draw, music levels
-- [ ] B10 OTA
+- [x] B10 OTA
 
 ### Track C: Integration
 - [ ] C01 [H] Real BLE transport in app, pairing with passkey
@@ -44,6 +44,7 @@ B10 OTA
 ## Decisions
 
 (date, decision, why)
+- 2026-11-02: Pure BLE streaming OTA with min_spiffs dual-partition rollback and monotonic version check (Option B).
 - 2026-11-02: No piezo buzzer yet. Defer all audio to B07b. Birthday show runs lights-only; timer uses visual alert. App shows audio controls disabled with 'Speaker not connected'.
 - 2026-11-02: Hardware matrix changed to 100 LEDs (10x10) connected to GPIO 5 (D5).
 - Assumed Android only, no RTC, timer cancelled on power loss. Confirm or change in SPEC section 2.

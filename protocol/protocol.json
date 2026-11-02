@@ -34,7 +34,10 @@
     "BAD_VALUE": 3,
     "BUSY": 4,
     "UNSUPPORTED": 5,
-    "STORAGE_ERR": 6
+    "STORAGE_ERR": 6,
+    "OTA_VER_ERR": 7,
+    "OTA_SPACE_ERR": 8,
+    "OTA_WRITE_ERR": 9
   },
   "opcodes": {
     "SET_COLOR": { "code": 1, "name": "SET_COLOR", "payload": "r g b" },
@@ -61,7 +64,10 @@
     "GET_STATUS": { "code": 22, "name": "GET_STATUS", "payload": "none" },
     "CLEAR_BONDS": { "code": 23, "name": "CLEAR_BONDS", "payload": "none" },
     "FACTORY_RESET": { "code": 24, "name": "FACTORY_RESET", "payload": "magic 0xA5 0x5A" },
-    "OTA_BEGIN": { "code": 25, "name": "OTA_BEGIN", "payload": "decided in task B10" }
+    "OTA_BEGIN": { "code": 25, "name": "OTA_BEGIN", "payload": "totalBytes u32, fwMajor u8, fwMinor u8, fwPatch u8" },
+    "OTA_CHUNK": { "code": 26, "name": "OTA_CHUNK", "payload": "chunkSeq u16, binary chunk" },
+    "OTA_COMMIT": { "code": 27, "name": "OTA_COMMIT", "payload": "crc32 u32" },
+    "OTA_ABORT": { "code": 28, "name": "OTA_ABORT", "payload": "none" }
   },
   "enums": {
     "mode": {

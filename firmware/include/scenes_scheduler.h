@@ -35,3 +35,4 @@ void renderDraw(CRGB* leds);
 void feedMusicLevels(const uint8_t* levels, uint8_t count);
 void musicLoop(uint32_t now);
 void renderMusic(uint32_t now, CRGB* leds);
+

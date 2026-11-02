@@ -120,7 +120,7 @@ Little-endian. CMD: `[opcode u8][seq u8][payload...]`. STATUS notifications:
 - ACK: `[0xA0][seq][code]`
 - Snapshot: `[0xA1][protoVer][mode][brightness][r][g][b][effectBase][speed][flags][fwMajor][fwMinor]`
 flags bits: 0 muted, 1 timeSynced, 2 timerRunning, 3 showRunning, 4 powerCapped.
-Error codes: 0 OK, 1 UNKNOWN_OP, 2 BAD_LEN, 3 BAD_VALUE, 4 BUSY, 5 UNSUPPORTED, 6 STORAGE_ERR. Unknown opcodes and bad lengths never crash; they return an error ACK.
+Error codes: 0 OK, 1 UNKNOWN_OP, 2 BAD_LEN, 3 BAD_VALUE, 4 BUSY, 5 UNSUPPORTED, 6 STORAGE_ERR, 7 OTA_VER_ERR, 8 OTA_SPACE_ERR, 9 OTA_WRITE_ERR. Unknown opcodes and bad lengths never crash; they return an error ACK.
 
 ### 7.4 Opcodes
 
@@ -150,7 +150,10 @@ Error codes: 0 OK, 1 UNKNOWN_OP, 2 BAD_LEN, 3 BAD_VALUE, 4 BUSY, 5 UNSUPPORTED, 
 | 0x16 | GET_STATUS | none |
 | 0x17 | CLEAR_BONDS | none |
 | 0x18 | FACTORY_RESET | magic 0xA5 0x5A |
-| 0x19 | OTA_BEGIN | decided in task B10 |
+| 0x19 | OTA_BEGIN | totalBytes u32, fwMajor u8, fwMinor u8, fwPatch u8 |
+| 0x1A | OTA_CHUNK | chunkSeq u16, up to 180 bytes binary chunk |
+| 0x1B | OTA_COMMIT | crc32 u32 |
+| 0x1C | OTA_ABORT | none |
 
 Schedule actions: 0 on, 1 off, 2 load scene (arg), 3 sunrise alarm (arg minutes).
 Enums for dir: 0 L, 1 R, 2 U, 3 D, 4 IN, 5 OUT.

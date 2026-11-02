@@ -21,3 +21,4 @@ uint32_t getTimerRemainingSeconds();
 
 // Render timer mode on 10x10
 void renderTimer(uint32_t now, CRGB* leds);
+

@@ -340,3 +340,4 @@ void renderMusic(uint32_t now, CRGB* leds) {
         }
     }
 }
+

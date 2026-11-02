@@ -182,3 +182,4 @@ void renderTimer(uint32_t now, CRGB* leds) {
         drawDigit3x4(mins % 10, 5, 3, CRGB::Green);
     }
 }
+

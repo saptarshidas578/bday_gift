@@ -11,7 +11,10 @@ enum ProtocolErrorCode : uint8_t {
     ERR_BAD_VALUE = 3,
     ERR_BUSY = 4,
     ERR_UNSUPPORTED = 5,
-    ERR_STORAGE_ERR = 6
+    ERR_STORAGE_ERR = 6,
+    ERR_OTA_VER = 7,
+    ERR_OTA_SPACE = 8,
+    ERR_OTA_WRITE = 9
 };
 
 // Opcodes matching protocol/protocol.json
@@ -39,14 +42,18 @@ enum ProtocolOpcode : uint8_t {
     OP_SET_MUTE = 21,
     OP_GET_STATUS = 22,
     OP_CLEAR_BONDS = 23,
-    OP_FACTORY_RESET = 24
+    OP_FACTORY_RESET = 24,
+    OP_OTA_BEGIN = 25,
+    OP_OTA_CHUNK = 26,
+    OP_OTA_COMMIT = 27,
+    OP_OTA_ABORT = 28
 };
 
 struct ParsedCommand {
     uint8_t opcode;
     uint8_t seq;
     uint8_t payloadLen;
-    uint8_t payload[24];
+    uint8_t payload[192];
 };
 
 // Parses and validates a raw packet: [opcode u8][seq u8][payload...]

@@ -10,6 +10,7 @@
 #include "font.h"
 #include "clock_timer.h"
 #include "scenes_scheduler.h"
+#include "ota_manager.h"
 
 static uint32_t lastRenderTime = 0;
 static const uint32_t FRAME_INTERVAL_MS = 16; // ~60 FPS
@@ -231,6 +232,47 @@ void processIncomingCommand(const ParsedCommand& cmd) {
             break;
         }
 
+        case OP_OTA_BEGIN: {
+            uint32_t totalBytes = (uint32_t)cmd.payload[0] |
+                                  ((uint32_t)cmd.payload[1] << 8) |
+                                  ((uint32_t)cmd.payload[2] << 16) |
+                                  ((uint32_t)cmd.payload[3] << 24);
+            uint8_t maj = cmd.payload[4];
+            uint8_t min = cmd.payload[5];
+            uint8_t pat = cmd.payload[6];
+            uint8_t res = otaHandleBegin(totalBytes, maj, min, pat);
+            bleSendAck(cmd.seq, res);
+            break;
+        }
+
+        case OP_OTA_CHUNK: {
+            uint16_t chunkSeq = (uint16_t)cmd.payload[0] | ((uint16_t)cmd.payload[1] << 8);
+            const uint8_t* chunkData = &cmd.payload[2];
+            uint8_t len = cmd.payloadLen - 2;
+            uint8_t res = otaHandleChunk(chunkSeq, chunkData, len);
+            bleSendAck(cmd.seq, res);
+            break;
+        }
+
+        case OP_OTA_COMMIT: {
+            uint32_t crc = 0;
+            if (cmd.payloadLen == 4) {
+                crc = (uint32_t)cmd.payload[0] |
+                      ((uint32_t)cmd.payload[1] << 8) |
+                      ((uint32_t)cmd.payload[2] << 16) |
+                      ((uint32_t)cmd.payload[3] << 24);
+            }
+            uint8_t res = otaHandleCommit(crc);
+            bleSendAck(cmd.seq, res);
+            break;
+        }
+
+        case OP_OTA_ABORT: {
+            otaHandleAbort();
+            bleSendAck(cmd.seq, ERR_OK);
+            break;
+        }
+
         default:
             Serial.printf("  Opcode 0x%02X acknowledged.\n", cmd.opcode);
             break;
@@ -260,6 +302,7 @@ void setup() {
     birthdayInit();
     clockTimerInit();
     scenesSchedulerInit();
+    otaInit();
 
     matrixSetBrightness(state.brightness);
     bleInit();
@@ -281,18 +324,21 @@ void loop() {
         processIncomingCommand(cmd);
     }
 
-    // 3. Audio, Storage, Scheduler, Sleep & Music non-blocking loop steps
+    // 3. Audio, Storage, Scheduler, Sleep, Music & OTA non-blocking loop steps
     audioLoop();
     storageLoop();
     schedulerLoop(now);
     sleepTimerLoop(now);
     musicLoop(now);
+    otaLoop();
 
     // 4. Render loop (~60 FPS non-blocking)
     if (now - lastRenderTime >= FRAME_INTERVAL_MS) {
         lastRenderTime = now;
 
-        if (isBirthdayRunning()) {
+        if (isOtaRunning()) {
+            otaRender(now, matrixGetLeds());
+        } else if (isBirthdayRunning()) {
             birthdayRender(now, matrixGetLeds());
         } else if (isTimerRunning() || isTimerAlerting()) {
             renderTimer(now, matrixGetLeds());

@@ -47,3 +47,11 @@
 #define LED_MAX_MA 2500
 #define DEFAULT_BRIGHTNESS 40 // Safe low brightness (0-255)
 #define MAX_BRIGHTNESS 255
+
+// ============================================================================
+// Firmware Version
+// ============================================================================
+#define FW_VERSION_MAJOR 1
+#define FW_VERSION_MINOR 0
+#define FW_VERSION_PATCH 0
+

@@ -5,6 +5,7 @@
 #include "font.h"
 #include "../src/font.cpp"
 #include "scenes_scheduler.h"
+#include "ota_manager.h"
 
 // Stubs for scenes_scheduler unit testing
 DeviceState state;
@@ -16,6 +17,7 @@ void matrixClear() {}
 uint16_t XY(uint8_t x, uint8_t y) { return y * 10 + x; }
 
 #include "../src/scenes_scheduler.cpp"
+#include "../src/ota_manager.cpp"
 
 void setUp(void) {}
 void tearDown(void) {}
@@ -356,6 +358,64 @@ void test_b09_packet_parsers() {
     TEST_ASSERT_EQUAL_UINT8(ERR_OK, parseCommandPacket(pMusic10, sizeof(pMusic10), cmd));
 }
 
+// =============================================================
+// OTA Tests (B10)
+// =============================================================
+void test_ota_version_and_space_checks() {
+    otaInit();
+
+    // Anti-rollback: attempt to downgrade from v1.0.0 to v0.9.0 -> ERR_OTA_VER
+    uint8_t res = otaHandleBegin(100000, 0, 9, 0);
+    TEST_ASSERT_EQUAL_UINT8(ERR_OTA_VER, res);
+
+    // Attempt 0 bytes -> ERR_OTA_SPACE
+    res = otaHandleBegin(0, 1, 1, 0);
+    TEST_ASSERT_EQUAL_UINT8(ERR_OTA_SPACE, res);
+
+    // Attempt size exceeding 1.9MB partition limit -> ERR_OTA_SPACE
+    res = otaHandleBegin(2500000, 1, 1, 0);
+    TEST_ASSERT_EQUAL_UINT8(ERR_OTA_SPACE, res);
+}
+
+void test_ota_chunk_validation() {
+    otaInit();
+
+    // Chunk before begin -> ERR_BUSY
+    uint8_t chunk[10] = { 0 };
+    uint8_t res = otaHandleChunk(0, chunk, 10);
+    TEST_ASSERT_EQUAL_UINT8(ERR_BUSY, res);
+
+    // Commit before begin -> ERR_BUSY
+    res = otaHandleCommit(0);
+    TEST_ASSERT_EQUAL_UINT8(ERR_BUSY, res);
+}
+
+void test_ota_packet_parsers() {
+    ParsedCommand cmd;
+
+    // OP_OTA_BEGIN: totalBytes u32, fwMajor u8, fwMinor u8, fwPatch u8 (7 bytes)
+    uint8_t pBegin[] = { OP_OTA_BEGIN, 0x30, 0x00, 0x00, 0x05, 0x00, 0x01, 0x01, 0x00 };
+    TEST_ASSERT_EQUAL_UINT8(ERR_OK, parseCommandPacket(pBegin, sizeof(pBegin), cmd));
+    uint8_t pBeginBad[] = { OP_OTA_BEGIN, 0x30, 0x00, 0x00, 0x05, 0x00, 0x01 }; // 5 bytes (bad len)
+    TEST_ASSERT_EQUAL_UINT8(ERR_BAD_LEN, parseCommandPacket(pBeginBad, sizeof(pBeginBad), cmd));
+
+    // OP_OTA_CHUNK: chunkSeq u16 + data (>= 2 bytes)
+    uint8_t pChunk[] = { OP_OTA_CHUNK, 0x31, 0x00, 0x00, 0xAA, 0xBB, 0xCC };
+    TEST_ASSERT_EQUAL_UINT8(ERR_OK, parseCommandPacket(pChunk, sizeof(pChunk), cmd));
+    uint8_t pChunkBad[] = { OP_OTA_CHUNK, 0x31, 0x00 }; // 1 byte (bad len)
+    TEST_ASSERT_EQUAL_UINT8(ERR_BAD_LEN, parseCommandPacket(pChunkBad, sizeof(pChunkBad), cmd));
+
+    // OP_OTA_COMMIT: crc32 u32 (4 bytes or 0 bytes)
+    uint8_t pCommit[] = { OP_OTA_COMMIT, 0x32, 0x12, 0x34, 0x56, 0x78 };
+    TEST_ASSERT_EQUAL_UINT8(ERR_OK, parseCommandPacket(pCommit, sizeof(pCommit), cmd));
+    uint8_t pCommitZero[] = { OP_OTA_COMMIT, 0x32 };
+    TEST_ASSERT_EQUAL_UINT8(ERR_OK, parseCommandPacket(pCommitZero, sizeof(pCommitZero), cmd));
+
+    // OP_OTA_ABORT: 0 bytes
+    uint8_t pAbort[] = { OP_OTA_ABORT, 0x33 };
+    TEST_ASSERT_EQUAL_UINT8(ERR_OK, parseCommandPacket(pAbort, sizeof(pAbort), cmd));
+}
+
 int runAllTests() {
     UNITY_BEGIN();
     // B06 tests
@@ -382,6 +442,10 @@ int runAllTests() {
     RUN_TEST(test_draw_chunk_bounds);
     RUN_TEST(test_music_levels_feed_and_timeout);
     RUN_TEST(test_b09_packet_parsers);
+    // B10 tests
+    RUN_TEST(test_ota_version_and_space_checks);
+    RUN_TEST(test_ota_chunk_validation);
+    RUN_TEST(test_ota_packet_parsers);
     return UNITY_END();
 }
 

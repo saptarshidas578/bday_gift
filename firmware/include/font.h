@@ -11,3 +11,4 @@ const uint8_t* getFont5x7(char c);
 
 // Renders "Sync Needed" glyph onto a 10x10 matrix (blinking icon)
 void drawSyncNeededGlyph(uint32_t now);
+

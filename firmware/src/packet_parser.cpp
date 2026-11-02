@@ -117,6 +117,22 @@ uint8_t parseCommandPacket(const uint8_t* data, size_t len, ParsedCommand& out) 
             if (data[2] != 0xA5 || data[3] != 0x5A) return ERR_BAD_VALUE;
             break;
 
+        case OP_OTA_BEGIN:
+            if (payloadLen != 7) return ERR_BAD_LEN;
+            break;
+
+        case OP_OTA_CHUNK:
+            if (payloadLen < 2) return ERR_BAD_LEN;
+            break;
+
+        case OP_OTA_COMMIT:
+            if (payloadLen != 0 && payloadLen != 4) return ERR_BAD_LEN;
+            break;
+
+        case OP_OTA_ABORT:
+            if (payloadLen != 0) return ERR_BAD_LEN;
+            break;
+
         default:
             return ERR_UNKNOWN_OP;
     }

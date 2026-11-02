@@ -110,3 +110,4 @@ void drawSyncNeededGlyph(uint32_t now) {
         matrixSetPixel(4, 7, amber); // Dot
     }
 }
+

@@ -10,7 +10,7 @@ static const uint32_t DEBOUNCE_DELAY_MS = 2000; // 2 seconds debounce per SPEC
 
 void setDefaults() {
     state.mode = MODE_SOLID;
-    state.color = CRGB(255, 60, 180); // Vibrant Pink
+    state.color = CRGB(210, 4, 45); // Cherry Red (#D2042D)
     state.brightness = DEFAULT_BRIGHTNESS;
 
     state.effect.base = 6; // Rainbow Wave
@@ -18,24 +18,24 @@ void setDefaults() {
     state.effect.dir = 0;
     state.effect.mirror = 0;
     state.effect.colorMode = 3; // Rainbow
-    state.effect.c1 = CRGB(255, 60, 180);
-    state.effect.c2 = CRGB(0, 200, 255);
+    state.effect.c1 = CRGB(210, 4, 45); // Cherry Red
+    state.effect.c2 = CRGB(255, 215, 0); // Gold
 
     state.paletteCount = 4;
-    state.palette[0] = CRGB::Red;
-    state.palette[1] = CRGB::Yellow;
-    state.palette[2] = CRGB::Green;
-    state.palette[3] = CRGB::Blue;
+    state.palette[0] = CRGB(210, 4, 45);  // Cherry Red
+    state.palette[1] = CRGB(255, 215, 0); // Gold
+    state.palette[2] = CRGB(255, 120, 20); // Amber
+    state.palette[3] = CRGB(255, 60, 140); // Rose
     for (int i = 4; i < 8; i++) state.palette[i] = CRGB::Black;
 
     state.clockStyle = 0; // Stacked 3x4
-    state.tzOffsetMinutes = 0;
+    state.tzOffsetMinutes = 330; // IST (+5:30) default
     state.isMuted = 0;
     state.sleepDefaultMinutes = 30;
 
-    strncpy(state.customMessage, "Happy Birthday!", sizeof(state.customMessage));
-    strncpy(state.birthdayName, "Friend", sizeof(state.birthdayName));
-    strncpy(state.birthdayGreeting, "Have a wonderful day!", sizeof(state.birthdayGreeting));
+    strncpy(state.customMessage, "HAPPY 19TH BIRTHDAY MADHUMITHA!", sizeof(state.customMessage));
+    strncpy(state.birthdayName, "MADHUMITHA", sizeof(state.birthdayName));
+    strncpy(state.birthdayGreeting, "HAPPY 19TH \x01 24 JAN \x02 WISHING YOU JOY & LOVE !", sizeof(state.birthdayGreeting));
 
     for (int i = 0; i < 8; i++) {
         state.scenes[i].isValid = 0;

@@ -68,31 +68,30 @@ void bleInit() {
         cmdQueue = xQueueCreate(16, sizeof(ParsedCommand));
     }
 
-    // Security configuration: LE Secure Connections + Bonding + Static Passkey
-    NimBLEDevice::setSecurityAuth(true, true, true); // bonding, mitm/authen, sc
-    NimBLEDevice::setSecurityIOCap(ESP_IO_CAP_OUT);   // Display only
+    // Security configuration: LE Secure Connections + Bonding ("Just Works" - no PIN needed)
+    NimBLEDevice::setSecurityAuth(true, false, true); // bonding=true, mitm=false (no PIN needed), sc=true
+    NimBLEDevice::setSecurityIOCap(ESP_IO_CAP_NONE);  // No IO -> triggers Just Works pairing
     NimBLEDevice::setSecurityInitKey(ESP_BLE_ENC_KEY_MASK | ESP_BLE_ID_KEY_MASK);
     NimBLEDevice::setSecurityRespKey(ESP_BLE_ENC_KEY_MASK | ESP_BLE_ID_KEY_MASK);
-    NimBLEDevice::setSecurityPasskey(BLE_PASSKEY);
 
     pServer = NimBLEDevice::createServer();
     pServer->setCallbacks(new ServerCallbacks());
 
     NimBLEService* pService = pServer->createService(PIXELGIFT_SERVICE_UUID);
 
-    // CMD Characteristic: Write / Write Without Response, Encrypted + Authenticated
+    // CMD Characteristic: Write / Write Without Response, Encrypted
     pCmdChar = pService->createCharacteristic(
         PIXELGIFT_CHAR_CMD_UUID,
         NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_NR |
-        NIMBLE_PROPERTY::WRITE_ENC | NIMBLE_PROPERTY::WRITE_AUTHEN
+        NIMBLE_PROPERTY::WRITE_ENC
     );
     pCmdChar->setCallbacks(new CmdCallbacks());
 
-    // STATUS Characteristic: Read / Notify, Encrypted + Authenticated
+    // STATUS Characteristic: Read / Notify, Encrypted
     pStatusChar = pService->createCharacteristic(
         PIXELGIFT_CHAR_STATUS_UUID,
         NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY |
-        NIMBLE_PROPERTY::READ_ENC | NIMBLE_PROPERTY::READ_AUTHEN
+        NIMBLE_PROPERTY::READ_ENC
     );
 
     pService->start();

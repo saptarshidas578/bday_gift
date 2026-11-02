@@ -1,22 +1,25 @@
-# Birthday Content Template
+# Birthday Content
 
-Fill in this template for the recipient's personalized birthday show.
+Personalized configuration for the birthday gift.
 
 ## Recipient Details
-- **Recipient Name**: `[Fill in name, e.g. Sarah]`
-- **Nickname / Short Name** (for 9x9 matrix scroll): `[Fill in, <= 10 characters]`
-- **Birthday Date**: `[YYYY-MM-DD]`
+- **Recipient Name**: Madhumitha
+- **Display Name**: MADHUMITHA
+- **Age**: 19
+- **Birthday Date**: January 24
 
 ## Message & Greeting
-- **Intro / Greeting Text**: `[Fill in text, e.g. HAPPY BIRTHDAY]`
-- **Personalized Message**: `[Fill in longer scrolling message text]`
+- **Banner**: `HAPPY BIRTHDAY MADHUMITHA !`
+- **Scrolling Greeting**: `HAPPY 19TH BIRTHDAY \x01 24 JAN \x02 WISHING YOU JOY & LOVE !`
+- **Custom App Message**: `HAPPY 19TH BIRTHDAY MADHUMITHA!`
 
 ## Preferred Theme Colors
-- **Primary Color**: `[Hex code or color name, e.g. #FF1493 Deep Pink]`
-- **Secondary Color**: `[Hex code or color name, e.g. #00FFFF Cyan]`
-- **Accent Color**: `[Hex code or color name, e.g. #FFD700 Gold]`
-- **Favorite Palette**: `[e.g. Sunset, Pastel, Neon, Rainbow]`
+- **Primary Color**: Cherry Red (`#D2042D`, RGB: `210, 4, 45`)
+- **Secondary Color**: Warm Gold (`#FFD700`, RGB: `255, 215, 0`)
+- **Accent Color**: Deep Crimson (`#DC143C`, RGB: `220, 20, 60`)
+- **Favorite Palette**: Cherry Sunset (`Cherry Red`, `Gold`, `Amber`, `Rose`)
 
-## Additional Customization
-- **Favorite Effect**: `[e.g. Hearts, Fireworks, Sparkle]`
-- **Special Pixel Glyphs**: `[Heart, Star, Smile]`
+## Hardware & Connection Settings
+- **LED Layout**: 10x10 (100 LEDs), horizontal serpentine (Row 0: 1..10, Row 1: 20..11, Row 2: 21..30 ...)
+- **BLE Pairing**: Just Works pairing (no PIN prompt needed)
+- **Power-on Default**: Solid Cherry Red at safe brightness

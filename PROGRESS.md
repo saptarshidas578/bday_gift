@@ -4,7 +4,7 @@ Agent: update this at the end of every task, then commit. Keep it terse. Legend:
 
 ## Next step
 
-B03 Effect engine + first 10 effects + native tests
+B04 Remaining effects to 60 bases + effects.json complete
 
 ## Phases
 
@@ -25,7 +25,7 @@ B03 Effect engine + first 10 effects + native tests
 ### Track B: Firmware
 - [x] B01 [H] PlatformIO project + pixel walk + color order + pin confirm
 - [x] B02 Matrix mapping, brightness and current cap
-- [ ] B03 Effect engine + first 10 effects + native tests
+- [x] B03 Effect engine + first 10 effects + native tests
 - [ ] B04 Remaining effects to 60 bases + effects.json complete
 - [ ] B05 NVS persistence with debounce
 - [ ] B06 [H] BLE server, secure pairing, protocol dispatch

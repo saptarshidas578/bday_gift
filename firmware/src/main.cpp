@@ -2,40 +2,54 @@
 #include <FastLED.h>
 #include "config.h"
 #include "matrix.h"
+#include "effects.h"
 
-enum B02State {
-    STATE_CORNERS,
-    STATE_ROW_SWEEP,
-    STATE_PERIMETER_BOX,
-    STATE_BRIGHTNESS_RAMP,
-    STATE_PAUSE
-};
+static EffectParams currentParams;
+static uint32_t effectStartTime = 0;
+static uint32_t lastRenderTime = 0;
+static size_t currentEffectIndex = 0;
 
-static B02State currentState = STATE_CORNERS;
-static uint32_t stateStartTime = 0;
-static uint32_t lastStepTime = 0;
-static uint8_t sweepX = 0;
-static uint8_t sweepY = 0;
-static uint8_t rampStep = 0;
+static const uint32_t EFFECT_DURATION_MS = 5000;
+static const uint32_t FRAME_INTERVAL_MS = 16; // ~60 FPS
 
-void printB02Banner() {
-    Serial.println();
-    Serial.println("==================================================");
-    Serial.println("  PixelGift Matrix Mapping & Power Cap (Task B02)");
-    Serial.println("==================================================");
-    Serial.printf("MCU:           ESP32 DevKit\n");
-    Serial.printf("Data Pin:      GPIO %d (D5)\n", DATA_PIN);
-    Serial.printf("Matrix Size:   %d x %d (%d LEDs)\n", MATRIX_WIDTH, MATRIX_HEIGHT, NUM_LEDS);
-    Serial.printf("Layout:        Serpentine: %s\n", MATRIX_SERPENTINE ? "YES" : "NO");
-    Serial.printf("Power Cap:     %d V, %d mA limit\n", LED_VOLTS, LED_MAX_MA);
-    Serial.printf("Default Bright: %d / 255\n", DEFAULT_BRIGHTNESS);
-    Serial.println("--------------------------------------------------");
-    Serial.println("VERIFICATION PHASES:");
-    Serial.println("1. Corners: (0,0)=Red, (9,0)=Green, (0,9)=Blue, (9,9)=Yellow");
-    Serial.println("2. Serpentine Row Sweep: dot travels LEFT->RIGHT on ALL rows");
-    Serial.println("3. Perimeter Box: Cyan border around 10x10 edges");
-    Serial.println("4. Brightness Ramp: Full panel ramps 20->40->60 safely");
-    Serial.println("==================================================");
+void loadEffectByIndex(size_t index) {
+    const EffectEntry* entry = getEffectByIndex(index);
+    if (!entry) return;
+
+    currentParams.base = entry->id;
+    currentParams.speed = 50;
+    currentParams.dir = 0;
+    currentParams.mirror = 0;
+    currentParams.colorMode = 0;
+    currentParams.c1 = CRGB(255, 60, 180); // Vibrant Pink default
+    currentParams.c2 = CRGB(0, 200, 255);  // Cyan default
+
+    // Effect-specific custom parameter tuning for demo
+    if (entry->id == 1) { // Solid
+        currentParams.colorMode = 3; // Rainbow cycling solid
+    } else if (entry->id == 4) { // Heartbeat
+        currentParams.c1 = CRGB::Crimson;
+    } else if (entry->id == 6) { // Rainbow Wave
+        currentParams.speed = 60;
+        currentParams.colorMode = 3;
+    } else if (entry->id == 7) { // Rainbow Cycle
+        currentParams.speed = 50;
+        currentParams.colorMode = 3;
+    } else if (entry->id == 8) { // Scanner
+        currentParams.c1 = CRGB::Red;
+        currentParams.speed = 70;
+    } else if (entry->id == 9) { // Sparkle
+        currentParams.colorMode = 3;
+        currentParams.speed = 65;
+    } else if (entry->id == 10) { // Fire
+        currentParams.speed = 65;
+    }
+
+    Serial.printf("\n[B03 Effect %u/%u] Running: \"%s\" (ID %u)...\n",
+                  (unsigned int)(index + 1),
+                  (unsigned int)getEffectCount(),
+                  entry->name,
+                  entry->id);
 }
 
 void setup() {
@@ -45,123 +59,41 @@ void setup() {
         // Wait up to 1 second for serial
     }
 
-    printB02Banner();
+    Serial.println();
+    Serial.println("==================================================");
+    Serial.println("  PixelGift Effect Engine - First 10 Effects (B03)");
+    Serial.println("==================================================");
+    Serial.printf("Matrix: %dx%d (%d LEDs), Pin D5 (GPIO %d)\n", MATRIX_WIDTH, MATRIX_HEIGHT, NUM_LEDS, DATA_PIN);
+    Serial.printf("Power limit: %d V, %d mA, Brightness: %d/255\n", LED_VOLTS, LED_MAX_MA, DEFAULT_BRIGHTNESS);
+    Serial.println("--------------------------------------------------");
 
-    // Initialize matrix with power cap and safe initial brightness
     matrixInit();
+    effectsInit();
 
     pinMode(BUZZER_PIN, OUTPUT);
     digitalWrite(BUZZER_PIN, LOW);
 
-    stateStartTime = millis();
-    lastStepTime = millis();
-    currentState = STATE_CORNERS;
-    Serial.println("[B02] Phase 1: 4 Corners Check (TopLeft=R, TopRight=G, BottomLeft=B, BottomRight=Y)...");
+    currentEffectIndex = 0;
+    loadEffectByIndex(currentEffectIndex);
+    effectStartTime = millis();
+    lastRenderTime = millis();
 }
 
 void loop() {
     uint32_t now = millis();
 
-    switch (currentState) {
-        case STATE_CORNERS: {
-            matrixClear();
-            matrixSetPixel(0, 0, CRGB::Red);                                    // Top Left
-            matrixSetPixel(MATRIX_WIDTH - 1, 0, CRGB::Green);                   // Top Right
-            matrixSetPixel(0, MATRIX_HEIGHT - 1, CRGB::Blue);                   // Bottom Left
-            matrixSetPixel(MATRIX_WIDTH - 1, MATRIX_HEIGHT - 1, CRGB::Yellow);  // Bottom Right
-            matrixShow();
+    // Check if it's time to cycle to the next effect
+    if (now - effectStartTime >= EFFECT_DURATION_MS) {
+        currentEffectIndex = (currentEffectIndex + 1) % getEffectCount();
+        loadEffectByIndex(currentEffectIndex);
+        effectStartTime = now;
+        matrixClear();
+    }
 
-            if (now - stateStartTime >= 2500) {
-                currentState = STATE_ROW_SWEEP;
-                stateStartTime = now;
-                lastStepTime = now;
-                sweepX = 0;
-                sweepY = 0;
-                matrixClear();
-                matrixShow();
-                Serial.println("[B02] Phase 2: Serpentine Sweep (dot moves Left-to-Right on EVERY row)...");
-            }
-            break;
-        }
-
-        case STATE_ROW_SWEEP: {
-            if (now - lastStepTime >= 40) { // 40ms per pixel
-                lastStepTime = now;
-                matrixClear();
-                matrixSetPixel(sweepX, sweepY, CRGB::White);
-                matrixShow();
-
-                sweepX++;
-                if (sweepX >= MATRIX_WIDTH) {
-                    sweepX = 0;
-                    sweepY++;
-                    if (sweepY >= MATRIX_HEIGHT) {
-                        sweepY = 0;
-                        currentState = STATE_PERIMETER_BOX;
-                        stateStartTime = now;
-                        matrixClear();
-                        matrixShow();
-                        Serial.println("[B02] Phase 3: Perimeter Box (10x10 border check)...");
-                    }
-                }
-            }
-            break;
-        }
-
-        case STATE_PERIMETER_BOX: {
-            matrixClear();
-            for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
-                matrixSetPixel(x, 0, CRGB::Cyan);
-                matrixSetPixel(x, MATRIX_HEIGHT - 1, CRGB::Cyan);
-            }
-            for (uint8_t y = 0; y < MATRIX_HEIGHT; y++) {
-                matrixSetPixel(0, y, CRGB::Cyan);
-                matrixSetPixel(MATRIX_WIDTH - 1, y, CRGB::Cyan);
-            }
-            matrixShow();
-
-            if (now - stateStartTime >= 2500) {
-                currentState = STATE_BRIGHTNESS_RAMP;
-                stateStartTime = now;
-                lastStepTime = now;
-                rampStep = 0;
-                matrixFill(CRGB(255, 140, 20)); // Warm Amber fill
-                matrixSetBrightness(20);
-                matrixShow();
-                Serial.println("[B02] Phase 4: Brightness Ramp (20 -> 40 -> 60 safe power limit)...");
-            }
-            break;
-        }
-
-        case STATE_BRIGHTNESS_RAMP: {
-            if (now - lastStepTime >= 500) { // step every 500ms
-                lastStepTime = now;
-                rampStep++;
-                uint8_t levels[] = {20, 35, 50, 65, 50, 35, 20};
-                if (rampStep < sizeof(levels) / sizeof(levels[0])) {
-                    matrixSetBrightness(levels[rampStep]);
-                    matrixFill(CRGB(255, 140, 20));
-                    matrixShow();
-                    Serial.printf("  Brightness set to: %d / 255\n", levels[rampStep]);
-                } else {
-                    matrixSetBrightness(DEFAULT_BRIGHTNESS);
-                    currentState = STATE_PAUSE;
-                    stateStartTime = now;
-                    matrixClear();
-                    matrixShow();
-                    Serial.println("[B02] Cycle complete. Pausing 1s before restarting test loop...");
-                }
-            }
-            break;
-        }
-
-        case STATE_PAUSE: {
-            if (now - stateStartTime >= 1000) {
-                currentState = STATE_CORNERS;
-                stateStartTime = now;
-                Serial.println("\n[B02] Restarting Phase 1 (Corners)...");
-            }
-            break;
-        }
+    // Render at target ~60 FPS
+    if (now - lastRenderTime >= FRAME_INTERVAL_MS) {
+        lastRenderTime = now;
+        effectsRender(now, currentParams, matrixGetLeds());
+        matrixShow();
     }
 }

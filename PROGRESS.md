@@ -4,7 +4,7 @@ Agent: update this at the end of every task, then commit. Keep it terse. Legend:
 
 ## Next step
 
-B05 NVS persistence with debounce
+B06 [H] BLE server, secure pairing, protocol dispatch
 
 ## Phases
 
@@ -27,7 +27,8 @@ B05 NVS persistence with debounce
 - [x] B02 Matrix mapping, brightness and current cap
 - [x] B03 Effect engine + first 10 effects + native tests
 - [x] B04 Remaining effects to 60 bases + effects.json complete
-- [ ] B05 NVS persistence with debounce
+- [x] B05 NVS persistence with debounce
+- [ ] B06 [H] BLE server, secure pairing, protocol dispatch
 - [ ] B05 NVS persistence with debounce
 - [ ] B06 [H] BLE server, secure pairing, protocol dispatch
 - [ ] B07 [H] Piezo audio + birthday show

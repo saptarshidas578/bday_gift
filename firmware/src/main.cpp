@@ -3,42 +3,22 @@
 #include "config.h"
 #include "matrix.h"
 #include "effects.h"
+#include "storage.h"
 
-static EffectParams currentParams;
-static uint32_t effectStartTime = 0;
 static uint32_t lastRenderTime = 0;
-static size_t currentEffectIndex = 0;
+static const uint32_t FRAME_INTERVAL_MS = 16; // ~60 FPS
 
-static const uint32_t EFFECT_DURATION_MS = 4000; // 4 seconds per effect
-static const uint32_t FRAME_INTERVAL_MS = 16;   // ~60 FPS
+// Demo state machine for Task B05 verification
+enum DemoPhase {
+    PHASE_BOOT_RESTORE,
+    PHASE_RAPID_CHANGES,
+    PHASE_WAIT_DEBOUNCE,
+    PHASE_NORMAL_RUN
+};
 
-void loadEffectByIndex(size_t index) {
-    const EffectEntry* entry = getEffectByIndex(index);
-    if (!entry) return;
-
-    currentParams.base = entry->id;
-    currentParams.speed = 55;
-    currentParams.dir = 0;
-    currentParams.mirror = 0;
-    currentParams.colorMode = 0;
-    currentParams.c1 = CRGB(255, 60, 180); // Neon Pink
-    currentParams.c2 = CRGB(0, 200, 255);  // Electric Blue
-
-    // Tailored defaults for visual demo
-    if (entry->id == 1) currentParams.colorMode = 3;  // Rainbow solid
-    if (entry->id == 4) currentParams.c1 = CRGB::Crimson;
-    if (entry->id == 6 || entry->id == 7) currentParams.colorMode = 3;
-    if (entry->id == 8) currentParams.c1 = CRGB::Red;
-    if (entry->id == 9) currentParams.colorMode = 3;
-    if (entry->id == 10) currentParams.speed = 65;
-
-    Serial.printf("\n[Effect %u/%u] \"%s\" (ID %u, Category: %s)\n",
-                  (unsigned int)(index + 1),
-                  (unsigned int)getEffectCount(),
-                  entry->name,
-                  entry->id,
-                  entry->category);
-}
+static DemoPhase demoPhase = PHASE_BOOT_RESTORE;
+static uint32_t phaseStartTime = 0;
+static uint8_t changeCount = 0;
 
 void setup() {
     Serial.begin(115200);
@@ -49,39 +29,106 @@ void setup() {
 
     Serial.println();
     Serial.println("==================================================");
-    Serial.println("  PixelGift 66-Effect Engine Catalog (Task B04)  ");
+    Serial.println("  PixelGift NVS Persistence & Debounce (Task B05) ");
     Serial.println("==================================================");
-    Serial.printf("Matrix: %dx%d (%d LEDs), Pin D5 (GPIO %d)\n", MATRIX_WIDTH, MATRIX_HEIGHT, NUM_LEDS, DATA_PIN);
-    Serial.printf("Power limit: %d V, %d mA, Brightness: %d/255\n", LED_VOLTS, LED_MAX_MA, DEFAULT_BRIGHTNESS);
-    Serial.println("--------------------------------------------------");
 
     matrixInit();
     effectsInit();
+    storageInit(); // Loads state from NVS
 
     pinMode(BUZZER_PIN, OUTPUT);
     digitalWrite(BUZZER_PIN, LOW);
 
-    currentEffectIndex = 0;
-    loadEffectByIndex(currentEffectIndex);
-    effectStartTime = millis();
+    // Apply restored state to hardware
+    matrixSetBrightness(state.brightness);
+
+    demoPhase = PHASE_BOOT_RESTORE;
+    phaseStartTime = millis();
     lastRenderTime = millis();
+    Serial.println("[B05] Initial state active. Beginning debounce verification in 3s...");
 }
 
 void loop() {
     uint32_t now = millis();
 
-    // Auto-cycle to next effect every 4 seconds
-    if (now - effectStartTime >= EFFECT_DURATION_MS) {
-        currentEffectIndex = (currentEffectIndex + 1) % getEffectCount();
-        loadEffectByIndex(currentEffectIndex);
-        effectStartTime = now;
-        matrixClear();
+    // 1. Non-blocking storage debounced flush (runs continuously)
+    storageLoop();
+
+    // 2. Automated Task B05 Debounce Demonstration
+    switch (demoPhase) {
+        case PHASE_BOOT_RESTORE: {
+            if (now - phaseStartTime >= 3000) {
+                demoPhase = PHASE_RAPID_CHANGES;
+                phaseStartTime = now;
+                changeCount = 0;
+                Serial.println("\n[B05] Simulating rapid parameter adjustments (should NOT write to NVS immediately)...");
+            }
+            break;
+        }
+
+        case PHASE_RAPID_CHANGES: {
+            static uint32_t lastChangeTime = 0;
+            if (now - lastChangeTime >= 350) { // change every 350ms (faster than 2s debounce)
+                lastChangeTime = now;
+                changeCount++;
+
+                if (changeCount == 1) {
+                    state.brightness = 35;
+                    matrixSetBrightness(state.brightness);
+                    storageMarkDirty();
+                    Serial.println("  [Change 1] Brightness set to 35. storageMarkDirty() called.");
+                } else if (changeCount == 2) {
+                    state.color = CRGB::Cyan;
+                    storageMarkDirty();
+                    Serial.println("  [Change 2] Color set to Cyan. storageMarkDirty() called.");
+                } else if (changeCount == 3) {
+                    state.effect.base = 2; // Breathing
+                    state.effect.c1 = CRGB(255, 40, 180);
+                    state.effect.speed = 60;
+                    storageMarkDirty();
+                    Serial.println("  [Change 3] Effect set to Breathing (ID 2). storageMarkDirty() called.");
+                } else if (changeCount == 4) {
+                    state.mode = MODE_EFFECT;
+                    storageMarkDirty();
+                    Serial.println("  [Change 4] Mode set to EFFECT. Changes complete. Awaiting 2s debounce window...");
+                    demoPhase = PHASE_WAIT_DEBOUNCE;
+                    phaseStartTime = now;
+                }
+            }
+            break;
+        }
+
+        case PHASE_WAIT_DEBOUNCE: {
+            // Exactly 2000 ms after change 4, storageLoop() will trigger and print:
+            // "[STORAGE] Persisted debounced state to NVS successfully."
+            if (now - phaseStartTime >= 3000) {
+                demoPhase = PHASE_NORMAL_RUN;
+                Serial.println("[B05] Debounce verification finished! Operating normally in restored mode.\n");
+            }
+            break;
+        }
+
+        case PHASE_NORMAL_RUN: {
+            // Normal operation rendering active effect / mode
+            break;
+        }
     }
 
-    // Smooth ~60 FPS render
+    // 3. Render loop (~60 FPS non-blocking)
     if (now - lastRenderTime >= FRAME_INTERVAL_MS) {
         lastRenderTime = now;
-        effectsRender(now, currentParams, matrixGetLeds());
+
+        if (state.mode == MODE_SOLID) {
+            matrixFill(state.color);
+        } else if (state.mode == MODE_EFFECT) {
+            effectsRender(now, state.effect, matrixGetLeds());
+        } else if (state.mode == MODE_OFF) {
+            matrixClear();
+        } else {
+            // Default render
+            effectsRender(now, state.effect, matrixGetLeds());
+        }
+
         matrixShow();
     }
 }

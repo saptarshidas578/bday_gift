@@ -94,11 +94,11 @@ Default: stacked 3x4 digits (two digits plus a 1-column gap = 7 columns, centere
 Alternate: scrolling 5x7 "HH:MM". Verify legibility on the real matrix; tune in B08.
 
 ### 6.7 Birthday show (60-120 s)
-Timeline: intro sparkle (5 s), name reveal scrolling, hearts and balloons, fireworks, rainbow, scrolling greeting, finale glow that settles into a soft ambient effect.
-Melody: "Happy Birthday" as a note table, played by the non-blocking audio module, beat-aligned with scene changes. Start and stop only by command. Runs fully on the ESP32.
+Timeline: intro sparkle (5 s), name reveal scrolling, hearts and balloons, fireworks, rainbow, scrolling greeting, finale glow that settles into a soft ambient effect. Runs on lights-only timing until buzzer hardware arrives (B07b).
+Start and stop only by command (`PLAY_BIRTHDAY` / `STOP_SHOW` or serial); never auto-resumed at boot. Runs fully on the ESP32.
 
-### 6.8 Audio
-Passive piezo via LEDC. Alerts: timer done (3 beeps), connect chirp (optional, off by default), birthday melody. Global mute flag in state and app.
+### 6.8 Audio (Deferred to B07b)
+Piezo buzzer deferred until hardware arrives. Audio module provides no-op stubs (`playMelody`, `playBeeps`, `setMute`). Birthday show runs lights-only; timer completion uses visual flashing alert instead of beeps. App shows audio/mute controls disabled with "Speaker not connected". Full melody and beeps implemented in task B07b.
 
 ## 7. BLE protocol (v1)
 

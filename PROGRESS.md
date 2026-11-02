@@ -4,7 +4,7 @@ Agent: update this at the end of every task, then commit. Keep it terse. Legend:
 
 ## Next step
 
-B07 [H] Piezo audio + birthday show
+B08 Text engine, clock, timer
 
 ## Phases
 
@@ -29,10 +29,8 @@ B07 [H] Piezo audio + birthday show
 - [x] B04 Remaining effects to 60 bases + effects.json complete
 - [x] B05 NVS persistence with debounce
 - [x] B06 [H] BLE server, secure pairing, protocol dispatch
-- [ ] B07 [H] Piezo audio + birthday show
-- [ ] B05 NVS persistence with debounce
-- [ ] B06 [H] BLE server, secure pairing, protocol dispatch
-- [ ] B07 [H] Piezo audio + birthday show
+- [x] B07 [H] Birthday show (lights only, 60-120s, deferred audio)
+- [ ] B07b Audio when buzzer arrives (melody player, beeps, mute)
 - [ ] B08 Text engine, clock, timer
 - [ ] B09 Scenes, schedules, sleep timer, draw, music levels
 - [ ] B10 OTA
@@ -46,6 +44,7 @@ B07 [H] Piezo audio + birthday show
 ## Decisions
 
 (date, decision, why)
+- 2026-11-02: No piezo buzzer yet. Defer all audio to B07b. Birthday show runs lights-only; timer uses visual alert. App shows audio controls disabled with 'Speaker not connected'.
 - 2026-11-02: Hardware matrix changed to 100 LEDs (10x10) connected to GPIO 5 (D5).
 - Assumed Android only, no RTC, timer cancelled on power loss. Confirm or change in SPEC section 2.
 

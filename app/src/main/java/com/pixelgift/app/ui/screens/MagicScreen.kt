@@ -350,7 +350,7 @@ private fun BirthdayShowTab(
                 fontWeight = FontWeight.Bold
             )
             Text(
-                text = "Plays intro sparkle, name reveal, heart & balloon animations, fireworks, and Happy Birthday melody via piezo.",
+                text = "Plays intro sparkle, name reveal, heart & balloon animations, fireworks, and rainbow celebration (Lights-only, speaker not connected).",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

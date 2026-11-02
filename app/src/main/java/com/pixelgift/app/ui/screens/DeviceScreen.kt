@@ -234,9 +234,10 @@ fun DeviceScreen(
                     Column {
                         Text("Piezo Buzzer", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
                         Text(
-                            if (statusSnapshot.isMuted) "Muted" else "Active",
+                            "Not connected",
                             style = MaterialTheme.typography.bodyMedium,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.outline
                         )
                     }
                 }
@@ -308,7 +309,7 @@ fun DeviceScreen(
 
                 HorizontalDivider()
 
-                // Piezo Buzzer Mute
+                // Piezo Buzzer Mute (Disabled - Speaker not connected)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -319,20 +320,21 @@ fun DeviceScreen(
                         horizontalArrangement = Arrangement.spacedBy(PixelGiftSpacing.sm)
                     ) {
                         Icon(
-                            imageVector = if (statusSnapshot.isMuted) Icons.AutoMirrored.Filled.VolumeMute else Icons.AutoMirrored.Filled.VolumeUp,
+                            imageVector = Icons.AutoMirrored.Filled.VolumeMute,
                             contentDescription = null,
-                            tint = if (statusSnapshot.isMuted) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                            tint = MaterialTheme.colorScheme.outline
                         )
                         Column {
-                            Text("Mute Piezo Buzzer", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-                            Text("Silences melody and timer alarm beeps", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text("Mute Buzzer", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.outline)
+                            Text("Speaker not connected (audio deferred to B07b)", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
                         }
                     }
 
                     Switch(
-                        checked = statusSnapshot.isMuted,
-                        onCheckedChange = { viewModel.onToggleMute(it) },
-                        modifier = Modifier.semantics { contentDescription = "Toggle Piezo Mute" }
+                        checked = false,
+                        onCheckedChange = {},
+                        enabled = false,
+                        modifier = Modifier.semantics { contentDescription = "Speaker not connected" }
                     )
                 }
             }

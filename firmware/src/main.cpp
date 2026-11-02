@@ -5,6 +5,8 @@
 #include "effects.h"
 #include "storage.h"
 #include "ble_server.h"
+#include "audio.h"
+#include "birthday.h"
 
 static uint32_t lastRenderTime = 0;
 static const uint32_t FRAME_INTERVAL_MS = 16; // ~60 FPS
@@ -24,10 +26,24 @@ void checkBootButton() {
         if (now - bootBtnPressStart >= 5000) {
             Serial.println("\n[RECOVERY] BOOT button held 5s! Clearing BLE bonds...");
             bleClearBonds();
-            bootBtnPressStart = now + 10000; // prevent repeat
+            bootBtnPressStart = now + 10000;
         }
     } else if (!isDown && bootBtnPressed) {
         bootBtnPressed = false;
+    }
+}
+
+void checkSerialCommands() {
+    if (Serial.available()) {
+        String cmd = Serial.readStringUntil('\n');
+        cmd.trim();
+        if (cmd.equalsIgnoreCase("bday") || cmd == "b") {
+            Serial.println("[SERIAL] Starting Birthday Show...");
+            birthdayStart();
+        } else if (cmd.equalsIgnoreCase("stop") || cmd == "s") {
+            Serial.println("[SERIAL] Stopping Birthday Show...");
+            birthdayStop();
+        }
     }
 }
 
@@ -37,6 +53,7 @@ void processIncomingCommand(const ParsedCommand& cmd) {
 
     switch (cmd.opcode) {
         case OP_SET_COLOR: {
+            if (isBirthdayRunning()) birthdayStop();
             state.color = CRGB(cmd.payload[0], cmd.payload[1], cmd.payload[2]);
             state.mode = MODE_SOLID;
             storageMarkDirty();
@@ -53,6 +70,7 @@ void processIncomingCommand(const ParsedCommand& cmd) {
         }
 
         case OP_SET_EFFECT: {
+            if (isBirthdayRunning()) birthdayStop();
             state.effect.base = cmd.payload[0];
             state.effect.speed = cmd.payload[1];
             state.effect.dir = cmd.payload[2];
@@ -80,14 +98,24 @@ void processIncomingCommand(const ParsedCommand& cmd) {
         }
 
         case OP_SET_MODE: {
+            if (isBirthdayRunning()) birthdayStop();
             state.mode = cmd.payload[0];
             storageMarkDirty();
             Serial.printf("  SET_MODE: %u\n", state.mode);
             break;
         }
 
+        case OP_PLAY_BIRTHDAY: {
+            birthdayStart();
+            break;
+        }
+
+        case OP_STOP_SHOW: {
+            birthdayStop();
+            break;
+        }
+
         case OP_GET_STATUS: {
-            Serial.println("  GET_STATUS: Sending snapshot notification.");
             bleSendSnapshot();
             break;
         }
@@ -118,7 +146,7 @@ void setup() {
 
     Serial.println();
     Serial.println("==================================================");
-    Serial.println("  PixelGift BLE Server & Dispatcher (Task B06)   ");
+    Serial.println("  PixelGift Main Controller & Birthday Show (B07)");
     Serial.println("==================================================");
 
     pinMode(BOOT_BUTTON_PIN, INPUT_PULLUP);
@@ -128,37 +156,40 @@ void setup() {
     matrixInit();
     effectsInit();
     storageInit();
+    audioInit();
+    birthdayInit();
 
-    // Set restored hardware brightness
     matrixSetBrightness(state.brightness);
-
-    // Initialize BLE Server with LE Secure Connections & Passkey
     bleInit();
 
     lastRenderTime = millis();
-    Serial.println("[SYSTEM] Ready! Awaiting BLE connections / commands.\n");
+    Serial.println("[SYSTEM] Ready! Type 'bday' in serial or trigger via BLE to start show.\n");
 }
 
 void loop() {
     uint32_t now = millis();
 
-    // 1. Process boot button for clearing bonds (hold 5s)
+    // 1. Check recovery boot button and serial commands
     checkBootButton();
+    checkSerialCommands();
 
-    // 2. Dispatch queued BLE commands to main loop
+    // 2. Dispatch queued BLE commands
     ParsedCommand cmd;
     while (blePopCommand(cmd)) {
         processIncomingCommand(cmd);
     }
 
-    // 3. Periodic NVS debounced flush
+    // 3. Audio & Storage non-blocking loop steps
+    audioLoop();
     storageLoop();
 
     // 4. Render loop (~60 FPS non-blocking)
     if (now - lastRenderTime >= FRAME_INTERVAL_MS) {
         lastRenderTime = now;
 
-        if (state.mode == MODE_SOLID) {
+        if (isBirthdayRunning()) {
+            birthdayRender(now, matrixGetLeds());
+        } else if (state.mode == MODE_SOLID) {
             matrixFill(state.color);
         } else if (state.mode == MODE_EFFECT) {
             effectsRender(now, state.effect, matrixGetLeds());

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_background"
+    android:padding="12dp">
+
+    <!-- Header Row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_splash_logo"
+            android:contentDescription="@string/app_name" />
+
+        <TextView
+            android:id="@+id/widget_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="@string/app_name"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/widget_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/status_connected"
+            android:textColor="#D2042D"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#333745"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:contentDescription="@null" />
+
+    <!-- Action Buttons Row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <!-- Power On / Off Toggle Button -->
+        <Button
+            android:id="@+id/btn_widget_power"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="6dp"
+            android:background="@drawable/widget_btn_background"
+            android:text="@string/widget_action_power"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:contentDescription="@string/widget_action_power" />
+
+        <!-- Favorite Scene / Cherry Red Quick Button -->
+        <Button
+            android:id="@+id/btn_widget_cherry"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:layout_marginStart="6dp"
+            android:background="@drawable/widget_btn_background"
+            android:text="@string/widget_action_cherry"
+            android:textColor="#D2042D"
+            android:textSize="12sp"
+            android:contentDescription="@string/widget_action_cherry" />
+    </LinearLayout>
+</LinearLayout>
+

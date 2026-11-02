@@ -6,12 +6,12 @@
     android:viewportHeight="96">
     <!-- Stylized pixel gift icon -->
     <path
-        android:fillColor="#FF7A00"
+        android:fillColor="#D2042D"
         android:pathData="M24,24h14v14h-14zM41,24h14v14h-14zM58,24h14v14h-14zM24,41h14v14h-14zM41,41h14v14h-14zM58,41h14v14h-14zM24,58h14v14h-14zM41,58h14v14h-14zM58,58h14v14h-14z" />
     <path
-        android:fillColor="#00E5FF"
+        android:fillColor="#FFD700"
         android:pathData="M41,24h14v14h-14zM24,41h14v14h-14zM58,41h14v14h-14zM41,58h14v14h-14z" />
     <path
-        android:fillColor="#FFD700"
+        android:fillColor="#FFFFFF"
         android:pathData="M41,41h14v14h-14z" />
 </vector>

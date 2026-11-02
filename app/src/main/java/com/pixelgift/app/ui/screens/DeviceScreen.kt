@@ -538,18 +538,83 @@ fun DeviceScreen(
     if (showAboutDialog) {
         AlertDialog(
             onDismissRequest = { showAboutDialog = false },
-            icon = { Icon(Icons.Default.Info, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(32.dp)) },
-            title = { Text("About PixelGift") },
+            icon = {
+                Icon(
+                    Icons.Default.Info,
+                    contentDescription = "About PixelGift",
+                    tint = Color(0xFFD2042D),
+                    modifier = Modifier.size(36.dp)
+                )
+            },
+            title = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "PixelGift • 19th Birthday Edition",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    )
+                    Text(
+                        text = "Dedicated to Madhumitha • January 24",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = Color(0xFFD2042D),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(PixelGiftSpacing.sm)) {
-                    Text("PixelGift v1.0 • Personalized Smart Matrix", fontWeight = FontWeight.Bold)
-                    Text("Hardware: ESP32 DevKit, 81× WS2812B LEDs (9×9), Passive Piezo Buzzer on GPIO 18, Data on GPIO 5.")
-                    Text("Security: BLE LE Secure Connections with static 6-digit passkey bonding.")
-                    Text("Engine: Local 60 FPS animation renderer, offline clock, timer and scheduler.")
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(PixelGiftSpacing.sm),
+                    modifier = Modifier.verticalScroll(rememberScrollState())
+                ) {
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(PixelGiftSpacing.md)) {
+                            Text(
+                                text = "Personal Note",
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = stringResource(R.string.about_personal_note_body),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Column(modifier = Modifier.padding(PixelGiftSpacing.md)) {
+                            Text(
+                                text = "Specifications",
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "• Hardware: ESP32 DevKit V1 • GPIO 5 (Data)\n• Display: 10×10 (100 LEDs) WS2812B GRB Serpentine\n• Palette: Cherry Red & Warm Gold Theme\n• BLE: LE Secure Connections (Nordic Android BLE)\n• Firmware: v1.0.0 Dual-Partition OTA Rollback",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
                 }
             },
             confirmButton = {
-                Button(onClick = { showAboutDialog = false }) { Text("OK") }
+                Button(
+                    onClick = { showAboutDialog = false },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD2042D)),
+                    modifier = Modifier.defaultMinSize(minHeight = 48.dp)
+                ) {
+                    Text("Close", color = Color.White)
+                }
             }
         )
     }

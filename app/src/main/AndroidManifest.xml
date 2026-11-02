@@ -43,6 +43,32 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- Home-screen Widget Receiver -->
+        <receiver
+            android:name=".widget.PixelGiftWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.pixelgift.app.widget.ACTION_TOGGLE_POWER" />
+                <action android:name="com.pixelgift.app.widget.ACTION_QUICK_CHERRY" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_info" />
+        </receiver>
+
+        <!-- Quick Settings Tile Service -->
+        <service
+            android:name=".widget.PixelGiftTileService"
+            android:icon="@drawable/ic_splash_logo"
+            android:label="@string/tile_label"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

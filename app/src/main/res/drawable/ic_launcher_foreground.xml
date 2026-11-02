@@ -6,12 +6,12 @@
     android:viewportHeight="108">
     <!-- Stylized 3x3 pixel matrix gift icon inside 108dp viewport -->
     <path
-        android:fillColor="#FF7A00"
+        android:fillColor="#D2042D"
         android:pathData="M38,38h10v10h-10zM50,38h10v10h-10zM62,38h10v10h-10zM38,50h10v10h-10zM50,50h10v10h-10zM62,50h10v10h-10zM38,62h10v10h-10zM50,62h10v10h-10zM62,62h10v10h-10z" />
     <path
-        android:fillColor="#00E5FF"
+        android:fillColor="#FFD700"
         android:pathData="M50,38h10v10h-10zM38,50h10v10h-10zM62,50h10v10h-10zM50,62h10v10h-10z" />
     <path
-        android:fillColor="#FFD700"
+        android:fillColor="#FFFFFF"
         android:pathData="M50,50h10v10h-10z" />
 </vector>

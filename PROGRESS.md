@@ -4,7 +4,7 @@ Agent: update this at the end of every task, then commit. Keep it terse. Legend:
 
 ## Next step
 
-B02 Matrix mapping, brightness and current cap
+B03 Effect engine + first 10 effects + native tests
 
 ## Phases
 
@@ -24,7 +24,7 @@ B02 Matrix mapping, brightness and current cap
 
 ### Track B: Firmware
 - [x] B01 [H] PlatformIO project + pixel walk + color order + pin confirm
-- [ ] B02 Matrix mapping, brightness and current cap
+- [x] B02 Matrix mapping, brightness and current cap
 - [ ] B03 Effect engine + first 10 effects + native tests
 - [ ] B04 Remaining effects to 60 bases + effects.json complete
 - [ ] B05 NVS persistence with debounce
@@ -43,14 +43,16 @@ B02 Matrix mapping, brightness and current cap
 ## Decisions
 
 (date, decision, why)
+- 2026-11-02: Hardware matrix changed to 100 LEDs (10x10) connected to GPIO 5 (D5).
 - Assumed Android only, no RTC, timer cancelled on power loss. Confirm or change in SPEC section 2.
 
 ## Hardware facts (fill in as measured)
 - Board: ESP32 DevKit V1 (esp32dev)
-- Data pin / buzzer pin: GPIO 27 (Data, confirmed) / GPIO 18 (Buzzer default)
+- Data pin / buzzer pin: GPIO 5 (D5, confirmed working) / GPIO 18 (Buzzer default)
+- Matrix size: 10x10 (100 LEDs)
 - Matrix order (serpentine?): Yes, serpentine (row 0 L->R, row 1 R->L, row 2 L->R...)
 - Color order (GRB?): GRB (accurate on RGB color cycle test)
-- Supply rating: 5V regulated (FastLED capped at 2500 mA, brightness safe 30/255)
+- Supply rating: 5V regulated (FastLED capped at 2500 mA, brightness safe 40/255)
 - Passkey card written: no
 
 ## Debug notes

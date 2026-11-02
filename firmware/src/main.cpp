@@ -1,160 +1,165 @@
 #include <Arduino.h>
 #include <FastLED.h>
 #include "config.h"
+#include "matrix.h"
 
-// CRGB array for 81 LEDs (9x9)
-CRGB leds[NUM_LEDS];
-
-// Test state machine states
-enum TestState {
-    STATE_PIXEL_WALK,
-    STATE_PAUSE_BEFORE_COLORS,
-    STATE_COLOR_RED,
-    STATE_COLOR_GREEN,
-    STATE_COLOR_BLUE,
-    STATE_PAUSE_BEFORE_WALK
+enum B02State {
+    STATE_CORNERS,
+    STATE_ROW_SWEEP,
+    STATE_PERIMETER_BOX,
+    STATE_BRIGHTNESS_RAMP,
+    STATE_PAUSE
 };
 
-static TestState currentState = STATE_PIXEL_WALK;
+static B02State currentState = STATE_CORNERS;
+static uint32_t stateStartTime = 0;
 static uint32_t lastStepTime = 0;
-static int currentPixel = 0;
+static uint8_t sweepX = 0;
+static uint8_t sweepY = 0;
+static uint8_t rampStep = 0;
 
-// Timing constants (ms)
-static const uint32_t PIXEL_WALK_INTERVAL_MS = 60;
-static const uint32_t COLOR_DISPLAY_MS = 2000;
-static const uint32_t PAUSE_INTERVAL_MS = 500;
-
-void printBanner() {
+void printB02Banner() {
     Serial.println();
-    Serial.println("=================================================");
-    Serial.println("  PixelGift Hardware Verification Test (Task B01)");
-    Serial.println("=================================================");
-    Serial.printf("MCU: ESP32 DevKit (board: esp32dev)\n");
-    Serial.printf("LED Data Pin: GPIO %d\n", DATA_PIN);
-    Serial.printf("Buzzer Pin:   GPIO %d\n", BUZZER_PIN);
-    Serial.printf("Total LEDs:   %d (9x9 matrix)\n", NUM_LEDS);
-    Serial.printf("Power Cap:    %d V, %d mA max\n", LED_VOLTS, LED_MAX_MA);
-    Serial.printf("Brightness:   %d / 255 (Safe low level)\n", DEFAULT_BRIGHTNESS);
-    Serial.println("-------------------------------------------------");
-    Serial.println("TEST SEQUENCE:");
-    Serial.println("1. Pixel walk: index 0 -> 80 (watch serpentine path)");
-    Serial.println("2. Solid RED   (verify if true red or green/blue)");
-    Serial.println("3. Solid GREEN (verify if true green or red/blue)");
-    Serial.println("4. Solid BLUE  (verify if true blue)");
-    Serial.println("=================================================");
+    Serial.println("==================================================");
+    Serial.println("  PixelGift Matrix Mapping & Power Cap (Task B02)");
+    Serial.println("==================================================");
+    Serial.printf("MCU:           ESP32 DevKit\n");
+    Serial.printf("Data Pin:      GPIO %d (D5)\n", DATA_PIN);
+    Serial.printf("Matrix Size:   %d x %d (%d LEDs)\n", MATRIX_WIDTH, MATRIX_HEIGHT, NUM_LEDS);
+    Serial.printf("Layout:        Serpentine: %s\n", MATRIX_SERPENTINE ? "YES" : "NO");
+    Serial.printf("Power Cap:     %d V, %d mA limit\n", LED_VOLTS, LED_MAX_MA);
+    Serial.printf("Default Bright: %d / 255\n", DEFAULT_BRIGHTNESS);
+    Serial.println("--------------------------------------------------");
+    Serial.println("VERIFICATION PHASES:");
+    Serial.println("1. Corners: (0,0)=Red, (9,0)=Green, (0,9)=Blue, (9,9)=Yellow");
+    Serial.println("2. Serpentine Row Sweep: dot travels LEFT->RIGHT on ALL rows");
+    Serial.println("3. Perimeter Box: Cyan border around 10x10 edges");
+    Serial.println("4. Brightness Ramp: Full panel ramps 20->40->60 safely");
+    Serial.println("==================================================");
 }
 
 void setup() {
     Serial.begin(115200);
-    // Brief settle time for serial
     unsigned long startWait = millis();
     while (!Serial && (millis() - startWait < 1000)) {
-        // wait up to 1 second
+        // Wait up to 1 second for serial
     }
 
-    printBanner();
+    printB02Banner();
 
-    // FastLED setup with hardware current cap & safe low brightness
-    FastLED.addLeds<WS2812B, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS);
-    FastLED.setMaxPowerInVoltsAndMilliamps(LED_VOLTS, LED_MAX_MA);
-    FastLED.setBrightness(DEFAULT_BRIGHTNESS);
-    FastLED.clear();
-    FastLED.show();
+    // Initialize matrix with power cap and safe initial brightness
+    matrixInit();
 
-    // Configure buzzer pin as output and silent
     pinMode(BUZZER_PIN, OUTPUT);
     digitalWrite(BUZZER_PIN, LOW);
 
+    stateStartTime = millis();
     lastStepTime = millis();
-    currentPixel = 0;
-    currentState = STATE_PIXEL_WALK;
-    Serial.println("[START] Beginning Pixel Walk...");
+    currentState = STATE_CORNERS;
+    Serial.println("[B02] Phase 1: 4 Corners Check (TopLeft=R, TopRight=G, BottomLeft=B, BottomRight=Y)...");
 }
 
 void loop() {
     uint32_t now = millis();
 
     switch (currentState) {
-        case STATE_PIXEL_WALK: {
-            if (now - lastStepTime >= PIXEL_WALK_INTERVAL_MS) {
+        case STATE_CORNERS: {
+            matrixClear();
+            matrixSetPixel(0, 0, CRGB::Red);                                    // Top Left
+            matrixSetPixel(MATRIX_WIDTH - 1, 0, CRGB::Green);                   // Top Right
+            matrixSetPixel(0, MATRIX_HEIGHT - 1, CRGB::Blue);                   // Bottom Left
+            matrixSetPixel(MATRIX_WIDTH - 1, MATRIX_HEIGHT - 1, CRGB::Yellow);  // Bottom Right
+            matrixShow();
+
+            if (now - stateStartTime >= 2500) {
+                currentState = STATE_ROW_SWEEP;
+                stateStartTime = now;
                 lastStepTime = now;
+                sweepX = 0;
+                sweepY = 0;
+                matrixClear();
+                matrixShow();
+                Serial.println("[B02] Phase 2: Serpentine Sweep (dot moves Left-to-Right on EVERY row)...");
+            }
+            break;
+        }
 
-                // Clear previous pixel
-                FastLED.clear();
+        case STATE_ROW_SWEEP: {
+            if (now - lastStepTime >= 40) { // 40ms per pixel
+                lastStepTime = now;
+                matrixClear();
+                matrixSetPixel(sweepX, sweepY, CRGB::White);
+                matrixShow();
 
-                // Light current pixel with a distinct color (white / warm)
-                if (currentPixel < NUM_LEDS) {
-                    leds[currentPixel] = CRGB(200, 200, 255);
-                    FastLED.show();
-
-                    // Print milestone every row (every 9 pixels)
-                    if (currentPixel % 9 == 0) {
-                        Serial.printf("  Pixel row %d (index %d..%d)\n", currentPixel / 9, currentPixel, currentPixel + 8);
+                sweepX++;
+                if (sweepX >= MATRIX_WIDTH) {
+                    sweepX = 0;
+                    sweepY++;
+                    if (sweepY >= MATRIX_HEIGHT) {
+                        sweepY = 0;
+                        currentState = STATE_PERIMETER_BOX;
+                        stateStartTime = now;
+                        matrixClear();
+                        matrixShow();
+                        Serial.println("[B02] Phase 3: Perimeter Box (10x10 border check)...");
                     }
-
-                    currentPixel++;
-                } else {
-                    currentPixel = 0;
-                    currentState = STATE_PAUSE_BEFORE_COLORS;
-                    lastStepTime = now;
-                    FastLED.clear();
-                    FastLED.show();
-                    Serial.println("[WALK COMPLETE] Pausing before color tests...");
                 }
             }
             break;
         }
 
-        case STATE_PAUSE_BEFORE_COLORS: {
-            if (now - lastStepTime >= PAUSE_INTERVAL_MS) {
-                currentState = STATE_COLOR_RED;
+        case STATE_PERIMETER_BOX: {
+            matrixClear();
+            for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
+                matrixSetPixel(x, 0, CRGB::Cyan);
+                matrixSetPixel(x, MATRIX_HEIGHT - 1, CRGB::Cyan);
+            }
+            for (uint8_t y = 0; y < MATRIX_HEIGHT; y++) {
+                matrixSetPixel(0, y, CRGB::Cyan);
+                matrixSetPixel(MATRIX_WIDTH - 1, y, CRGB::Cyan);
+            }
+            matrixShow();
+
+            if (now - stateStartTime >= 2500) {
+                currentState = STATE_BRIGHTNESS_RAMP;
+                stateStartTime = now;
                 lastStepTime = now;
-                fill_solid(leds, NUM_LEDS, CRGB::Red);
-                FastLED.show();
-                Serial.println("[COLOR CHECK] Solid RED -> Check: Are all 81 LEDs pure RED?");
+                rampStep = 0;
+                matrixFill(CRGB(255, 140, 20)); // Warm Amber fill
+                matrixSetBrightness(20);
+                matrixShow();
+                Serial.println("[B02] Phase 4: Brightness Ramp (20 -> 40 -> 60 safe power limit)...");
             }
             break;
         }
 
-        case STATE_COLOR_RED: {
-            if (now - lastStepTime >= COLOR_DISPLAY_MS) {
-                currentState = STATE_COLOR_GREEN;
+        case STATE_BRIGHTNESS_RAMP: {
+            if (now - lastStepTime >= 500) { // step every 500ms
                 lastStepTime = now;
-                fill_solid(leds, NUM_LEDS, CRGB::Green);
-                FastLED.show();
-                Serial.println("[COLOR CHECK] Solid GREEN -> Check: Are all 81 LEDs pure GREEN?");
+                rampStep++;
+                uint8_t levels[] = {20, 35, 50, 65, 50, 35, 20};
+                if (rampStep < sizeof(levels) / sizeof(levels[0])) {
+                    matrixSetBrightness(levels[rampStep]);
+                    matrixFill(CRGB(255, 140, 20));
+                    matrixShow();
+                    Serial.printf("  Brightness set to: %d / 255\n", levels[rampStep]);
+                } else {
+                    matrixSetBrightness(DEFAULT_BRIGHTNESS);
+                    currentState = STATE_PAUSE;
+                    stateStartTime = now;
+                    matrixClear();
+                    matrixShow();
+                    Serial.println("[B02] Cycle complete. Pausing 1s before restarting test loop...");
+                }
             }
             break;
         }
 
-        case STATE_COLOR_GREEN: {
-            if (now - lastStepTime >= COLOR_DISPLAY_MS) {
-                currentState = STATE_COLOR_BLUE;
-                lastStepTime = now;
-                fill_solid(leds, NUM_LEDS, CRGB::Blue);
-                FastLED.show();
-                Serial.println("[COLOR CHECK] Solid BLUE -> Check: Are all 81 LEDs pure BLUE?");
-            }
-            break;
-        }
-
-        case STATE_COLOR_BLUE: {
-            if (now - lastStepTime >= COLOR_DISPLAY_MS) {
-                currentState = STATE_PAUSE_BEFORE_WALK;
-                lastStepTime = now;
-                FastLED.clear();
-                FastLED.show();
-                Serial.println("[COLOR CHECK COMPLETE] Pausing before next walk cycle...");
-            }
-            break;
-        }
-
-        case STATE_PAUSE_BEFORE_WALK: {
-            if (now - lastStepTime >= PAUSE_INTERVAL_MS) {
-                currentState = STATE_PIXEL_WALK;
-                lastStepTime = now;
-                currentPixel = 0;
-                Serial.println("\n[CYCLE RESTART] Beginning Pixel Walk...");
+        case STATE_PAUSE: {
+            if (now - stateStartTime >= 1000) {
+                currentState = STATE_CORNERS;
+                stateStartTime = now;
+                Serial.println("\n[B02] Restarting Phase 1 (Corners)...");
             }
             break;
         }

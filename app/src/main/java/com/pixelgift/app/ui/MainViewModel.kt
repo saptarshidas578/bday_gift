@@ -38,16 +38,27 @@ class MainViewModel(
 
     fun onConnectionChipClicked() {
         viewModelScope.launch {
-            when (transport.connectionState.value) {
-                is ConnectionState.Disconnected -> {
-                    transport.connect("FA:KE:DE:VI:CE:00")
+            try {
+                when (transport.connectionState.value) {
+                    is ConnectionState.Disconnected -> {
+                        val addr = if (transport is com.pixelgift.app.transport.BleTransport) {
+                            transport.getLastBondedAddress()
+                        } else {
+                            "FA:KE:DE:VI:CE:00"
+                        }
+                        if (!addr.isNullOrBlank()) {
+                            transport.connect(addr)
+                        }
+                    }
+                    is ConnectionState.Connected -> {
+                        transport.disconnect()
+                    }
+                    else -> {
+                        // Connecting or Disconnecting in progress
+                    }
                 }
-                is ConnectionState.Connected -> {
-                    transport.disconnect()
-                }
-                else -> {
-                    // Connecting or Disconnecting in progress
-                }
+            } catch (e: Exception) {
+                android.util.Log.w("MainViewModel", "Connection chip action failed: ${e.message}")
             }
         }
     }

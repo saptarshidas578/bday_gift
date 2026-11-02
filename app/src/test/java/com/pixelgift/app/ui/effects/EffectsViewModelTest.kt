@@ -176,4 +176,25 @@ class EffectsViewModelTest {
 
         assertTrue("Commands must be dispatched", vm.sendCountForTesting > 0)
     }
+
+    @Test
+    fun updateFromSnapshot_syncsActiveEffectAndSpeed() {
+        val vm = createViewModel()
+        val snapshot = com.pixelgift.app.protocol.DeviceNotification.StatusSnapshot(
+            protoVer = 1,
+            mode = com.pixelgift.app.protocol.ProtocolConstants.MODE_EFFECT,
+            brightness = 100,
+            r = 0, g = 0, b = 0,
+            effectBase = 6, // Rainbow wave
+            speed = 77,
+            flags = 0,
+            fwMajor = 1, fwMinor = 0
+        )
+
+        vm.updateFromSnapshot(snapshot)
+        assertNotNull(vm.selectedEffect.value)
+        assertEquals(6, vm.selectedEffect.value!!.id)
+        assertEquals("Rainbow Wave", vm.selectedEffect.value!!.name)
+        assertEquals(77, vm.speed.value)
+    }
 }

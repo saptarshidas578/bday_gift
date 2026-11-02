@@ -90,6 +90,7 @@ fun DeviceScreen(
     val isConnecting = connectionState is ConnectionState.Connecting
 
     var showClearBondsDialog by remember { mutableStateOf(false) }
+    var showFactoryResetDialog by remember { mutableStateOf(false) }
     var showOtaDialog by remember { mutableStateOf(false) }
     var showAboutDialog by remember { mutableStateOf(false) }
 
@@ -460,6 +461,34 @@ fun DeviceScreen(
 
                 HorizontalDivider()
 
+                // Factory Reset
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(PixelGiftSpacing.sm)
+                    ) {
+                        Icon(Icons.Default.Shield, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                        Column {
+                            Text("Factory Reset", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                            Text("Erase NVS settings and restore defaults", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    }
+
+                    Button(
+                        onClick = { showFactoryResetDialog = true },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+                        modifier = Modifier.defaultMinSize(minHeight = 44.dp)
+                    ) {
+                        Text("Reset")
+                    }
+                }
+
+                HorizontalDivider()
+
                 // About & Onboarding
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -507,6 +536,30 @@ fun DeviceScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showClearBondsDialog = false }) { Text("Cancel") }
+            }
+        )
+    }
+
+    // Factory Reset Confirmation Dialog
+    if (showFactoryResetDialog) {
+        AlertDialog(
+            onDismissRequest = { showFactoryResetDialog = false },
+            icon = { Icon(Icons.Default.Shield, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(32.dp)) },
+            title = { Text("Factory Reset PixelGift?") },
+            text = { Text("This will erase all stored scenes, schedules, custom messages, colors and Bluetooth pairings in the ESP32 NVS. The device will restart with factory defaults.") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.onFactoryReset()
+                        showFactoryResetDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Reset Everything")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showFactoryResetDialog = false }) { Text("Cancel") }
             }
         )
     }

@@ -5,6 +5,12 @@ import java.util.UUID
 object ProtocolConstants {
     const val PROTOCOL_VERSION: Int = 1
 
+    // Matrix Dimensions & Layout (Single source of truth per Check K)
+    const val MATRIX_WIDTH: Int = 9
+    const val MATRIX_HEIGHT: Int = 9
+    const val MATRIX_LED_COUNT: Int = MATRIX_WIDTH * MATRIX_HEIGHT // 81 LEDs
+    const val MATRIX_FRAME_BYTES: Int = MATRIX_LED_COUNT * 3       // 243 bytes
+
     // BLE Service and Characteristic UUIDs
     val SERVICE_UUID: UUID = UUID.fromString("7a1c0001-5d3e-4b8a-9c21-8f6d2e4a1b00")
     val COMMAND_UUID: UUID = UUID.fromString("7a1c0002-5d3e-4b8a-9c21-8f6d2e4a1b00")

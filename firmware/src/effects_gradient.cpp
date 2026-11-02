@@ -10,8 +10,11 @@ void renderRainbowWave(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     for (uint8_t y = 0; y < MATRIX_HEIGHT; y++) {
         for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
             uint8_t effX = params.mirror ? ((x < MATRIX_WIDTH / 2) ? x : (MATRIX_WIDTH - 1 - x)) : x;
-            uint8_t hue = (params.dir == 2) ? (offset + (y * 25)) : (offset + (effX * 25));
-            matrixSetPixel(x, y, CHSV(hue, 240, 255));
+            uint8_t pos = (params.dir == 2) ? y : effX;
+            uint8_t hue = offset + (pos * 25);
+            CRGB rainbowCol = CHSV(hue, 240, 255);
+            CRGB pixelCol = (params.colorMode == 3) ? rainbowCol : getEffectColor(params, t_ms, pos, rainbowCol);
+            matrixSetPixel(x, y, pixelCol);
         }
     }
 }
@@ -27,7 +30,9 @@ void renderRainbowCycle(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
             float dx = x - cx, dy = y - cy;
             uint8_t dist = (uint8_t)(sqrtf(dx * dx + dy * dy) * 35.0f);
             uint8_t hue = (params.dir == 1) ? (offset + dist) : (offset - dist);
-            matrixSetPixel(x, y, CHSV(hue, 240, 255));
+            CRGB rainbowCol = CHSV(hue, 240, 255);
+            CRGB pixelCol = (params.colorMode == 3) ? rainbowCol : getEffectColor(params, t_ms, dist / 15, rainbowCol);
+            matrixSetPixel(x, y, pixelCol);
         }
     }
 }

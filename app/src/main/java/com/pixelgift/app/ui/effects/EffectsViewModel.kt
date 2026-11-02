@@ -220,7 +220,22 @@ class EffectsViewModel(
                     c2 = _c2.value
                 )
             )
-            transport.send(Command.SetMode(ProtocolConstants.MODE_EFFECT))
+        }
+    }
+
+    /**
+     * Updates ViewModel state from incoming device StatusSnapshot without overwriting device state.
+     * Per SPEC 7.1.
+     */
+    fun updateFromSnapshot(snapshot: com.pixelgift.app.protocol.DeviceNotification.StatusSnapshot) {
+        if (snapshot.mode == ProtocolConstants.MODE_EFFECT) {
+            val matching = allEffects.find { it.id == snapshot.effectBase }
+            if (matching != null) {
+                _selectedEffect.value = matching
+            }
+            if (snapshot.speed > 0) {
+                _speed.value = snapshot.speed
+            }
         }
     }
 }

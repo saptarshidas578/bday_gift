@@ -1,5 +1,6 @@
 #include "effects.h"
 #include "matrix.h"
+#include "storage.h"
 
 static EffectEntry effectTable[66];
 static size_t registeredCount = 0;
@@ -116,5 +117,36 @@ void effectsRender(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
         entry->render(t_ms, params, leds);
     } else {
         renderSolid(t_ms, params, leds);
+    }
+}
+
+CRGB getEffectColor(const EffectParams& p, uint32_t t_ms, uint8_t index, CRGB fallback) {
+    uint8_t spd = p.speed ? p.speed : 50;
+
+    switch (p.colorMode) {
+        case 1: { // Dual color blend
+            CRGB col1 = (p.c1 == CRGB(0,0,0)) ? fallback : p.c1;
+            CRGB col2 = (p.c2 == CRGB(0,0,0)) ? CRGB::Cyan : p.c2;
+            uint8_t ratio = sin8((uint8_t)((t_ms * spd / 200) + (index * 20)));
+            return blend(col1, col2, ratio);
+        }
+        case 2: { // Palette
+            if (state.paletteCount > 0) {
+                uint8_t palIdx = ((t_ms * spd / 300) + index) % state.paletteCount;
+                return state.palette[palIdx];
+            }
+            return (p.c1 == CRGB(0,0,0)) ? fallback : p.c1;
+        }
+        case 3: { // Rainbow
+            uint8_t hue = (uint8_t)((t_ms * spd / 35) + (index * 25));
+            return CHSV(hue, 240, 255);
+        }
+        case 0: // Single color
+        default: {
+            if (p.c1 != CRGB(0,0,0)) {
+                return p.c1;
+            }
+            return fallback;
+        }
     }
 }

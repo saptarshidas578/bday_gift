@@ -73,16 +73,20 @@ object ColorMath {
     }
 
     /**
-     * Parses a hex string (#RRGGBB or RRGGBB) to [Rgb], or returns null if invalid.
+     * Parses a hex string (#RRGGBB, RRGGBB, #RGB, or RGB) to [Rgb], or returns null if invalid.
      */
     fun hexToRgb(hex: String): Rgb? {
         val sanitized = hex.trim().removePrefix("#")
-        if (sanitized.length != 6) return null
+        val fullHex = when (sanitized.length) {
+            3 -> "${sanitized[0]}${sanitized[0]}${sanitized[1]}${sanitized[1]}${sanitized[2]}${sanitized[2]}"
+            6 -> sanitized
+            else -> return null
+        }
 
         return try {
-            val r = sanitized.substring(0, 2).toInt(16)
-            val g = sanitized.substring(2, 4).toInt(16)
-            val b = sanitized.substring(4, 6).toInt(16)
+            val r = fullHex.substring(0, 2).toInt(16)
+            val g = fullHex.substring(2, 4).toInt(16)
+            val b = fullHex.substring(4, 6).toInt(16)
             Rgb(r, g, b)
         } catch (_: NumberFormatException) {
             null

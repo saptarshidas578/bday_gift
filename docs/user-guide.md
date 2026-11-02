@@ -99,3 +99,4 @@ Choose from **60 base animation engines** generating over **500 unique visual lo
 
 - **Clear Bonds**: In the app under **Device → Clear Bonds**, or hold down the physical **BOOT button (GPIO 0)** on the ESP32 for **5 seconds** while powered on. The matrix will flash to confirm, allowing pairing with a new phone.
 - **Data Persistence**: All saved scenes, schedules, brightness, color, and birthday greetings are safely stored in non-volatile flash memory (NVS) with a 2-second debounce to protect hardware lifespan.
+

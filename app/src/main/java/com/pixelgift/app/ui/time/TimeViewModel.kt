@@ -156,16 +156,17 @@ class TimeViewModel(
 
     fun onStartTimer(seconds: Long) {
         require(seconds > 0) { "Timer seconds must be positive, got $seconds" }
-        _timerTotalSeconds.value = seconds
-        _timerRemainingSeconds.value = seconds
+        val clamped = seconds.coerceAtMost(0xFFFFFFFFL)
+        _timerTotalSeconds.value = clamped
+        _timerRemainingSeconds.value = clamped
         _isTimerRunning.value = true
         sendCountForTesting++
 
         startLocalCountdown()
 
         scope.launch {
-            transport.send(Command.StartTimer(seconds))
-            _feedback.value = "Timer started for ${formatSeconds(seconds)}"
+            transport.send(Command.StartTimer(clamped))
+            _feedback.value = "Timer started for ${formatSeconds(clamped)}"
         }
     }
 

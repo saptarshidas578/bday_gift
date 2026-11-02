@@ -184,4 +184,27 @@ class StudioViewModelTest {
         assertEquals(185, viewModel2.brightness.value)
         assertTrue(viewModel2.favoriteColors.value.contains(Rgb(111, 222, 33)))
     }
+
+    @Test
+    fun updateFromSnapshot_syncsColorAndBrightness() {
+        val fakeDevice = FakeDevice(scope = testScope)
+        val viewModel = StudioViewModel(fakeDevice, externalScope = testScope)
+
+        val snapshot = com.pixelgift.app.protocol.DeviceNotification.StatusSnapshot(
+            protoVer = 1,
+            mode = com.pixelgift.app.protocol.ProtocolConstants.MODE_SOLID,
+            brightness = 190,
+            r = 0, g = 255, b = 128,
+            effectBase = 1,
+            speed = 50,
+            flags = 0,
+            fwMajor = 1, fwMinor = 0
+        )
+
+        viewModel.updateFromSnapshot(snapshot)
+        assertEquals(Rgb(0, 255, 128), viewModel.selectedColor.value)
+        assertEquals(Rgb(0, 255, 128), viewModel.committedColor.value)
+        assertEquals(190, viewModel.brightness.value)
+        assertEquals("#00FF80", viewModel.hexInput.value)
+    }
 }

@@ -39,7 +39,8 @@ fun PixelGiftApp(
     val context = LocalContext.current.applicationContext
     val transport = remember {
         try {
-            val adapter = android.bluetooth.BluetoothAdapter.getDefaultAdapter()
+            val manager = context.getSystemService(android.bluetooth.BluetoothManager::class.java)
+            val adapter = manager?.adapter
             if (adapter != null) {
                 com.pixelgift.app.transport.BleTransport(context)
             } else {
@@ -76,6 +77,8 @@ fun PixelGiftApp(
 
     LaunchedEffect(statusSnapshot) {
         timeViewModel.updateFromSnapshot(statusSnapshot)
+        studioViewModel.updateFromSnapshot(statusSnapshot)
+        effectsViewModel.updateFromSnapshot(statusSnapshot)
     }
 
     LaunchedEffect(connectionState) {

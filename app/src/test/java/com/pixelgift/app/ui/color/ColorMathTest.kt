@@ -84,6 +84,15 @@ class ColorMathTest {
     }
 
     @Test
+    fun hexParsing_threeDigitShorthand_success() {
+        assertEquals(Rgb(255, 0, 0), ColorMath.hexToRgb("#F00"))
+        assertEquals(Rgb(0, 255, 0), ColorMath.hexToRgb("0F0"))
+        assertEquals(Rgb(0, 0, 255), ColorMath.hexToRgb("#00F"))
+        assertEquals(Rgb(255, 255, 255), ColorMath.hexToRgb("#FFF"))
+        assertEquals(Rgb(0, 0, 0), ColorMath.hexToRgb("#000"))
+    }
+
+    @Test
     fun hexParsing_invalidInputs_returnNull() {
         assertNull(ColorMath.hexToRgb(""))
         assertNull(ColorMath.hexToRgb("#FF"))

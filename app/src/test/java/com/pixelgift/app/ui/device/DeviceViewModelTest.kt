@@ -144,4 +144,49 @@ class DeviceViewModelTest {
         viewModel.onToggleAutoReconnect(true)
         assertTrue(viewModel.autoReconnect.value)
     }
+
+    @Test
+    fun confirmPairing_stopsScanBeforeConnecting() = runBlocking {
+        val fakeDevice = FakeDevice(scope = testScope, connectDelayMs = 0L)
+        val viewModel = DeviceViewModel(fakeDevice, externalScope = testScope)
+
+        viewModel.startScan()
+        assertEquals(PairingUiState.Scanning, viewModel.pairingState.value)
+
+        val targetDevice = DiscoveredDevice(name = "PixelGift-Sim", address = "FA:KE:DE:VI:CE:00", rssi = -42)
+        viewModel.confirmPairing(targetDevice, "123456")
+
+        // Scanning job must be cancelled immediately when connecting starts
+        assertNull("Scan job must be null after confirmPairing", viewModel.getScanJobForTesting())
+    }
+
+    @Test
+    fun confirmPairing_alreadyBonded_bypassesPasskey() = runBlocking {
+        val fakeDevice = FakeDevice(scope = testScope, connectDelayMs = 0L)
+        val viewModel = DeviceViewModel(fakeDevice, externalScope = testScope)
+
+        // Device is already bonded: empty passkey should NOT fail
+        val bondedDevice = DiscoveredDevice(name = "PixelGift-Bonded", address = "FA:KE:DE:VI:CE:00", rssi = -50, isBonded = true)
+        viewModel.confirmPairing(bondedDevice, "")
+        delay(100)
+
+        assertTrue(
+            "Already bonded device should succeed without passkey, got: ${viewModel.pairingState.value}",
+            viewModel.pairingState.value is PairingUiState.Success
+        )
+    }
+
+    @Test
+    fun deviceTab_factoryReset_sendsMagicBytes() = runBlocking {
+        val fakeDevice = FakeDevice(scope = testScope)
+        fakeDevice.connect("FA:KE:DE:VI:CE:00")
+        val viewModel = DeviceViewModel(fakeDevice, externalScope = testScope)
+
+        val preCount = viewModel.sendCountForTesting
+        viewModel.onFactoryReset()
+        delay(50)
+        assertEquals(preCount + 1, viewModel.sendCountForTesting)
+        assertNotNull(viewModel.feedback.value)
+        assertTrue(viewModel.feedback.value!!.contains("Factory reset"))
+    }
 }

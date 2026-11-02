@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.BluetoothManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -109,12 +110,45 @@ class BleTransport(
     private var userRequestedDisconnect = false
     private var reconnectJob: Job? = null
     private var pendingPasskey: String? = null
+    private var activeScanCallback: ScanCallback? = null
+    private var connectReadyDeferred: CompletableDeferred<Unit>? = null
 
     private val bleManager = PixelGiftBleManager(context)
 
     init {
         setupObservers()
         registerBroadcastReceivers()
+    }
+
+    private fun getBluetoothAdapter(): BluetoothAdapter? {
+        val manager = context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager
+        return manager?.adapter
+    }
+
+    @SuppressLint("MissingPermission")
+    fun getLastBondedAddress(): String? {
+        if (!lastConnectedAddress.isNullOrBlank()) {
+            return lastConnectedAddress
+        }
+        val adapter = getBluetoothAdapter() ?: return null
+        return try {
+            val bonded = adapter.bondedDevices ?: return null
+            bonded.firstOrNull { it.name?.startsWith("PixelGift", ignoreCase = true) == true }?.address
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    fun stopScanning() {
+        val cb = activeScanCallback
+        if (cb != null) {
+            try {
+                BluetoothLeScannerCompat.getScanner().stopScan(cb)
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to stop scanner: ${e.message}")
+            }
+            activeScanCallback = null
+        }
     }
 
     fun setAutoReconnect(enabled: Boolean) {
@@ -136,7 +170,7 @@ class BleTransport(
 
     @SuppressLint("MissingPermission")
     override suspend fun connect(address: String) {
-        val adapter = BluetoothAdapter.getDefaultAdapter()
+        val adapter = getBluetoothAdapter()
             ?: throw IllegalStateException("Bluetooth is not available on this device")
         if (!adapter.isEnabled) {
             throw IllegalStateException("Bluetooth is turned off")
@@ -144,6 +178,7 @@ class BleTransport(
 
         userRequestedDisconnect = false
         cancelAutoReconnect()
+        stopScanning()
         _connectionState.value = ConnectionState.Connecting
 
         val device = try {
@@ -153,23 +188,25 @@ class BleTransport(
             throw IllegalArgumentException("Invalid Bluetooth address: $address", e)
         }
 
-        val deferred = CompletableDeferred<Unit>()
+        val readyDeferred = CompletableDeferred<Unit>()
+        connectReadyDeferred = readyDeferred
 
         bleManager.connect(device)
             .retry(3, 300)
             .useAutoConnect(false)
-            .timeout(10000)
-            .done {
-                lastConnectedAddress = address
-                deferred.complete(Unit)
-            }
+            .timeout(12000)
             .fail { _, status ->
                 _connectionState.value = ConnectionState.Disconnected
-                deferred.completeExceptionally(Exception("GATT connection failed with status $status"))
+                readyDeferred.completeExceptionally(Exception("GATT connection failed with status $status"))
+                connectReadyDeferred = null
             }
             .enqueue()
 
-        deferred.await()
+        try {
+            readyDeferred.await()
+        } finally {
+            connectReadyDeferred = null
+        }
     }
 
     override suspend fun disconnect() {
@@ -328,12 +365,18 @@ class BleTransport(
         }
 
         try {
+            activeScanCallback = callback
             scanner.startScan(filters, settings, callback)
             for (list in channel) {
                 emit(list)
             }
         } finally {
-            scanner.stopScan(callback)
+            activeScanCallback = null
+            try {
+                scanner.stopScan(callback)
+            } catch (e: Exception) {
+                // Ignore
+            }
         }
     }.flowOn(Dispatchers.IO)
 
@@ -387,6 +430,8 @@ class BleTransport(
             override fun onDeviceFailedToConnect(device: BluetoothDevice, reason: Int) {
                 Log.w(TAG, "Device failed to connect: ${device.address}, reason: $reason")
                 _connectionState.value = ConnectionState.Disconnected
+                connectReadyDeferred?.completeExceptionally(Exception("Device failed to connect (reason $reason)"))
+                connectReadyDeferred = null
                 if (!userRequestedDisconnect) {
                     triggerAutoReconnect(device.address)
                 }
@@ -398,6 +443,8 @@ class BleTransport(
                 Log.i(TAG, "Device ready! ($devName, ${device.address})")
                 _connectionState.value = ConnectionState.Connected(devName, device.address)
                 lastConnectedAddress = device.address
+                connectReadyDeferred?.complete(Unit)
+                connectReadyDeferred = null
 
                 // SPEC 7.1: Fetch device status snapshot immediately on connect / reconnect
                 scope.launch {
@@ -414,6 +461,8 @@ class BleTransport(
             override fun onDeviceDisconnected(device: BluetoothDevice, reason: Int) {
                 Log.i(TAG, "Device disconnected: ${device.address}, reason: $reason")
                 _connectionState.value = ConnectionState.Disconnected
+                connectReadyDeferred?.completeExceptionally(Exception("Device disconnected (code $reason)"))
+                connectReadyDeferred = null
                 failAllPendingAcks(Exception("Device disconnected (code $reason)"))
 
                 if (!userRequestedDisconnect && autoReconnectEnabled) {
@@ -449,7 +498,7 @@ class BleTransport(
                     break
                 }
 
-                val adapter = BluetoothAdapter.getDefaultAdapter()
+                val adapter = getBluetoothAdapter()
                 if (adapter != null && adapter.isEnabled) {
                     try {
                         _connectionState.value = ConnectionState.Connecting
@@ -573,13 +622,10 @@ class BleTransport(
         }
 
         override fun initialize() {
-            // 1. Ensure bonded (LE Secure Connections)
-            ensureBond().enqueue()
-
-            // 2. Request MTU 185
+            // 1. Request MTU 185
             requestMtu(185).enqueue()
 
-            // 3. Subscribe to STATUS characteristic notifications
+            // 2. Subscribe to STATUS characteristic notifications
             setNotificationCallback(statusChar).with { _, data ->
                 val bytes = data.value ?: return@with
                 handleIncomingBytes(bytes)

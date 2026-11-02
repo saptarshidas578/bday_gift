@@ -16,7 +16,6 @@ class ServerCallbacks : public NimBLEServerCallbacks {
         deviceConnected = true;
         Serial.printf("[BLE] Client connected (%s)\n",
                       desc ? NimBLEAddress(desc->peer_ota_addr).toString().c_str() : "peer");
-        bleSendSnapshot();
     }
 
     void onDisconnect(NimBLEServer* pServer) override {
@@ -107,12 +106,10 @@ void bleInit() {
 }
 
 void bleSendAck(uint8_t seq, uint8_t code) {
-    if (!pStatusChar) return;
+    if (!pStatusChar || !deviceConnected) return;
     uint8_t ack[3] = { HEADER_ACK, seq, code };
     pStatusChar->setValue(ack, sizeof(ack));
-    if (deviceConnected) {
-        pStatusChar->notify();
-    }
+    pStatusChar->notify();
 }
 
 void bleSendSnapshot() {

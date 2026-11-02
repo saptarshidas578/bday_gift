@@ -1,9 +1,15 @@
 package com.pixelgift.app.ui.screens
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -95,10 +101,54 @@ fun PairScreen(
     val selectedDeviceForPasskey by viewModel.selectedDeviceForPasskey.collectAsState()
     val permissionStatus by viewModel.permissionStatus.collectAsState()
 
-    // Start scan on screen entry if idle
-    LaunchedEffect(Unit) {
-        if (pairingState is PairingUiState.Idle) {
+    val requiredPermissions = remember {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            arrayOf(
+                Manifest.permission.BLUETOOTH_SCAN,
+                Manifest.permission.BLUETOOTH_CONNECT
+            )
+        } else {
+            arrayOf(
+                Manifest.permission.ACCESS_FINE_LOCATION,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            )
+        }
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { results ->
+        val allGranted = results.values.all { it }
+        viewModel.onPermissionResult(allGranted, !allGranted)
+        if (allGranted) {
             viewModel.startScan()
+        }
+    }
+
+    fun requestScanWithPermissions() {
+        val allGranted = requiredPermissions.all { perm ->
+            ContextCompat.checkSelfPermission(context, perm) == PackageManager.PERMISSION_GRANTED
+        }
+        if (allGranted) {
+            viewModel.onPermissionResult(true, false)
+            viewModel.startScan()
+        } else {
+            permissionLauncher.launch(requiredPermissions)
+        }
+    }
+
+    // Check permissions and start scan on screen entry if idle
+    LaunchedEffect(Unit) {
+        val allGranted = requiredPermissions.all { perm ->
+            ContextCompat.checkSelfPermission(context, perm) == PackageManager.PERMISSION_GRANTED
+        }
+        if (allGranted) {
+            viewModel.onPermissionResult(true, false)
+            if (pairingState is PairingUiState.Idle) {
+                viewModel.startScan()
+            }
+        } else {
+            permissionLauncher.launch(requiredPermissions)
         }
     }
 
@@ -119,7 +169,7 @@ fun PairScreen(
                 actions = {
                     if (pairingState !is PairingUiState.Success && pairingState !is PairingUiState.Connecting) {
                         IconButton(
-                            onClick = { viewModel.startScan() },
+                            onClick = { requestScanWithPermissions() },
                             modifier = Modifier.defaultMinSize(minHeight = 48.dp, minWidth = 48.dp)
                         ) {
                             Icon(Icons.Default.Refresh, contentDescription = "Refresh Scan")
@@ -187,7 +237,7 @@ fun PairScreen(
                         Icon(Icons.AutoMirrored.Filled.BluetoothSearching, contentDescription = null, modifier = Modifier.size(64.dp), tint = MaterialTheme.colorScheme.outline)
                         Text("Ready to Search for PixelGift", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                         Text("Make sure your ESP32 matrix is powered on and advertising.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
-                        Button(onClick = { viewModel.startScan() }, modifier = Modifier.defaultMinSize(minHeight = 48.dp)) {
+                        Button(onClick = { requestScanWithPermissions() }, modifier = Modifier.defaultMinSize(minHeight = 48.dp)) {
                             Text("Start Scanning")
                         }
                     }

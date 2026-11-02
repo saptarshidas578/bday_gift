@@ -113,7 +113,11 @@ class DeviceViewModel(
     }
 
     fun onSelectDeviceForPasskey(device: DiscoveredDevice) {
-        _selectedDeviceForPasskey.value = device
+        if (device.isBonded) {
+            confirmPairing(device, "")
+        } else {
+            _selectedDeviceForPasskey.value = device
+        }
     }
 
     fun onDismissPasskeyDialog() {
@@ -121,9 +125,10 @@ class DeviceViewModel(
     }
 
     fun confirmPairing(device: DiscoveredDevice, passkey: String) {
+        stopScan()
         _selectedDeviceForPasskey.value = null
 
-        if (passkey.isNotBlank()) {
+        if (!device.isBonded && passkey.isNotBlank()) {
             if (passkey.length != 6 || !passkey.all { it.isDigit() }) {
                 _pairingState.value = PairingUiState.Failed(device, "Passkey must be exactly 6 digits")
                 return
@@ -131,6 +136,9 @@ class DeviceViewModel(
             if (transport is BleTransport) {
                 transport.setPendingPasskey(passkey)
             }
+        } else if (!device.isBonded && passkey.isBlank()) {
+            _pairingState.value = PairingUiState.Failed(device, "Passkey is required for unbonded devices")
+            return
         }
 
         _pairingState.value = PairingUiState.Connecting(device)
@@ -146,6 +154,8 @@ class DeviceViewModel(
         }
     }
 
+    fun getScanJobForTesting(): Job? = scanJob
+
     fun setPairingStateForTesting(state: PairingUiState) {
         _pairingState.value = state
     }
@@ -159,16 +169,41 @@ class DeviceViewModel(
 
     fun onToggleConnect() {
         scope.launch {
-            when (transport.connectionState.value) {
-                is ConnectionState.Disconnected -> {
-                    transport.connect("FA:KE:DE:VI:CE:00")
-                    _feedback.value = "Connecting to device…"
+            try {
+                when (transport.connectionState.value) {
+                    is ConnectionState.Disconnected -> {
+                        val addr = if (transport is BleTransport) {
+                            transport.getLastBondedAddress()
+                        } else {
+                            "FA:KE:DE:VI:CE:00"
+                        }
+                        if (!addr.isNullOrBlank()) {
+                            _feedback.value = "Connecting to device…"
+                            transport.connect(addr)
+                        } else {
+                            _feedback.value = "No bonded device found. Please tap 'Pair Device…' to pair."
+                        }
+                    }
+                    is ConnectionState.Connected -> {
+                        transport.disconnect()
+                        _feedback.value = "Disconnected from device"
+                    }
+                    else -> {}
                 }
-                is ConnectionState.Connected -> {
-                    transport.disconnect()
-                    _feedback.value = "Disconnected from device"
-                }
-                else -> {}
+            } catch (e: Exception) {
+                _feedback.value = "Connection failed: ${e.message}"
+            }
+        }
+    }
+
+    fun onFactoryReset() {
+        sendCountForTesting++
+        scope.launch {
+            try {
+                transport.send(Command.FactoryReset)
+                _feedback.value = "Factory reset signal sent to device"
+            } catch (e: Exception) {
+                _feedback.value = "Failed to send factory reset: ${e.message}"
             }
         }
     }

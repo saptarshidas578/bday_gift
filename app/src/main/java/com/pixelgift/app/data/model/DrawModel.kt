@@ -1,9 +1,10 @@
 package com.pixelgift.app.data.model
 
+import com.pixelgift.app.protocol.ProtocolConstants
 import com.pixelgift.app.protocol.Rgb
 
 /**
- * A saved 9x9 pixel drawing (81 RGB pixels = 243 bytes frame).
+ * A saved pixel drawing (${ProtocolConstants.MATRIX_WIDTH}x${ProtocolConstants.MATRIX_HEIGHT} = ${ProtocolConstants.MATRIX_LED_COUNT} RGB pixels = ${ProtocolConstants.MATRIX_FRAME_BYTES} bytes frame).
  */
 data class PixelDrawing(
     val id: String,
@@ -11,11 +12,13 @@ data class PixelDrawing(
     val pixels: List<Rgb>
 ) {
     init {
-        require(pixels.size == 81) { "Pixel drawing must contain exactly 81 pixels, got ${pixels.size}" }
+        require(pixels.size == ProtocolConstants.MATRIX_LED_COUNT) {
+            "Pixel drawing must contain exactly ${ProtocolConstants.MATRIX_LED_COUNT} pixels, got ${pixels.size}"
+        }
     }
 
     fun toFrameBytes(): ByteArray {
-        val bytes = ByteArray(243)
+        val bytes = ByteArray(ProtocolConstants.MATRIX_FRAME_BYTES)
         pixels.forEachIndexed { i, rgb ->
             bytes[i * 3] = rgb.r.toByte()
             bytes[i * 3 + 1] = rgb.g.toByte()
@@ -26,9 +29,11 @@ data class PixelDrawing(
 
     companion object {
         fun fromFrameBytes(id: String, name: String, bytes: ByteArray): PixelDrawing {
-            require(bytes.size == 243) { "Frame must be 243 bytes, got ${bytes.size}" }
-            val pixels = ArrayList<Rgb>(81)
-            for (i in 0 until 81) {
+            require(bytes.size == ProtocolConstants.MATRIX_FRAME_BYTES) {
+                "Frame must be ${ProtocolConstants.MATRIX_FRAME_BYTES} bytes, got ${bytes.size}"
+            }
+            val pixels = ArrayList<Rgb>(ProtocolConstants.MATRIX_LED_COUNT)
+            for (i in 0 until ProtocolConstants.MATRIX_LED_COUNT) {
                 val r = bytes[i * 3].toInt() and 0xFF
                 val g = bytes[i * 3 + 1].toInt() and 0xFF
                 val b = bytes[i * 3 + 2].toInt() and 0xFF
@@ -37,7 +42,7 @@ data class PixelDrawing(
             return PixelDrawing(id, name, pixels)
         }
 
-        val BLANK_CANVAS: List<Rgb> = List(81) { Rgb.BLACK }
+        val BLANK_CANVAS: List<Rgb> = List(ProtocolConstants.MATRIX_LED_COUNT) { Rgb.BLACK }
 
         val HEART_PRESET: PixelDrawing by lazy {
             val p = BLANK_CANVAS.toMutableList()

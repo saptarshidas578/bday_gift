@@ -174,7 +174,7 @@ class MagicViewModel(
     }
 
     fun onPixelClicked(index: Int) {
-        if (index !in 0..80) return
+        if (index !in 0 until com.pixelgift.app.protocol.ProtocolConstants.MATRIX_LED_COUNT) return
         val current = _canvasPixels.value
         val color = _selectedDrawColor.value
 

@@ -111,6 +111,22 @@ class StudioViewModel(
     }
 
     /**
+     * Updates ViewModel state from incoming device StatusSnapshot without overwriting device state.
+     * Per SPEC 7.1.
+     */
+    fun updateFromSnapshot(snapshot: com.pixelgift.app.protocol.DeviceNotification.StatusSnapshot) {
+        val deviceColor = snapshot.color
+        if (deviceColor.r != 0 || deviceColor.g != 0 || deviceColor.b != 0) {
+            _committedColor.value = deviceColor
+            _selectedColor.value = deviceColor
+            updateTextInputs(deviceColor)
+        }
+        if (snapshot.brightness > 0) {
+            _brightness.value = snapshot.brightness
+        }
+    }
+
+    /**
      * Called continuously as the user drags on the color wheel.
      * Throttled to at most 10 sends per second (100ms interval) per SPEC 9.3.
      */
@@ -232,9 +248,10 @@ class StudioViewModel(
 
     fun onCreatePalette(name: String, colors: List<Rgb>) {
         val safeColors = colors.take(8).ifEmpty { listOf(_selectedColor.value) }
+        val sanitizedName = name.trim().take(32).ifBlank { "My Palette" }
         val palette = NamedPalette(
             id = "palette_${System.currentTimeMillis()}",
-            name = name.ifBlank { "My Palette" },
+            name = sanitizedName,
             colors = safeColors
         )
         _palettes.value = listOf(palette) + _palettes.value
@@ -363,7 +380,6 @@ class StudioViewModel(
         sendCountForTesting++
         scope.launch {
             transport.send(Command.SetColor(rgb))
-            transport.send(Command.SetMode(ProtocolConstants.MODE_SOLID))
         }
     }
 

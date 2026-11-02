@@ -4,7 +4,7 @@ Agent: update this at the end of every task, then commit. Keep it terse. Legend:
 
 ## Next step
 
-Done! All tracks complete. Tagged v1.0-gift. Ready for gifting to Madhumitha!
+Complete Task QA-1. Full app audit done with all 14 issues fixed and verified across FakeDevice and real BLE modes. Next: flash firmware updates and verify with phone.
 
 ## Phases
 
@@ -44,6 +44,7 @@ Done! All tracks complete. Tagged v1.0-gift. Ready for gifting to Madhumitha!
 ## Decisions
 
 (date, decision, why)
+- 2026-11-02: Completed Task QA-1. Fixed 14 bugs across Areas A-K: BLE scanner collision stopping prior to connect, real device address handling on connection chip (preventing app crash), awaiting onDeviceReady for pairing success, removing redundant back-to-back SetMode packets, adding getEffectColor support for rainbow/dual/palette effect modes, and 3-digit HEX parsing.
 - 2026-11-02: Completed Task C04. Built signed release APK (PixelGift-release.apk) with external keystore outside git, published user guide (docs/user-guide.md), power validation at 2500 mA cap, and tagged v1.0-gift.
 - 2026-11-02: Added home-screen widget (PixelGiftWidgetProvider) and Quick Settings tile (PixelGiftTileService), Cherry Red icon and splash pass, personal note for Madhumitha's 19th birthday in About dialog, and verified lintDebug clean with 0 errors.
 - 2026-11-02: Implemented BleTransport using Nordic Android BLE library (ble-ktx 2.7.5 + scanner 1.6.0) with MTU 185, write queue + ACK timeout, exponential auto-reconnect, and state sync on connect.

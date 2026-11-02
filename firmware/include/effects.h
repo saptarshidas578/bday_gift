@@ -35,6 +35,9 @@ size_t getEffectCount();
 // Render current effect to LED array
 void effectsRender(uint32_t t_ms, const EffectParams& params, CRGB* leds);
 
+// Helper to resolve color based on colorMode (single, dual blend, palette, rainbow)
+CRGB getEffectColor(const EffectParams& p, uint32_t t_ms, uint8_t index = 0, CRGB fallback = CRGB::White);
+
 // --- Category 1: Static / Glow (1-5, 11-13) ---
 void renderSolid(uint32_t t_ms, const EffectParams& p, CRGB* leds);
 void renderBreathing(uint32_t t_ms, const EffectParams& p, CRGB* leds);

@@ -73,4 +73,3 @@ uint8_t matrixGetBrightness() {
 CRGB* matrixGetLeds() {
     return leds;
 }
-

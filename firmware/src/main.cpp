@@ -9,47 +9,35 @@ static uint32_t effectStartTime = 0;
 static uint32_t lastRenderTime = 0;
 static size_t currentEffectIndex = 0;
 
-static const uint32_t EFFECT_DURATION_MS = 5000;
-static const uint32_t FRAME_INTERVAL_MS = 16; // ~60 FPS
+static const uint32_t EFFECT_DURATION_MS = 4000; // 4 seconds per effect
+static const uint32_t FRAME_INTERVAL_MS = 16;   // ~60 FPS
 
 void loadEffectByIndex(size_t index) {
     const EffectEntry* entry = getEffectByIndex(index);
     if (!entry) return;
 
     currentParams.base = entry->id;
-    currentParams.speed = 50;
+    currentParams.speed = 55;
     currentParams.dir = 0;
     currentParams.mirror = 0;
     currentParams.colorMode = 0;
-    currentParams.c1 = CRGB(255, 60, 180); // Vibrant Pink default
-    currentParams.c2 = CRGB(0, 200, 255);  // Cyan default
+    currentParams.c1 = CRGB(255, 60, 180); // Neon Pink
+    currentParams.c2 = CRGB(0, 200, 255);  // Electric Blue
 
-    // Effect-specific custom parameter tuning for demo
-    if (entry->id == 1) { // Solid
-        currentParams.colorMode = 3; // Rainbow cycling solid
-    } else if (entry->id == 4) { // Heartbeat
-        currentParams.c1 = CRGB::Crimson;
-    } else if (entry->id == 6) { // Rainbow Wave
-        currentParams.speed = 60;
-        currentParams.colorMode = 3;
-    } else if (entry->id == 7) { // Rainbow Cycle
-        currentParams.speed = 50;
-        currentParams.colorMode = 3;
-    } else if (entry->id == 8) { // Scanner
-        currentParams.c1 = CRGB::Red;
-        currentParams.speed = 70;
-    } else if (entry->id == 9) { // Sparkle
-        currentParams.colorMode = 3;
-        currentParams.speed = 65;
-    } else if (entry->id == 10) { // Fire
-        currentParams.speed = 65;
-    }
+    // Tailored defaults for visual demo
+    if (entry->id == 1) currentParams.colorMode = 3;  // Rainbow solid
+    if (entry->id == 4) currentParams.c1 = CRGB::Crimson;
+    if (entry->id == 6 || entry->id == 7) currentParams.colorMode = 3;
+    if (entry->id == 8) currentParams.c1 = CRGB::Red;
+    if (entry->id == 9) currentParams.colorMode = 3;
+    if (entry->id == 10) currentParams.speed = 65;
 
-    Serial.printf("\n[B03 Effect %u/%u] Running: \"%s\" (ID %u)...\n",
+    Serial.printf("\n[Effect %u/%u] \"%s\" (ID %u, Category: %s)\n",
                   (unsigned int)(index + 1),
                   (unsigned int)getEffectCount(),
                   entry->name,
-                  entry->id);
+                  entry->id,
+                  entry->category);
 }
 
 void setup() {
@@ -61,7 +49,7 @@ void setup() {
 
     Serial.println();
     Serial.println("==================================================");
-    Serial.println("  PixelGift Effect Engine - First 10 Effects (B03)");
+    Serial.println("  PixelGift 66-Effect Engine Catalog (Task B04)  ");
     Serial.println("==================================================");
     Serial.printf("Matrix: %dx%d (%d LEDs), Pin D5 (GPIO %d)\n", MATRIX_WIDTH, MATRIX_HEIGHT, NUM_LEDS, DATA_PIN);
     Serial.printf("Power limit: %d V, %d mA, Brightness: %d/255\n", LED_VOLTS, LED_MAX_MA, DEFAULT_BRIGHTNESS);
@@ -82,7 +70,7 @@ void setup() {
 void loop() {
     uint32_t now = millis();
 
-    // Check if it's time to cycle to the next effect
+    // Auto-cycle to next effect every 4 seconds
     if (now - effectStartTime >= EFFECT_DURATION_MS) {
         currentEffectIndex = (currentEffectIndex + 1) % getEffectCount();
         loadEffectByIndex(currentEffectIndex);
@@ -90,7 +78,7 @@ void loop() {
         matrixClear();
     }
 
-    // Render at target ~60 FPS
+    // Smooth ~60 FPS render
     if (now - lastRenderTime >= FRAME_INTERVAL_MS) {
         lastRenderTime = now;
         effectsRender(now, currentParams, matrixGetLeds());

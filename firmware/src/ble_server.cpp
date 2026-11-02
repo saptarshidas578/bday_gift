@@ -16,6 +16,9 @@ class ServerCallbacks : public NimBLEServerCallbacks {
         deviceConnected = true;
         Serial.printf("[BLE] Client connected (%s)\n",
                       desc ? NimBLEAddress(desc->peer_ota_addr).toString().c_str() : "peer");
+        if (desc) {
+            NimBLEDevice::startSecurity(desc->conn_handle);
+        }
         bleSendSnapshot();
     }
 

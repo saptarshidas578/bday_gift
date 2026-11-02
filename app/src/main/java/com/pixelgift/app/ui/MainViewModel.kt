@@ -51,7 +51,7 @@ class MainViewModel(
                         }
                     }
                     is ConnectionState.Connected -> {
-                        transport.disconnect()
+                        // Keep connected. Connection chip acts as indicator / retry trigger.
                     }
                     else -> {
                         // Connecting or Disconnecting in progress

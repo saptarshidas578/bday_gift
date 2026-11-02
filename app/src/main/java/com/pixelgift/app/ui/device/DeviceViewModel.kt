@@ -82,18 +82,40 @@ class DeviceViewModel(
     // --- Pairing Actions ---
 
     fun startScan() {
-        scanJob?.cancel()
+        if (scanJob != null && scanJob?.isActive == true) {
+            return
+        }
         _pairingState.value = PairingUiState.Scanning
 
         scanJob = scope.launch {
             if (transport is BleTransport) {
+                val bondedAddr = transport.getLastBondedAddress()
+                if (!bondedAddr.isNullOrBlank()) {
+                    val bondedDev = DiscoveredDevice(
+                        name = "PixelGift",
+                        address = bondedAddr,
+                        rssi = -50,
+                        isBonded = true
+                    )
+                    _discoveredDevices.value = listOf(bondedDev)
+                    _pairingState.value = PairingUiState.Discovered(listOf(bondedDev))
+                }
                 try {
                     transport.scanDevices().collect { devices ->
-                        _discoveredDevices.value = devices
-                        _pairingState.value = PairingUiState.Discovered(devices)
+                        val combined = if (!bondedAddr.isNullOrBlank() && devices.none { it.address == bondedAddr }) {
+                            listOf(DiscoveredDevice("PixelGift", bondedAddr, -50, true)) + devices
+                        } else {
+                            devices
+                        }
+                        _discoveredDevices.value = combined
+                        _pairingState.value = PairingUiState.Discovered(combined)
                     }
                 } catch (e: Exception) {
-                    _pairingState.value = PairingUiState.Failed(null, e.message ?: "Scan failed")
+                    if (_discoveredDevices.value.isNotEmpty()) {
+                        _pairingState.value = PairingUiState.Discovered(_discoveredDevices.value)
+                    } else {
+                        _pairingState.value = PairingUiState.Failed(null, e.message ?: "Scan failed")
+                    }
                 }
             } else {
                 // Simulate scan delay (500ms) for FakeDevice or unit testing

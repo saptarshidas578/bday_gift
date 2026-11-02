@@ -3,11 +3,7 @@
 
 // 1. Solid
 void renderSolid(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
-    CRGB col = (params.c1 == CRGB(0,0,0)) ? CRGB::White : params.c1;
-    if (params.colorMode == 3) {
-        uint8_t spd = params.speed ? params.speed : 50;
-        col = CHSV((t_ms * spd / 40) & 0xFF, 240, 255);
-    }
+    CRGB col = getEffectColor(params, t_ms, 0, CRGB::White);
     for (int i = 0; i < NUM_LEDS; i++) leds[i] = col;
 }
 
@@ -15,12 +11,7 @@ void renderSolid(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
 void renderBreathing(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     uint8_t spd = params.speed ? params.speed : 50;
     uint8_t breath = (sin8((uint8_t)(t_ms * spd / 300)) / 2) + 30;
-    CRGB col = (params.c1 == CRGB(0,0,0)) ? CRGB(255, 60, 180) : params.c1;
-    if (params.colorMode == 1) {
-        col = blend(params.c1, params.c2, sin8((uint8_t)(t_ms * spd / 500)));
-    } else if (params.colorMode == 3) {
-        col = CHSV((t_ms * spd / 50) & 0xFF, 240, 255);
-    }
+    CRGB col = getEffectColor(params, t_ms, 0, CRGB(255, 60, 180));
     col.nscale8_video(breath);
     for (int i = 0; i < NUM_LEDS; i++) leds[i] = col;
 }
@@ -33,10 +24,7 @@ void renderPulse(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     uint16_t phase = t_ms % period;
     uint8_t bright = (phase < period / 5) ? map(phase, 0, period / 5, 20, 255)
                                           : map(phase, period / 5, period, 255, 10);
-    CRGB col = (params.c1 == CRGB(0,0,0)) ? CRGB::Cyan : params.c1;
-    if (params.colorMode == 3) {
-        col = CHSV((t_ms * spd / 60) & 0xFF, 240, 255);
-    }
+    CRGB col = getEffectColor(params, t_ms, 0, CRGB::Cyan);
     col.nscale8_video(bright);
     for (int i = 0; i < NUM_LEDS; i++) leds[i] = col;
 }
@@ -54,7 +42,7 @@ void renderHeartbeat(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
         b = sin8(map(pos, 200, 380, 0, 128));
     }
     b = qadd8(b, 15);
-    CRGB col = (params.c1 == CRGB(0,0,0)) ? CRGB::Crimson : params.c1;
+    CRGB col = getEffectColor(params, t_ms, 0, CRGB::Crimson);
     col.nscale8_video(b);
     for (int i = 0; i < NUM_LEDS; i++) leds[i] = col;
 }
@@ -77,7 +65,7 @@ void renderStrobeSoft(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     if (period == 0) period = 50;
     uint16_t phase = t_ms % period;
     uint8_t b = (phase < period / 3) ? map(phase, 0, period / 3, 255, 0) : 0;
-    CRGB col = (params.c1 == CRGB(0,0,0)) ? CRGB::White : params.c1;
+    CRGB col = getEffectColor(params, t_ms, 0, CRGB::White);
     col.nscale8_video(b);
     for (int i = 0; i < NUM_LEDS; i++) leds[i] = col;
 }
@@ -88,14 +76,14 @@ void renderFadeTwo(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     uint8_t ratio = sin8((uint8_t)(t_ms * spd / 400));
     CRGB c1 = (params.c1 == CRGB(0,0,0)) ? CRGB(255, 40, 100) : params.c1;
     CRGB c2 = (params.c2 == CRGB(0,0,0)) ? CRGB(0, 180, 255) : params.c2;
-    CRGB col = blend(c1, c2, ratio);
+    CRGB col = (params.colorMode == 3) ? getEffectColor(params, t_ms, 0) : blend(c1, c2, ratio);
     for (int i = 0; i < NUM_LEDS; i++) leds[i] = col;
 }
 
 // 13. Flicker
 void renderFlicker(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     uint8_t spd = params.speed ? params.speed : 50;
-    CRGB col = (params.c1 == CRGB(0,0,0)) ? CRGB(255, 180, 50) : params.c1;
+    CRGB col = getEffectColor(params, t_ms, 0, CRGB(255, 180, 50));
     for (int i = 0; i < NUM_LEDS; i++) {
         uint8_t n = inoise8(i * 30, (t_ms * spd / 15));
         uint8_t b = map(n, 0, 255, 120, 255);

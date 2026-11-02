@@ -257,7 +257,7 @@ fun DeviceScreen(
                             .weight(1f)
                             .defaultMinSize(minHeight = 48.dp)
                     ) {
-                        Text(if (isConnected) "Disconnect" else "Connect Sim")
+                        Text(if (isConnected) "Disconnect" else "Connect")
                     }
 
                     OutlinedButton(

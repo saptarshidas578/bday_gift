@@ -20,7 +20,7 @@ void renderHearts(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
         {0,0,0,0,0,0,0,0,0,0}
     };
 
-    CRGB col = (params.c1 == CRGB(0,0,0)) ? CRGB::Crimson : params.c1;
+    CRGB col = getEffectColor(params, t_ms, 0, CRGB::Crimson);
     col.nscale8_video(b);
 
     for (uint8_t y = 0; y < MATRIX_HEIGHT; y++) {

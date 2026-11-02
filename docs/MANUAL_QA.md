@@ -16,3 +16,4 @@ Only a human with the physical ESP32 hardware and Android phone can verify these
 - [ ] **Screen Rotation**: Rotate phone between portrait and landscape in Studio, Effects, and Magic tabs. Verify no dialog resets or UI clipping.
 - [ ] **TalkBack / Accessibility**: Enable Android TalkBack. Navigate through the bottom navigation tabs and verify every interactive element has an informative description and meets the 48dp touch target standard.
 - [ ] **Thermal & Power Stability**: Leave an effect running at 50% brightness for 10 minutes. Feel the ESP32 chip and LED matrix wiring to verify normal operating temperature (<45°C).
+

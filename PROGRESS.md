@@ -4,7 +4,7 @@ Agent: update this at the end of every task, then commit. Keep it terse. Legend:
 
 ## Next step
 
-Complete Task QA-1. Full app audit done with all 14 issues fixed and verified across FakeDevice and real BLE modes. Next: flash firmware updates and verify with phone.
+Hardware verification on phone: test effect colors, rainbow color mode, and connection chip stability with the newly flashed ESP32 and installed app.
 
 ## Phases
 
@@ -44,6 +44,7 @@ Complete Task QA-1. Full app audit done with all 14 issues fixed and verified ac
 ## Decisions
 
 (date, decision, why)
+- 2026-11-02: Fixed effect color rendering and BLE stability. Added getEffectColor() across all 66 effects in effects_static, effects_motion, effects_particles, effects_geometric, effects_celebration, effects_retro, and effects_gradient so every effect responds dynamically to custom colors, dual blend, palette, and rainbow mode. Prevented accidental disconnect when tapping top connection chip. Flash verified on ESP32 (COM8) and app installed on phone.
 - 2026-11-02: Completed Task QA-1. Fixed 14 bugs across Areas A-K: BLE scanner collision stopping prior to connect, real device address handling on connection chip (preventing app crash), awaiting onDeviceReady for pairing success, removing redundant back-to-back SetMode packets, adding getEffectColor support for rainbow/dual/palette effect modes, and 3-digit HEX parsing.
 - 2026-11-02: Completed Task C04. Built signed release APK (PixelGift-release.apk) with external keystore outside git, published user guide (docs/user-guide.md), power validation at 2500 mA cap, and tagged v1.0-gift.
 - 2026-11-02: Added home-screen widget (PixelGiftWidgetProvider) and Quick Settings tile (PixelGiftTileService), Cherry Red icon and splash pass, personal note for Madhumitha's 19th birthday in About dialog, and verified lintDebug clean with 0 errors.

@@ -26,3 +26,4 @@
 | **BUG-12** | **Minor** | G. Timer | Timer seconds exceeding uint32 | Expected: Clamped to 0xFFFFFFFF. Actual: Potential Long overflow. | `TimeViewModel.kt:157` | **Fixed** |
 | **BUG-13** | **Minor** | K. Matrix Size | Update matrix dimensions | Expected: Single constant. Actual: Dimensions hardcoded as 81, 243, and 9 in multiple locations. Consolidated to `ProtocolConstants`. | `ProtocolConstants.kt:8`, `DrawModel.kt:14` | **Fixed** |
 | **BUG-14** | **Minor** | J. Release Build | Run `assembleRelease` with minification | Expected: Minified APK succeeds. Actual: Missing `proguard-rules.pro` created with rules for Nordic BLE and protocol models. | `app/proguard-rules.pro` | **Fixed** |
+

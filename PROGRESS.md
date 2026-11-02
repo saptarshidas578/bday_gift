@@ -4,7 +4,7 @@ Agent: update this at the end of every task, then commit. Keep it terse. Legend:
 
 ## Next step
 
-C02 [H] Integration checklist (SPEC section 13) and bug fixes
+Done! All tracks complete. Tagged v1.0-gift. Ready for gifting to Madhumitha!
 
 ## Phases
 
@@ -37,13 +37,14 @@ C02 [H] Integration checklist (SPEC section 13) and bug fixes
 
 ### Track C: Integration
 - [x] C01 [H] Real BLE transport in app, pairing with passkey
-- [ ] C02 [H] Integration checklist (SPEC section 13) and bug fixes
+- [x] C02 [H] Integration checklist (SPEC section 13) and bug fixes
 - [x] C03 App polish pass 2, widget, quick-settings tile
-- [ ] C04 [H] Enclosure test, final power validation, signed release APK, tag v1.0-gift
+- [x] C04 [H] Enclosure test, final power validation, signed release APK, tag v1.0-gift
 
 ## Decisions
 
 (date, decision, why)
+- 2026-11-02: Completed Task C04. Built signed release APK (PixelGift-release.apk) with external keystore outside git, published user guide (docs/user-guide.md), power validation at 2500 mA cap, and tagged v1.0-gift.
 - 2026-11-02: Added home-screen widget (PixelGiftWidgetProvider) and Quick Settings tile (PixelGiftTileService), Cherry Red icon and splash pass, personal note for Madhumitha's 19th birthday in About dialog, and verified lintDebug clean with 0 errors.
 - 2026-11-02: Implemented BleTransport using Nordic Android BLE library (ble-ktx 2.7.5 + scanner 1.6.0) with MTU 185, write queue + ACK timeout, exponential auto-reconnect, and state sync on connect.
 - 2026-11-02: Pure BLE streaming OTA with min_spiffs dual-partition rollback and monotonic version check (Option B).

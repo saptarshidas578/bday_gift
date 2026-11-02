@@ -7,6 +7,8 @@
 #include "ble_server.h"
 #include "audio.h"
 #include "birthday.h"
+#include "font.h"
+#include "clock_timer.h"
 
 static uint32_t lastRenderTime = 0;
 static const uint32_t FRAME_INTERVAL_MS = 16; // ~60 FPS
@@ -41,8 +43,20 @@ void checkSerialCommands() {
             Serial.println("[SERIAL] Starting Birthday Show...");
             birthdayStart();
         } else if (cmd.equalsIgnoreCase("stop") || cmd == "s") {
-            Serial.println("[SERIAL] Stopping Birthday Show...");
-            birthdayStop();
+            Serial.println("[SERIAL] Stopping Birthday Show / Timer...");
+            if (isBirthdayRunning()) birthdayStop();
+            if (isTimerRunning() || isTimerAlerting()) cancelTimer();
+        } else if (cmd.equalsIgnoreCase("clock") || cmd == "c") {
+            state.mode = MODE_CLOCK;
+            Serial.println("[SERIAL] Switched to CLOCK mode.");
+        } else if (cmd.equalsIgnoreCase("sync")) {
+            // Example UTC sync to 12:34:56
+            syncTime(1700000000, 330); // IST (+5:30 = 330 mins)
+            state.mode = MODE_CLOCK;
+            Serial.println("[SERIAL] Synced time to sample epoch.");
+        } else if (cmd.startsWith("timer")) {
+            startTimer(10); // 10 second test countdown
+            Serial.println("[SERIAL] Started 10-second test timer.");
         }
     }
 }
@@ -105,6 +119,37 @@ void processIncomingCommand(const ParsedCommand& cmd) {
             break;
         }
 
+        case OP_SYNC_TIME: {
+            uint32_t epoch = (uint32_t)cmd.payload[0] |
+                             ((uint32_t)cmd.payload[1] << 8) |
+                             ((uint32_t)cmd.payload[2] << 16) |
+                             ((uint32_t)cmd.payload[3] << 24);
+            int16_t tz = (int16_t)((uint16_t)cmd.payload[4] | ((uint16_t)cmd.payload[5] << 8));
+            syncTime(epoch, tz);
+            break;
+        }
+
+        case OP_SET_CLOCK_STYLE: {
+            state.clockStyle = cmd.payload[0];
+            storageMarkDirty();
+            Serial.printf("  SET_CLOCK_STYLE: %u\n", state.clockStyle);
+            break;
+        }
+
+        case OP_START_TIMER: {
+            uint32_t sec = (uint32_t)cmd.payload[0] |
+                           ((uint32_t)cmd.payload[1] << 8) |
+                           ((uint32_t)cmd.payload[2] << 16) |
+                           ((uint32_t)cmd.payload[3] << 24);
+            startTimer(sec);
+            break;
+        }
+
+        case OP_CANCEL_TIMER: {
+            cancelTimer();
+            break;
+        }
+
         case OP_PLAY_BIRTHDAY: {
             birthdayStart();
             break;
@@ -146,7 +191,7 @@ void setup() {
 
     Serial.println();
     Serial.println("==================================================");
-    Serial.println("  PixelGift Main Controller & Birthday Show (B07)");
+    Serial.println("  PixelGift Clock & Timer Engine (Task B08)       ");
     Serial.println("==================================================");
 
     pinMode(BOOT_BUTTON_PIN, INPUT_PULLUP);
@@ -158,12 +203,13 @@ void setup() {
     storageInit();
     audioInit();
     birthdayInit();
+    clockTimerInit();
 
     matrixSetBrightness(state.brightness);
     bleInit();
 
     lastRenderTime = millis();
-    Serial.println("[SYSTEM] Ready! Type 'bday' in serial or trigger via BLE to start show.\n");
+    Serial.println("[SYSTEM] Ready! Type 'clock', 'sync', 'timer', or 'bday' in serial.\n");
 }
 
 void loop() {
@@ -189,6 +235,10 @@ void loop() {
 
         if (isBirthdayRunning()) {
             birthdayRender(now, matrixGetLeds());
+        } else if (isTimerRunning() || isTimerAlerting()) {
+            renderTimer(now, matrixGetLeds());
+        } else if (state.mode == MODE_CLOCK) {
+            renderClock(now, matrixGetLeds());
         } else if (state.mode == MODE_SOLID) {
             matrixFill(state.color);
         } else if (state.mode == MODE_EFFECT) {

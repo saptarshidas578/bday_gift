@@ -4,7 +4,7 @@ Agent: update this at the end of every task, then commit. Keep it terse. Legend:
 
 ## Next step
 
-B08 Text engine, clock, timer
+B09 Scenes, schedules, sleep timer, draw, music levels
 
 ## Phases
 
@@ -31,7 +31,7 @@ B08 Text engine, clock, timer
 - [x] B06 [H] BLE server, secure pairing, protocol dispatch
 - [x] B07 [H] Birthday show (lights only, 60-120s, deferred audio)
 - [ ] B07b Audio when buzzer arrives (melody player, beeps, mute)
-- [ ] B08 Text engine, clock, timer
+- [x] B08 [H] Text engine, clock, timer
 - [ ] B09 Scenes, schedules, sleep timer, draw, music levels
 - [ ] B10 OTA
 

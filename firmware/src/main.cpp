@@ -9,6 +9,7 @@
 #include "birthday.h"
 #include "font.h"
 #include "clock_timer.h"
+#include "scenes_scheduler.h"
 
 static uint32_t lastRenderTime = 0;
 static const uint32_t FRAME_INTERVAL_MS = 16; // ~60 FPS
@@ -57,6 +58,20 @@ void checkSerialCommands() {
         } else if (cmd.startsWith("timer")) {
             startTimer(10); // 10 second test countdown
             Serial.println("[SERIAL] Started 10-second test timer.");
+        } else if (cmd.startsWith("scene save ")) {
+            uint8_t slot = cmd.substring(11).toInt();
+            saveScene(slot);
+        } else if (cmd.startsWith("scene load ")) {
+            uint8_t slot = cmd.substring(11).toInt();
+            loadScene(slot);
+        } else if (cmd.startsWith("sleep ")) {
+            uint16_t m = cmd.substring(6).toInt();
+            startSleepTimer(m);
+        } else if (cmd.equalsIgnoreCase("music")) {
+            // Demo burst of 10 levels
+            uint8_t demo[10] = { 40, 90, 150, 220, 255, 230, 180, 120, 70, 30 };
+            feedMusicLevels(demo, 10);
+            Serial.println("[SERIAL] Fed demo music levels.");
         }
     }
 }
@@ -160,6 +175,46 @@ void processIncomingCommand(const ParsedCommand& cmd) {
             break;
         }
 
+        case OP_SAVE_SCENE: {
+            saveScene(cmd.payload[0]);
+            break;
+        }
+
+        case OP_LOAD_SCENE: {
+            loadScene(cmd.payload[0]);
+            break;
+        }
+
+        case OP_SET_SCHEDULE: {
+            setSchedule(cmd.payload[0], cmd.payload[1], cmd.payload[2],
+                        cmd.payload[3], cmd.payload[4], cmd.payload[5], cmd.payload[6]);
+            break;
+        }
+
+        case OP_SET_SLEEP_TIMER: {
+            uint16_t mins = (uint16_t)cmd.payload[0] | ((uint16_t)cmd.payload[1] << 8);
+            startSleepTimer(mins);
+            break;
+        }
+
+        case OP_DRAW_CHUNK: {
+            uint16_t offset = (uint16_t)cmd.payload[0] | ((uint16_t)cmd.payload[1] << 8);
+            const uint8_t* chunk = &cmd.payload[2];
+            uint8_t len = cmd.payloadLen - 2;
+            drawChunk(offset, chunk, len);
+            break;
+        }
+
+        case OP_DRAW_COMMIT: {
+            drawCommit();
+            break;
+        }
+
+        case OP_MUSIC_LEVELS: {
+            feedMusicLevels(cmd.payload, cmd.payloadLen);
+            break;
+        }
+
         case OP_GET_STATUS: {
             bleSendSnapshot();
             break;
@@ -204,6 +259,7 @@ void setup() {
     audioInit();
     birthdayInit();
     clockTimerInit();
+    scenesSchedulerInit();
 
     matrixSetBrightness(state.brightness);
     bleInit();
@@ -225,9 +281,12 @@ void loop() {
         processIncomingCommand(cmd);
     }
 
-    // 3. Audio & Storage non-blocking loop steps
+    // 3. Audio, Storage, Scheduler, Sleep & Music non-blocking loop steps
     audioLoop();
     storageLoop();
+    schedulerLoop(now);
+    sleepTimerLoop(now);
+    musicLoop(now);
 
     // 4. Render loop (~60 FPS non-blocking)
     if (now - lastRenderTime >= FRAME_INTERVAL_MS) {
@@ -243,6 +302,10 @@ void loop() {
             matrixFill(state.color);
         } else if (state.mode == MODE_EFFECT) {
             effectsRender(now, state.effect, matrixGetLeds());
+        } else if (state.mode == MODE_DRAW) {
+            renderDraw(matrixGetLeds());
+        } else if (state.mode == MODE_MUSIC) {
+            renderMusic(now, matrixGetLeds());
         } else if (state.mode == MODE_OFF) {
             matrixClear();
         } else {

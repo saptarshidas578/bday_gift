@@ -4,11 +4,25 @@
 #include "../src/packet_parser.cpp"
 #include "font.h"
 #include "../src/font.cpp"
+#include "scenes_scheduler.h"
+
+// Stubs for scenes_scheduler unit testing
+DeviceState state;
+static bool mockTimeSynced = false;
+bool isTimeSynced() { return mockTimeSynced; }
+void storageMarkDirty() {}
+void matrixSetBrightness(uint8_t b) { state.brightness = b; }
+void matrixClear() {}
+uint16_t XY(uint8_t x, uint8_t y) { return y * 10 + x; }
+
+#include "../src/scenes_scheduler.cpp"
 
 void setUp(void) {}
 void tearDown(void) {}
 
+// =============================================================
 // Parser Tests (B06)
+// =============================================================
 void test_set_color_valid() {
     uint8_t packet[] = { OP_SET_COLOR, 0x01, 255, 0, 128 };
     ParsedCommand cmd;
@@ -92,7 +106,9 @@ void test_clear_bonds() {
     TEST_ASSERT_EQUAL_UINT8(0, cmd.payloadLen);
 }
 
+// =============================================================
 // Font & Clock & Timer Tests (B08)
+// =============================================================
 void test_digits_3x4_dimensions_and_masks() {
     for (int d = 0; d < 10; d++) {
         for (int col = 0; col < 3; col++) {
@@ -198,6 +214,148 @@ void test_timer_packet_parser() {
     TEST_ASSERT_EQUAL_UINT8(ERR_BAD_LEN, res);
 }
 
+// =============================================================
+// Scenes, Schedules, Sleep, Draw & Music Tests (B09)
+// =============================================================
+void test_scenes_save_and_load() {
+    scenesSchedulerInit();
+    state.mode = MODE_EFFECT;
+    state.color = CRGB(100, 150, 200);
+    state.brightness = 180;
+    state.effect.base = 12;
+
+    // Slot out of bounds
+    TEST_ASSERT_FALSE(saveScene(8));
+    TEST_ASSERT_FALSE(loadScene(8));
+
+    // Save to slot 3
+    TEST_ASSERT_TRUE(saveScene(3));
+    TEST_ASSERT_EQUAL_UINT8(1, state.scenes[3].isValid);
+    TEST_ASSERT_EQUAL_UINT8(MODE_EFFECT, state.scenes[3].mode);
+    TEST_ASSERT_EQUAL_UINT8(180, state.scenes[3].brightness);
+
+    // Modify state and load from slot 3
+    state.mode = MODE_SOLID;
+    state.brightness = 50;
+    TEST_ASSERT_TRUE(loadScene(3));
+    TEST_ASSERT_EQUAL_UINT8(MODE_EFFECT, state.mode);
+    TEST_ASSERT_EQUAL_UINT8(180, state.brightness);
+
+    // Load empty slot 4 fails
+    TEST_ASSERT_FALSE(loadScene(4));
+}
+
+void test_schedules_bounds_and_setup() {
+    // Valid slot 0..3
+    TEST_ASSERT_TRUE(setSchedule(0, 1, 0x7F, 7, 30, 3, 15));
+    TEST_ASSERT_EQUAL_UINT8(1, state.schedules[0].enabled);
+    TEST_ASSERT_EQUAL_UINT8(0x7F, state.schedules[0].dayMask);
+    TEST_ASSERT_EQUAL_UINT8(7, state.schedules[0].hh);
+    TEST_ASSERT_EQUAL_UINT8(30, state.schedules[0].mm);
+    TEST_ASSERT_EQUAL_UINT8(3, state.schedules[0].action); // SUNRISE_ALARM
+    TEST_ASSERT_EQUAL_UINT8(15, state.schedules[0].arg);
+
+    // Slot 4 out of bounds
+    TEST_ASSERT_FALSE(setSchedule(4, 1, 0x7F, 8, 0, 0, 0));
+}
+
+void test_sleep_timer_bounds_and_lifecycle() {
+    scenesSchedulerInit();
+    state.brightness = 200;
+
+    startSleepTimer(45);
+    TEST_ASSERT_TRUE(isSleepTimerRunning());
+    TEST_ASSERT_EQUAL_UINT16(45, getSleepTimerRemainingMinutes());
+
+    // 0 cancels
+    startSleepTimer(0);
+    TEST_ASSERT_FALSE(isSleepTimerRunning());
+
+    startSleepTimer(10);
+    cancelSleepTimer();
+    TEST_ASSERT_FALSE(isSleepTimerRunning());
+}
+
+void test_draw_chunk_bounds() {
+    scenesSchedulerInit();
+    uint8_t data[14] = { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 };
+
+    // Valid chunk within bounds
+    TEST_ASSERT_TRUE(drawChunk(0, data, 14));
+    TEST_ASSERT_TRUE(drawChunk(100, data, 14));
+
+    // Near boundary: offset 295 on 300-byte buffer (clamped safely)
+    TEST_ASSERT_TRUE(drawChunk(295, data, 14));
+
+    // At or beyond boundary
+    TEST_ASSERT_FALSE(drawChunk(DRAW_BUFFER_BYTES, data, 5));
+    TEST_ASSERT_FALSE(drawChunk(DRAW_BUFFER_BYTES + 50, data, 5));
+
+    // Invalid parameters
+    TEST_ASSERT_FALSE(drawChunk(0, nullptr, 10));
+    TEST_ASSERT_FALSE(drawChunk(0, data, 0));
+
+    // Commit sets mode to DRAW
+    drawCommit();
+    TEST_ASSERT_EQUAL_UINT8(MODE_DRAW, state.mode);
+}
+
+void test_music_levels_feed_and_timeout() {
+    scenesSchedulerInit();
+    state.mode = MODE_SOLID;
+
+    uint8_t levels[9] = { 20, 60, 100, 150, 200, 255, 180, 90, 40 };
+    feedMusicLevels(levels, 9);
+    TEST_ASSERT_EQUAL_UINT8(MODE_MUSIC, state.mode);
+
+    // Immediate loop does not timeout
+    uint32_t now = millis();
+    musicLoop(now);
+    TEST_ASSERT_EQUAL_UINT8(MODE_MUSIC, state.mode);
+
+    // Timeout after 2600ms without new packets reverts back to MODE_SOLID
+    musicLoop(now + 2600);
+    TEST_ASSERT_EQUAL_UINT8(MODE_SOLID, state.mode);
+}
+
+void test_b09_packet_parsers() {
+    ParsedCommand cmd;
+
+    // OP_SAVE_SCENE
+    uint8_t pSave[] = { OP_SAVE_SCENE, 0x20, 0x05 };
+    TEST_ASSERT_EQUAL_UINT8(ERR_OK, parseCommandPacket(pSave, sizeof(pSave), cmd));
+    uint8_t pSaveBad[] = { OP_SAVE_SCENE, 0x20, 0x08 }; // Slot 8 > 7
+    TEST_ASSERT_EQUAL_UINT8(ERR_BAD_VALUE, parseCommandPacket(pSaveBad, sizeof(pSaveBad), cmd));
+
+    // OP_LOAD_SCENE
+    uint8_t pLoad[] = { OP_LOAD_SCENE, 0x21, 0x02 };
+    TEST_ASSERT_EQUAL_UINT8(ERR_OK, parseCommandPacket(pLoad, sizeof(pLoad), cmd));
+
+    // OP_SET_SCHEDULE
+    uint8_t pSched[] = { OP_SET_SCHEDULE, 0x22, 0x01, 0x01, 0x3E, 0x07, 0x1E, 0x02, 0x03 };
+    TEST_ASSERT_EQUAL_UINT8(ERR_OK, parseCommandPacket(pSched, sizeof(pSched), cmd));
+    uint8_t pSchedBadSlot[] = { OP_SET_SCHEDULE, 0x22, 0x04, 0x01, 0x3E, 0x07, 0x1E, 0x02, 0x03 }; // Slot 4 > 3
+    TEST_ASSERT_EQUAL_UINT8(ERR_BAD_VALUE, parseCommandPacket(pSchedBadSlot, sizeof(pSchedBadSlot), cmd));
+
+    // OP_SET_SLEEP_TIMER
+    uint8_t pSleep[] = { OP_SET_SLEEP_TIMER, 0x23, 0x1E, 0x00 }; // 30 minutes
+    TEST_ASSERT_EQUAL_UINT8(ERR_OK, parseCommandPacket(pSleep, sizeof(pSleep), cmd));
+
+    // OP_DRAW_CHUNK
+    uint8_t pChunk[] = { OP_DRAW_CHUNK, 0x24, 0x00, 0x00, 0xFF, 0x00, 0x00 };
+    TEST_ASSERT_EQUAL_UINT8(ERR_OK, parseCommandPacket(pChunk, sizeof(pChunk), cmd));
+
+    // OP_DRAW_COMMIT
+    uint8_t pCommit[] = { OP_DRAW_COMMIT, 0x25 };
+    TEST_ASSERT_EQUAL_UINT8(ERR_OK, parseCommandPacket(pCommit, sizeof(pCommit), cmd));
+
+    // OP_MUSIC_LEVELS (9 or 10 bytes)
+    uint8_t pMusic9[] = { OP_MUSIC_LEVELS, 0x26, 10, 20, 30, 40, 50, 60, 70, 80, 90 };
+    TEST_ASSERT_EQUAL_UINT8(ERR_OK, parseCommandPacket(pMusic9, sizeof(pMusic9), cmd));
+    uint8_t pMusic10[] = { OP_MUSIC_LEVELS, 0x26, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100 };
+    TEST_ASSERT_EQUAL_UINT8(ERR_OK, parseCommandPacket(pMusic10, sizeof(pMusic10), cmd));
+}
+
 int runAllTests() {
     UNITY_BEGIN();
     // B06 tests
@@ -217,6 +375,13 @@ int runAllTests() {
     RUN_TEST(test_sync_time_packet_parser);
     RUN_TEST(test_set_clock_style_packet_parser);
     RUN_TEST(test_timer_packet_parser);
+    // B09 tests
+    RUN_TEST(test_scenes_save_and_load);
+    RUN_TEST(test_schedules_bounds_and_setup);
+    RUN_TEST(test_sleep_timer_bounds_and_lifecycle);
+    RUN_TEST(test_draw_chunk_bounds);
+    RUN_TEST(test_music_levels_feed_and_timeout);
+    RUN_TEST(test_b09_packet_parsers);
     return UNITY_END();
 }
 

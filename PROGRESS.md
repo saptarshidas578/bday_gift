@@ -4,7 +4,7 @@ Agent: update this at the end of every task, then commit. Keep it terse. Legend:
 
 ## Next step
 
-B09 Scenes, schedules, sleep timer, draw, music levels
+B10 OTA
 
 ## Phases
 
@@ -32,7 +32,7 @@ B09 Scenes, schedules, sleep timer, draw, music levels
 - [x] B07 [H] Birthday show (lights only, 60-120s, deferred audio)
 - [ ] B07b Audio when buzzer arrives (melody player, beeps, mute)
 - [x] B08 [H] Text engine, clock, timer
-- [ ] B09 Scenes, schedules, sleep timer, draw, music levels
+- [x] B09 [H] Scenes, schedules, sleep timer, draw, music levels
 - [ ] B10 OTA
 
 ### Track C: Integration

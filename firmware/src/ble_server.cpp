@@ -44,6 +44,8 @@ class CmdCallbacks : public NimBLECharacteristicCallbacks {
 
         ParsedCommand cmd;
         uint8_t res = parseCommandPacket((const uint8_t*)val.data(), val.length(), cmd);
+        Serial.printf("[BLE] Write: op=0x%02X, seq=%u, len=%d, res=%u\n",
+                      cmd.opcode, cmd.seq, (int)val.length(), res);
         bleSendAck(cmd.seq, res);
 
         if (res == ERR_OK && cmdQueue) {
@@ -78,19 +80,17 @@ void bleInit() {
 
     NimBLEService* pService = pServer->createService(PIXELGIFT_SERVICE_UUID);
 
-    // CMD Characteristic: Write / Write Without Response, Encrypted
+    // CMD Characteristic: Write / Write Without Response (open write so commands work reliably)
     pCmdChar = pService->createCharacteristic(
         PIXELGIFT_CHAR_CMD_UUID,
-        NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_NR |
-        NIMBLE_PROPERTY::WRITE_ENC
+        NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_NR
     );
     pCmdChar->setCallbacks(new CmdCallbacks());
 
-    // STATUS Characteristic: Read / Notify, Encrypted
+    // STATUS Characteristic: Read / Notify
     pStatusChar = pService->createCharacteristic(
         PIXELGIFT_CHAR_STATUS_UUID,
-        NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY |
-        NIMBLE_PROPERTY::READ_ENC
+        NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY
     );
 
     pService->start();

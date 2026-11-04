@@ -73,6 +73,31 @@ void checkSerialCommands() {
             uint8_t demo[10] = { 40, 90, 150, 220, 255, 230, 180, 120, 70, 30 };
             feedMusicLevels(demo, 10);
             Serial.println("[SERIAL] Fed demo music levels.");
+        } else if (cmd.equalsIgnoreCase("status") || cmd == "?") {
+            Serial.printf("[STATUS] Mode=%u (0=Off,1=Solid,2=Eff,3=Clock), Brightness=%u\n", state.mode, state.brightness);
+            Serial.printf("         SolidColor=(%u,%u,%u), EffBase=%u, CMode=%u\n",
+                          state.color.r, state.color.g, state.color.b,
+                          state.effect.base, state.effect.colorMode);
+            CRGB p0 = matrixGetPixel(0, 0);
+            Serial.printf("         Pixel[0,0] RGB=(%u,%u,%u)\n", p0.r, p0.g, p0.b);
+        } else if (cmd.equalsIgnoreCase("reset")) {
+            Serial.println("[SERIAL] Resetting NVS storage to defaults...");
+            storageFactoryReset();
+        } else if (cmd.startsWith("color ")) {
+            int r = 0, g = 0, b = 0;
+            sscanf(cmd.c_str() + 6, "%d %d %d", &r, &g, &b);
+            state.color = CRGB(r, g, b);
+            state.mode = MODE_SOLID;
+            storageMarkDirty();
+            Serial.printf("[SERIAL] Set Solid Color to RGB(%d, %d, %d)\n", r, g, b);
+        } else if (cmd.startsWith("effect ")) {
+            int eff = 6, cmode = 3;
+            sscanf(cmd.c_str() + 7, "%d %d", &eff, &cmode);
+            state.effect.base = eff;
+            state.effect.colorMode = cmode;
+            state.mode = MODE_EFFECT;
+            storageMarkDirty();
+            Serial.printf("[SERIAL] Set Effect Base=%d, CMode=%d\n", eff, cmode);
         }
     }
 }

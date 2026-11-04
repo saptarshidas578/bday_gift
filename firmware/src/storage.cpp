@@ -94,6 +94,16 @@ void storageInit() {
         // Load 4 schedules
         prefs.getBytes("scheds", state.schedules, sizeof(state.schedules));
 
+        // Prevent white-screen lock or black boot from previous bug
+        if ((state.mode == MODE_SOLID && (state.color.r > 240 && state.color.g > 240 && state.color.b > 240)) ||
+            (state.color.r == 0 && state.color.g == 0 && state.color.b == 0) ||
+            state.mode == MODE_OFF) {
+            state.mode = MODE_EFFECT;
+            state.effect.base = 6; // Rainbow Wave
+            state.effect.colorMode = 3; // Rainbow
+            state.color = CRGB(210, 4, 45); // Cherry Red
+        }
+
         Serial.printf("[STORAGE] Loaded state from NVS. Mode=%u, Brightness=%u, Effect=%u (\"%s\")\n",
                       state.mode, state.brightness, state.effect.base, state.customMessage);
     } else {

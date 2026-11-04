@@ -4,14 +4,14 @@
 
 // ============================================================================
 // Hardware Pin Configuration
-// Confirmed working in B01: Data on GPIO 5 (D5)
+// Matrix WS2812B Data on GPIO 18 (D18)
 // ============================================================================
 #ifndef DATA_PIN
-#define DATA_PIN 5
+#define DATA_PIN 18
 #endif
 
 #ifndef BUZZER_PIN
-#define BUZZER_PIN 18
+#define BUZZER_PIN 19
 #endif
 
 #ifndef BOOT_BUTTON_PIN

@@ -41,9 +41,8 @@ void renderRainbowCycle(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
 void renderDiagonalGradient(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     uint8_t spd = params.speed ? params.speed : 50;
     uint8_t shift = (t_ms * spd / 35) & 0xFF;
-    CRGB c1 = getEffectColor(params, t_ms, 0, CRGB::Blue);
+    CRGB c1 = (params.c1 == CRGB(0,0,0)) ? CRGB::Blue : params.c1;
     CRGB c2 = (params.c2 == CRGB(0,0,0)) ? CRGB::Magenta : params.c2;
-    if (params.colorMode == 3) c2 = getEffectColor(params, t_ms, 5);
 
     for (uint8_t y = 0; y < MATRIX_HEIGHT; y++) {
         for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
@@ -57,9 +56,8 @@ void renderDiagonalGradient(uint32_t t_ms, const EffectParams& params, CRGB* led
 void renderRadialGradient(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     uint8_t spd = params.speed ? params.speed : 40;
     uint8_t pulse = sin8((uint8_t)(t_ms * spd / 200));
-    CRGB c1 = getEffectColor(params, t_ms, 0, CRGB::Yellow);
+    CRGB c1 = (params.c1 == CRGB(0,0,0)) ? CRGB::Yellow : params.c1;
     CRGB c2 = (params.c2 == CRGB(0,0,0)) ? CRGB::Purple : params.c2;
-    if (params.colorMode == 3) c2 = getEffectColor(params, t_ms, 5);
     float cx = 4.5f, cy = 4.5f;
 
     for (uint8_t y = 0; y < MATRIX_HEIGHT; y++) {

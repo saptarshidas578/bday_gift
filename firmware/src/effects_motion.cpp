@@ -10,7 +10,7 @@ void renderScanner(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     uint16_t step = (t_ms * spd / 50) % cycle;
     uint8_t pos = (step < MATRIX_WIDTH) ? step : (cycle - step);
 
-    CRGB col = getEffectColor(params, t_ms, pos, CRGB::Red);
+    CRGB col = (params.colorMode == 3) ? CHSV((t_ms * spd / 40) & 0xFF, 240, 255) : params.c1;
     if (params.dir == 2) {
         for (uint8_t x = 0; x < MATRIX_WIDTH; x++) matrixSetPixel(x, pos, col);
     } else {
@@ -24,7 +24,7 @@ void renderChase(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     for (int i = 0; i < NUM_LEDS; i++) leds[i].nscale8(170);
 
     uint16_t head = (t_ms * spd / 40) % NUM_LEDS;
-    CRGB col = getEffectColor(params, t_ms, head, CRGB::Cyan);
+    CRGB col = (params.c1 == CRGB(0,0,0)) ? CRGB::Cyan : params.c1;
     matrixSetPixelRaw(head, col);
 }
 
@@ -32,9 +32,8 @@ void renderChase(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
 void renderWipe(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     uint8_t spd = params.speed ? params.speed : 40;
     uint16_t step = (t_ms * spd / 80) % (MATRIX_WIDTH * 2);
-    CRGB c1 = getEffectColor(params, t_ms, 0, CRGB::Green);
+    CRGB c1 = (params.c1 == CRGB(0,0,0)) ? CRGB::Green : params.c1;
     CRGB c2 = (params.c2 == CRGB(0,0,0)) ? CRGB::DarkBlue : params.c2;
-    if (params.colorMode == 3) c2 = getEffectColor(params, t_ms, 4);
 
     for (uint8_t y = 0; y < MATRIX_HEIGHT; y++) {
         for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
@@ -60,7 +59,7 @@ void renderBounce(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     uint8_t bx = (xStep < MATRIX_WIDTH) ? xStep : (xCycle - xStep);
     uint8_t by = (yStep < MATRIX_HEIGHT) ? yStep : (yCycle - yStep);
 
-    CRGB col = getEffectColor(params, t_ms, bx + by, CRGB::Yellow);
+    CRGB col = (params.c1 == CRGB(0,0,0)) ? CRGB::Yellow : params.c1;
     matrixSetPixel(bx, by, col);
 }
 
@@ -147,8 +146,7 @@ void renderSnakePath(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     for (int i = 0; i < NUM_LEDS; i++) leds[i].nscale8(210);
 
     uint16_t pos = (t_ms * spd / 50) % NUM_LEDS;
-    CRGB col = getEffectColor(params, t_ms, pos / 10, CRGB::LimeGreen);
-    matrixSetPixelRaw(pos, col);
+    matrixSetPixelRaw(pos, CRGB::LimeGreen);
 }
 
 // 28. Comet
@@ -161,8 +159,7 @@ void renderComet(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
         int8_t x = step - d;
         int8_t y = step - d;
         if (x >= 0 && x < MATRIX_WIDTH && y >= 0 && y < MATRIX_HEIGHT) {
-            CRGB baseCol = getEffectColor(params, t_ms, d * 2, (d == 0) ? CRGB::White : CRGB(255, 120, 0));
-            matrixSetPixel(x, y, baseCol);
+            matrixSetPixel(x, y, (d == 0) ? CRGB::White : CRGB(255, 120, 0));
         }
     }
 }
@@ -171,8 +168,9 @@ void renderComet(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
 void renderTheaterChase(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     uint8_t spd = params.speed ? params.speed : 50;
     uint8_t step = (t_ms * spd / 80) % 3;
+    CRGB col = (params.c1 == CRGB(0,0,0)) ? CRGB::Orange : params.c1;
+
     for (int i = 0; i < NUM_LEDS; i++) {
-        CRGB col = getEffectColor(params, t_ms, i / 3, CRGB::Orange);
         leds[i] = ((i % 3) == step) ? col : CRGB::Black;
     }
 }
@@ -183,7 +181,7 @@ void renderRowSweep(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     for (int i = 0; i < NUM_LEDS; i++) leds[i].nscale8(190);
 
     uint8_t row = (t_ms * spd / 80) % MATRIX_HEIGHT;
-    CRGB col = getEffectColor(params, t_ms, row * 4, CRGB::Magenta);
+    CRGB col = (params.colorMode == 3) ? CHSV((t_ms * spd / 30) & 0xFF, 240, 255) : params.c1;
     for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
         matrixSetPixel(x, row, col);
     }

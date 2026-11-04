@@ -26,7 +26,7 @@ void renderExpandingSquares(uint32_t t_ms, const EffectParams& params, CRGB* led
             int8_t dx = abs((int8_t)x - 4);
             int8_t dy = abs((int8_t)y - 4);
             uint8_t d = max(dx, dy);
-            CRGB col = (d == step) ? getEffectColor(params, t_ms, step, CRGB::Magenta) : CRGB::Black;
+            CRGB col = (d == step) ? CRGB::Magenta : CRGB::Black;
             matrixSetPixel(x, y, col);
         }
     }
@@ -84,9 +84,8 @@ void renderTunnel(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
 void renderChecker(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     uint8_t spd = params.speed ? params.speed : 40;
     uint8_t state = (t_ms * spd / 300) & 0x01;
-    CRGB c1 = getEffectColor(params, t_ms, 0, CRGB::White);
+    CRGB c1 = (params.c1 == CRGB(0,0,0)) ? CRGB::White : params.c1;
     CRGB c2 = (params.c2 == CRGB(0,0,0)) ? CRGB::DarkSlateGray : params.c2;
-    if (params.colorMode == 3) c2 = getEffectColor(params, t_ms, 4);
 
     for (uint8_t y = 0; y < MATRIX_HEIGHT; y++) {
         for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
@@ -104,7 +103,7 @@ void renderDiamonds(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     for (uint8_t y = 0; y < MATRIX_HEIGHT; y++) {
         for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
             int8_t dist = abs((int8_t)x - 4) + abs((int8_t)y - 4);
-            CRGB col = (dist == step) ? getEffectColor(params, t_ms, step, CRGB::Gold) : CRGB::Black;
+            CRGB col = (dist == step) ? CRGB::Gold : CRGB::Black;
             matrixSetPixel(x, y, col);
         }
     }
@@ -122,8 +121,7 @@ void renderPulseRings(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
         for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
             float d = sqrtf((x - cx) * (x - cx) + (y - cy) * (y - cy));
             if (fabsf(d - r) < 0.6f) {
-                CRGB col = getEffectColor(params, t_ms, (uint8_t)(r * 2), CRGB::Cyan);
-                matrixSetPixel(x, y, col);
+                matrixSetPixel(x, y, CRGB::Cyan);
             }
         }
     }

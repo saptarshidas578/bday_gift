@@ -69,7 +69,7 @@ void renderGameOfLife(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
 
     for (uint8_t y = 0; y < MATRIX_HEIGHT; y++) {
         for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
-            matrixSetPixel(x, y, grid[x][y] ? getEffectColor(params, t_ms, 0, CRGB::LimeGreen) : CRGB::Black);
+            matrixSetPixel(x, y, grid[x][y] ? CRGB::LimeGreen : CRGB::Black);
         }
     }
 }

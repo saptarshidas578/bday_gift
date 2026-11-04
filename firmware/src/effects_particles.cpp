@@ -9,7 +9,8 @@ void renderSparkle(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     uint8_t count = map(spd, 0, 255, 1, 4);
     for (uint8_t c = 0; c < count; c++) {
         uint8_t rx = random8(MATRIX_WIDTH), ry = random8(MATRIX_HEIGHT);
-        CRGB col = getEffectColor(params, t_ms, random8(), CRGB::White);
+        CRGB col = (params.colorMode == 3) ? CHSV(random8(), 200, 255) : params.c1;
+        if (col == CRGB(0,0,0)) col = CRGB::White;
         matrixSetPixel(rx, ry, col);
     }
 }
@@ -21,7 +22,7 @@ void renderTwinkle(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
         for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
             uint8_t n = inoise8(x * 90, (y * 90) + (t_ms * spd / 50));
             uint8_t b = (n > 180) ? map(n, 180, 255, 0, 255) : 0;
-            CRGB col = getEffectColor(params, t_ms, x + y, CRGB::Gold);
+            CRGB col = (params.c1 == CRGB(0,0,0)) ? CRGB::Gold : params.c1;
             col.nscale8_video(b);
             matrixSetPixel(x, y, col);
         }
@@ -39,8 +40,7 @@ void renderFireflies(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
         int8_t y = (int8_t)(4.5f + cosf(t * 0.9f + f * 2.3f) * 3.8f);
         if (x >= 0 && x < MATRIX_WIDTH && y >= 0 && y < MATRIX_HEIGHT) {
             uint8_t glow = sin8((uint8_t)(t * 100 + f * 60));
-            CRGB col = getEffectColor(params, t_ms, f * 3, CRGB(220, 220, 20));
-            col.nscale8_video(glow);
+            CRGB col = CRGB(glow, glow, 20);
             matrixSetPixel(x, y, col);
         }
     }
@@ -118,8 +118,7 @@ void renderMeteor(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
         int8_t x = step - k;
         int8_t y = step - k;
         if (x >= 0 && x < MATRIX_WIDTH && y >= 0 && y < MATRIX_HEIGHT) {
-            CRGB baseCol = getEffectColor(params, t_ms, k * 2, (k == 0) ? CRGB::White : CRGB(0, 180, 255));
-            matrixSetPixel(x, y, baseCol);
+            matrixSetPixel(x, y, (k == 0) ? CRGB::White : CRGB(0, 180, 255));
         }
     }
 }
@@ -134,15 +133,14 @@ void renderBubbles(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
         int8_t x = (int8_t)(3.0f + b * 2.5f + sinf(t + b) * 1.2f);
         int8_t y = (int8_t)(MATRIX_HEIGHT - 1 - fmodf(t * 2.0f + b * 3.0f, (float)MATRIX_HEIGHT));
         if (x >= 0 && x < MATRIX_WIDTH && y >= 0 && y < MATRIX_HEIGHT) {
-            CRGB col = getEffectColor(params, t_ms, b * 2, CRGB(100, 200, 255));
-            matrixSetPixel(x, y, col);
+            matrixSetPixel(x, y, CRGB(100, 200, 255));
         }
     }
 }
 
 // 38. Glitter
 void renderGlitter(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
-    CRGB baseCol = getEffectColor(params, t_ms, 0, CRGB(120, 20, 80));
+    CRGB baseCol = (params.c1 == CRGB(0,0,0)) ? CRGB(120, 20, 80) : params.c1;
     fill_solid(leds, NUM_LEDS, baseCol);
 
     if (random8() < 120) {
@@ -158,7 +156,7 @@ void renderStardust(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     for (uint8_t s = 0; s < 2; s++) {
         uint8_t rx = random8(MATRIX_WIDTH);
         uint8_t ry = random8(MATRIX_HEIGHT);
-        CRGB col = getEffectColor(params, t_ms, s * 4, CHSV((t_ms * spd / 60 + s * 40) & 0xFF, 180, 255));
-        matrixSetPixel(rx, ry, col);
+        uint8_t hue = (t_ms * spd / 60 + s * 40) & 0xFF;
+        matrixSetPixel(rx, ry, CHSV(hue, 180, 255));
     }
 }

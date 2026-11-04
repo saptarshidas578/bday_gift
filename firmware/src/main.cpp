@@ -1,388 +1,595 @@
+/**
+ * ====================================================================================================
+ * @file main.cpp
+ * @brief Dual-Core ESP32 Smart Grandfather Clock Firmware
+ * @author saptarshi2007 (https://github.com/saptarshidas578)
+ *
+ * @details
+ * Combines traditional horological mechanisms with modern embedded systems architecture:
+ * - Core 0 (FreeRTOS Task): Real-time I2S digital audio synthesis and Westminster chime playback.
+ * - Core 1 (Main Loop): FastLED ring animation, color-palette scheduling, and DS1307 I2C RTC polling.
+ * - Dual Time Sync: Network Time Protocol (NTP) over 2.4 GHz Wi-Fi with DS1307 battery-backed fallback.
+ *
+ * Hardware Peripherals:
+ * - ESP32 DevKit (Xtensa dual-core 32-bit LX6 @ 240 MHz)
+ * - WS2812B Addressable LED Ring (84 LEDs) on GPIO 5
+ * - I2S Audio DAC (e.g. MAX98357A / PCM5102A): WS=25, BCK=26, DOUT=27
+ * - DS1307 RTC (I2C: SDA=GPIO 21, SCL=GPIO 22)
+ * ====================================================================================================
+ */
+
 #include <Arduino.h>
+
+// --- CORE FILE SYSTEMS ---
+#include <FS.h>
+#include <SD.h>
+#include <SD_MMC.h>
+#include <SPIFFS.h>
+#include <FFat.h>
+
+// --- SENSORS, PERIPHERALS & NETWORKING ---
+#include <SPI.h>
+#include <Wire.h>
+#include <WiFi.h>
+#include <time.h>
+
+// --- LIBRARIES ---
 #include <FastLED.h>
-#include "config.h"
-#include "matrix.h"
-#include "effects.h"
-#include "storage.h"
-#include "ble_server.h"
-#include "audio.h"
-#include "birthday.h"
-#include "font.h"
-#include "clock_timer.h"
-#include "scenes_scheduler.h"
-#include "ota_manager.h"
+#include <RTClib.h>
+#include <driver/i2s.h>
+#include <math.h>
 
-static uint32_t lastRenderTime = 0;
-static const uint32_t FRAME_INTERVAL_MS = 16; // ~60 FPS
+// ==============================
+// 1. CONFIGURATION & PINS
+// ==============================
+const char* ssid = "Verizon-SM-N981U-7692";
+const char* password = "nzjf807(";
+const char* ntp_server = "pool.ntp.org";
+const char* time_zone = "IST-5:30";
 
-// Boot button detection for factory/bond reset (hold 5s)
-static uint32_t bootBtnPressStart = 0;
-static bool bootBtnPressed = false;
+#define NUM_LEDS 84
+#define DATA_PIN 5
+#define BRIGHTNESS 50
+CRGB leds[NUM_LEDS];
 
-void checkBootButton() {
-    bool isDown = (digitalRead(BOOT_BUTTON_PIN) == LOW);
-    uint32_t now = millis();
+#define I2S_WS_PIN 25
+#define I2S_BCK_PIN 26
+#define I2S_DOUT_PIN 27
+#define SAMPLE_RATE 44100
+#define CHUNK_SIZE 64
 
-    if (isDown && !bootBtnPressed) {
-        bootBtnPressed = true;
-        bootBtnPressStart = now;
-    } else if (isDown && bootBtnPressed) {
-        if (now - bootBtnPressStart >= 5000) {
-            Serial.println("\n[RECOVERY] BOOT button held 5s! Clearing BLE bonds...");
-            bleClearBonds();
-            bootBtnPressStart = now + 10000;
+// ==============================
+// 2. GLOBALS & TIMING
+// ==============================
+RTC_DS1307 rtc;
+int h, m, s;
+int lastChimeMinute = -1;
+unsigned long lastSerialPrint = 0;
+
+CRGB MARKER_COLOR, HOUR_COLOR, MINUTE_COLOR, SECOND_COLOR;
+CRGB DEFAULT_COLOR = CRGB::Black;
+
+// --- Audio Queue Variables ---
+volatile int quarterChimesToPlay = 0;
+volatile int hourStrikesToPlay = 0;
+const char* quarterMelody = "Westminster:d=4,o=5,b=90:e,c,d,2g4,p,g4,d,e,2c";
+const char* hourStrike = "Gong:d=2,o=5,b=60:c";
+
+// --- CROSS-CORE SYNC VARIABLES ---
+volatile uint32_t sharedUnixTime = 0;
+volatile uint32_t lastSyncSuccessTime = 0;
+volatile uint32_t lastSyncAttemptTime = 0;
+volatile bool isBackgroundSyncing = false;
+unsigned long bgSyncStartTime = 0;
+
+volatile bool newNtpTimeAvailable = false;
+volatile int ntpYear, ntpMonth, ntpDay, ntpHour, ntpMinute, ntpSecond;
+
+// ==============================
+// 3. WIFI & NTP SYNC SYSTEMS
+// ==============================
+
+// UNINTERRUPTED RAINBOW BOOT SEQUENCE
+/**
+ * @brief Performs blocking initial Wi-Fi connection and NTP time synchronization during boot.
+ * @details Displays a rotating rainbow spinner animation across the LED ring while waiting.
+ *          If network connection fails within the 15-second timeout, falls back to hardware DS1307 RTC.
+ */
+void initialBootSync() {
+    Serial.print("\nAttempting Initial WiFi Boot Sync: ");
+    Serial.println(ssid);
+
+    WiFi.begin(ssid, password);
+    int spinPos = 0;
+    unsigned long startWait = millis();
+
+    // Phase 1: Spin while connecting to WiFi (15s timeout)
+    while ((WiFi.status() != WL_CONNECTED) && (millis() - startWait < 15000)) {
+        FastLED.clear();
+        for (int i = 0; i < 12; i++) {
+            int ledIndex = (spinPos + i) % NUM_LEDS;
+            uint8_t hue = map(i, 0, 11, 0, 224);
+            leds[ledIndex] = CHSV(hue, 255, 255);
         }
-    } else if (!isDown && bootBtnPressed) {
-        bootBtnPressed = false;
+        FastLED.show();
+        spinPos = (spinPos + 1) % NUM_LEDS;
+        delay(25);
     }
-}
 
-void checkSerialCommands() {
-    if (Serial.available()) {
-        String cmd = Serial.readStringUntil('\n');
-        cmd.trim();
-        if (cmd.equalsIgnoreCase("bday") || cmd == "b") {
-            Serial.println("[SERIAL] Starting Birthday Show...");
-            birthdayStart();
-        } else if (cmd.equalsIgnoreCase("stop") || cmd == "s") {
-            Serial.println("[SERIAL] Stopping Birthday Show / Timer...");
-            if (isBirthdayRunning()) birthdayStop();
-            if (isTimerRunning() || isTimerAlerting()) cancelTimer();
-        } else if (cmd.equalsIgnoreCase("clock") || cmd == "c") {
-            state.mode = MODE_CLOCK;
-            Serial.println("[SERIAL] Switched to CLOCK mode.");
-        } else if (cmd.equalsIgnoreCase("sync")) {
-            // Example UTC sync to 12:34:56
-            syncTime(1700000000, 330); // IST (+5:30 = 330 mins)
-            state.mode = MODE_CLOCK;
-            Serial.println("[SERIAL] Synced time to sample epoch.");
-        } else if (cmd.startsWith("timer")) {
-            startTimer(10); // 10 second test countdown
-            Serial.println("[SERIAL] Started 10-second test timer.");
-        } else if (cmd.startsWith("scene save ")) {
-            uint8_t slot = cmd.substring(11).toInt();
-            saveScene(slot);
-        } else if (cmd.startsWith("scene load ")) {
-            uint8_t slot = cmd.substring(11).toInt();
-            loadScene(slot);
-        } else if (cmd.startsWith("sleep ")) {
-            uint16_t m = cmd.substring(6).toInt();
-            startSleepTimer(m);
-        } else if (cmd.equalsIgnoreCase("music")) {
-            // Demo burst of 10 levels
-            uint8_t demo[10] = { 40, 90, 150, 220, 255, 230, 180, 120, 70, 30 };
-            feedMusicLevels(demo, 10);
-            Serial.println("[SERIAL] Fed demo music levels.");
-        } else if (cmd.equalsIgnoreCase("status") || cmd == "?") {
-            Serial.printf("[STATUS] Mode=%u (0=Off,1=Solid,2=Eff,3=Clock), Brightness=%u\n", state.mode, state.brightness);
-            Serial.printf("         SolidColor=(%u,%u,%u), EffBase=%u, CMode=%u\n",
-                          state.color.r, state.color.g, state.color.b,
-                          state.effect.base, state.effect.colorMode);
-            CRGB p0 = matrixGetPixel(0, 0);
-            Serial.printf("         Pixel[0,0] RGB=(%u,%u,%u)\n", p0.r, p0.g, p0.b);
-        } else if (cmd.equalsIgnoreCase("reset")) {
-            Serial.println("[SERIAL] Resetting NVS storage to defaults...");
-            storageFactoryReset();
-        } else if (cmd.startsWith("color ")) {
-            int r = 0, g = 0, b = 0;
-            sscanf(cmd.c_str() + 6, "%d %d %d", &r, &g, &b);
-            state.color = CRGB(r, g, b);
-            state.mode = MODE_SOLID;
-            storageMarkDirty();
-            Serial.printf("[SERIAL] Set Solid Color to RGB(%d, %d, %d)\n", r, g, b);
-        } else if (cmd.startsWith("effect ")) {
-            int eff = 6, cmode = 3;
-            sscanf(cmd.c_str() + 7, "%d %d", &eff, &cmode);
-            state.effect.base = eff;
-            state.effect.colorMode = cmode;
-            state.mode = MODE_EFFECT;
-            storageMarkDirty();
-            Serial.printf("[SERIAL] Set Effect Base=%d, CMode=%d\n", eff, cmode);
-        }
-    }
-}
+    if (WiFi.status() == WL_CONNECTED) {
+        Serial.println("\n✅ Boot Sync Connected! Grabbing atomic time...");
+        configTzTime(time_zone, ntp_server);
 
-void processIncomingCommand(const ParsedCommand& cmd) {
-    Serial.printf("[CMD] Dispatching opcode 0x%02X (seq %u, len %u)\n",
-                  cmd.opcode, cmd.seq, cmd.payloadLen);
+        struct tm timeinfo;
+        bool timeSynced = false;
+        startWait = millis();
 
-    switch (cmd.opcode) {
-        case OP_SET_COLOR: {
-            if (isBirthdayRunning()) birthdayStop();
-            state.color = CRGB(cmd.payload[0], cmd.payload[1], cmd.payload[2]);
-            state.mode = MODE_SOLID;
-            storageMarkDirty();
-            Serial.printf("  SET_COLOR: RGB(%u, %u, %u)\n", state.color.r, state.color.g, state.color.b);
-            break;
-        }
-
-        case OP_SET_BRIGHTNESS: {
-            state.brightness = cmd.payload[0];
-            matrixSetBrightness(state.brightness);
-            storageMarkDirty();
-            Serial.printf("  SET_BRIGHTNESS: %u / 255\n", state.brightness);
-            break;
-        }
-
-        case OP_SET_EFFECT: {
-            if (isBirthdayRunning()) birthdayStop();
-            state.effect.base = cmd.payload[0];
-            state.effect.speed = cmd.payload[1];
-            state.effect.dir = cmd.payload[2];
-            state.effect.mirror = cmd.payload[3];
-            state.effect.colorMode = cmd.payload[4];
-            state.effect.c1 = CRGB(cmd.payload[5], cmd.payload[6], cmd.payload[7]);
-            state.effect.c2 = CRGB(cmd.payload[8], cmd.payload[9], cmd.payload[10]);
-            state.mode = MODE_EFFECT;
-            storageMarkDirty();
-            Serial.printf("  SET_EFFECT: Base=%u, Speed=%u, Dir=%u, CMode=%u\n",
-                          state.effect.base, state.effect.speed, state.effect.dir, state.effect.colorMode);
-            break;
-        }
-
-        case OP_SET_PALETTE: {
-            state.paletteCount = cmd.payload[0];
-            for (uint8_t i = 0; i < state.paletteCount && i < 8; i++) {
-                state.palette[i] = CRGB(cmd.payload[1 + i * 3],
-                                        cmd.payload[2 + i * 3],
-                                        cmd.payload[3 + i * 3]);
+        // Phase 2: Spin while getting NTP time (10s timeout)
+        while (!timeSynced && (millis() - startWait < 10000)) {
+            FastLED.clear();
+            for (int i = 0; i < 12; i++) {
+                int ledIndex = (spinPos + i) % NUM_LEDS;
+                uint8_t hue = map(i, 0, 11, 0, 224);
+                leds[ledIndex] = CHSV(hue, 255, 255);
             }
-            storageMarkDirty();
-            Serial.printf("  SET_PALETTE: %u colors updated\n", state.paletteCount);
-            break;
-        }
+            FastLED.show();
+            spinPos = (spinPos + 1) % NUM_LEDS;
 
-        case OP_SET_MODE: {
-            if (isBirthdayRunning()) birthdayStop();
-            state.mode = cmd.payload[0];
-            storageMarkDirty();
-            Serial.printf("  SET_MODE: %u\n", state.mode);
-            break;
-        }
-
-        case OP_SYNC_TIME: {
-            uint32_t epoch = (uint32_t)cmd.payload[0] |
-                             ((uint32_t)cmd.payload[1] << 8) |
-                             ((uint32_t)cmd.payload[2] << 16) |
-                             ((uint32_t)cmd.payload[3] << 24);
-            int16_t tz = (int16_t)((uint16_t)cmd.payload[4] | ((uint16_t)cmd.payload[5] << 8));
-            syncTime(epoch, tz);
-            break;
-        }
-
-        case OP_SET_CLOCK_STYLE: {
-            state.clockStyle = cmd.payload[0];
-            storageMarkDirty();
-            Serial.printf("  SET_CLOCK_STYLE: %u\n", state.clockStyle);
-            break;
-        }
-
-        case OP_START_TIMER: {
-            uint32_t sec = (uint32_t)cmd.payload[0] |
-                           ((uint32_t)cmd.payload[1] << 8) |
-                           ((uint32_t)cmd.payload[2] << 16) |
-                           ((uint32_t)cmd.payload[3] << 24);
-            startTimer(sec);
-            break;
-        }
-
-        case OP_CANCEL_TIMER: {
-            cancelTimer();
-            break;
-        }
-
-        case OP_PLAY_BIRTHDAY: {
-            birthdayStart();
-            break;
-        }
-
-        case OP_STOP_SHOW: {
-            birthdayStop();
-            break;
-        }
-
-        case OP_SAVE_SCENE: {
-            saveScene(cmd.payload[0]);
-            break;
-        }
-
-        case OP_LOAD_SCENE: {
-            loadScene(cmd.payload[0]);
-            break;
-        }
-
-        case OP_SET_SCHEDULE: {
-            setSchedule(cmd.payload[0], cmd.payload[1], cmd.payload[2],
-                        cmd.payload[3], cmd.payload[4], cmd.payload[5], cmd.payload[6]);
-            break;
-        }
-
-        case OP_SET_SLEEP_TIMER: {
-            uint16_t mins = (uint16_t)cmd.payload[0] | ((uint16_t)cmd.payload[1] << 8);
-            startSleepTimer(mins);
-            break;
-        }
-
-        case OP_DRAW_CHUNK: {
-            uint16_t offset = (uint16_t)cmd.payload[0] | ((uint16_t)cmd.payload[1] << 8);
-            const uint8_t* chunk = &cmd.payload[2];
-            uint8_t len = cmd.payloadLen - 2;
-            drawChunk(offset, chunk, len);
-            break;
-        }
-
-        case OP_DRAW_COMMIT: {
-            drawCommit();
-            break;
-        }
-
-        case OP_MUSIC_LEVELS: {
-            feedMusicLevels(cmd.payload, cmd.payloadLen);
-            break;
-        }
-
-        case OP_GET_STATUS: {
-            bleSendSnapshot();
-            break;
-        }
-
-        case OP_CLEAR_BONDS: {
-            bleClearBonds();
-            break;
-        }
-
-        case OP_FACTORY_RESET: {
-            storageFactoryReset();
-            bleClearBonds();
-            break;
-        }
-
-        case OP_OTA_BEGIN: {
-            uint32_t totalBytes = (uint32_t)cmd.payload[0] |
-                                  ((uint32_t)cmd.payload[1] << 8) |
-                                  ((uint32_t)cmd.payload[2] << 16) |
-                                  ((uint32_t)cmd.payload[3] << 24);
-            uint8_t maj = cmd.payload[4];
-            uint8_t min = cmd.payload[5];
-            uint8_t pat = cmd.payload[6];
-            uint8_t res = otaHandleBegin(totalBytes, maj, min, pat);
-            bleSendAck(cmd.seq, res);
-            break;
-        }
-
-        case OP_OTA_CHUNK: {
-            uint16_t chunkSeq = (uint16_t)cmd.payload[0] | ((uint16_t)cmd.payload[1] << 8);
-            const uint8_t* chunkData = &cmd.payload[2];
-            uint8_t len = cmd.payloadLen - 2;
-            uint8_t res = otaHandleChunk(chunkSeq, chunkData, len);
-            bleSendAck(cmd.seq, res);
-            break;
-        }
-
-        case OP_OTA_COMMIT: {
-            uint32_t crc = 0;
-            if (cmd.payloadLen == 4) {
-                crc = (uint32_t)cmd.payload[0] |
-                      ((uint32_t)cmd.payload[1] << 8) |
-                      ((uint32_t)cmd.payload[2] << 16) |
-                      ((uint32_t)cmd.payload[3] << 24);
+            // Check for time with a tiny 10ms timeout so animation doesn't freeze
+            if (getLocalTime(&timeinfo, 10)) {
+                timeSynced = true;
+            } else {
+                delay(15);
             }
-            uint8_t res = otaHandleCommit(crc);
-            bleSendAck(cmd.seq, res);
-            break;
         }
 
-        case OP_OTA_ABORT: {
-            otaHandleAbort();
-            bleSendAck(cmd.seq, ERR_OK);
-            break;
+        if (timeSynced) {
+            DateTime ntpTime(timeinfo.tm_year + 1900, timeinfo.tm_mon + 1, timeinfo.tm_mday, timeinfo.tm_hour,
+                             timeinfo.tm_min, timeinfo.tm_sec);
+            rtc.adjust(ntpTime);
+            lastSyncSuccessTime = ntpTime.unixtime();
+            Serial.println("✅ Hardware RTC perfectly updated!");
+        } else {
+            Serial.println("❌ NTP Sync Timeout. Falling back to RTC battery.");
         }
+    } else {
+        Serial.println("\n❌ Boot Sync Failed. Will retry in background on Core 0 later.");
+    }
 
-        default:
-            Serial.printf("  Opcode 0x%02X acknowledged.\n", cmd.opcode);
-            break;
+    FastLED.clear();
+    FastLED.show();
+    WiFi.disconnect(true);
+    WiFi.mode(WIFI_OFF);
+}
+
+// INVISIBLE BACKGROUND SYNC (Core 0)
+/**
+ * @brief Non-blocking background NTP resynchronization worker executed periodically.
+ * @details Attempts Wi-Fi reconnection and queries the NTP time server without blocking
+ *          LED animations or timekeeping on the primary execution core.
+ */
+void handleBackgroundSyncCore0() {
+    if (sharedUnixTime == 0) return;
+
+    if (sharedUnixTime - lastSyncSuccessTime >= 86400) {
+        if (!isBackgroundSyncing && (sharedUnixTime - lastSyncAttemptTime >= 3600)) {
+            Serial.println("\n🔄 [CORE 0] Audio is silent. Initiating atomic sync...");
+            WiFi.begin(ssid, password);
+            isBackgroundSyncing = true;
+            bgSyncStartTime = millis();
+            lastSyncAttemptTime = sharedUnixTime;
+        }
+    }
+
+    if (isBackgroundSyncing) {
+        if (WiFi.status() == WL_CONNECTED) {
+            Serial.println("✅ [CORE 0] WiFi Connected! Grabbing atomic time...");
+            configTzTime(time_zone, ntp_server);
+
+            struct tm timeinfo;
+            if (getLocalTime(&timeinfo, 5000)) {
+                ntpYear = timeinfo.tm_year + 1900;
+                ntpMonth = timeinfo.tm_mon + 1;
+                ntpDay = timeinfo.tm_mday;
+                ntpHour = timeinfo.tm_hour;
+                ntpMinute = timeinfo.tm_min;
+                ntpSecond = timeinfo.tm_sec;
+
+                newNtpTimeAvailable = true;
+                lastSyncSuccessTime = sharedUnixTime;
+                Serial.println("✅ [CORE 0] Time sent to Core 1 for RTC hardware update.");
+            } else {
+                Serial.println("❌ [CORE 0] NTP Server unresponsive.");
+            }
+
+            WiFi.disconnect(true);
+            WiFi.mode(WIFI_OFF);
+            isBackgroundSyncing = false;
+        } else if (millis() - bgSyncStartTime > 15000) {
+            Serial.println("❌ [CORE 0] WiFi timeout. Will try again invisibly in 1 hour.");
+            WiFi.disconnect(true);
+            WiFi.mode(WIFI_OFF);
+            isBackgroundSyncing = false;
+        }
     }
 }
 
+// ==============================
+// 4. AUDIO SYSTEM (Core 0)
+// ==============================
+/**
+ * @brief Initializes the ESP32 hardware I2S peripheral for digital audio streaming.
+ * @details Configures sample rate (44.1 kHz), 16-bit depth, standard I2S master mode,
+ *          and maps peripheral lines to GPIO 25 (WS), GPIO 26 (BCK), and GPIO 27 (DOUT).
+ */
+void setupI2S() {
+    i2s_config_t i2s_config = {.mode = (i2s_mode_t)(I2S_MODE_MASTER | I2S_MODE_TX),
+                               .sample_rate = SAMPLE_RATE,
+                               .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
+                               .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,
+                               .communication_format = I2S_COMM_FORMAT_STAND_I2S,
+                               .intr_alloc_flags = ESP_INTR_FLAG_LEVEL1,
+                               .dma_buf_count = 8,
+                               .dma_buf_len = 128,
+                               .use_apll = false,
+                               .tx_desc_auto_clear = true};
+    i2s_pin_config_t pin_config = {.bck_io_num = I2S_BCK_PIN,
+                                   .ws_io_num = I2S_WS_PIN,
+                                   .data_out_num = I2S_DOUT_PIN,
+                                   .data_in_num = I2S_PIN_NO_CHANGE};
+    i2s_driver_install(I2S_NUM_0, &i2s_config, 0, NULL);
+    i2s_set_pin(I2S_NUM_0, &pin_config);
+    i2s_zero_dma_buffer(I2S_NUM_0);
+}
+
+/**
+ * @brief Generates and transmits a real-time sinusoidal audio waveform over I2S.
+ * @param frequency Target audio pitch in Hertz (Hz).
+ * @param durationMs Tone duration in milliseconds.
+ * @details Uses direct digital synthesis (DDS) to write 16-bit stereo PCM samples to the I2S DMA buffer.
+ */
+void playTone(float frequency, uint32_t durationMs) {
+    if (frequency == 0.0f) {
+        vTaskDelay(durationMs / portTICK_PERIOD_MS);
+        return;
+    }
+    int totalSamples = (SAMPLE_RATE * durationMs) / 1000;
+    float phase = 0.0f;
+    float phaseInc = (2.0f * PI * frequency) / SAMPLE_RATE;
+    int16_t sampleBuffer[CHUNK_SIZE * 2];
+    int samplesWritten = 0;
+
+    float targetVolume = 0.40f;
+    int attackSamples = SAMPLE_RATE * 0.02;
+    int releaseSamples = SAMPLE_RATE * 0.60;
+
+    while (samplesWritten < totalSamples) {
+        int samplesToGenerate = min(CHUNK_SIZE, totalSamples - samplesWritten);
+        for (int i = 0; i < samplesToGenerate; i++) {
+            int currentSampleIndex = samplesWritten + i;
+            float currentVolume = targetVolume;
+
+            if (currentSampleIndex < attackSamples) {
+                currentVolume = targetVolume * ((float)currentSampleIndex / attackSamples);
+            } else if (currentSampleIndex > totalSamples - releaseSamples) {
+                float ratio = (float)(totalSamples - currentSampleIndex) / releaseSamples;
+                currentVolume = targetVolume * (ratio * ratio);
+            }
+
+            float fundamental = sin(phase);
+            float harmonic1 = 0.20f * sin(phase * 2.0f);
+            float harmonic2 = 0.02f * sin(phase * 3.0f);
+            float s = (fundamental + harmonic1 + harmonic2) / 1.22f;
+
+            phase += phaseInc;
+            if (phase >= (2.0f * PI)) phase -= (2.0f * PI);
+
+            int16_t pcmData = (int16_t)(s * currentVolume * 32767.0f);
+            sampleBuffer[i * 2] = pcmData;
+            sampleBuffer[(i * 2) + 1] = pcmData;
+        }
+        size_t bytesWritten;
+        i2s_write(I2S_NUM_0, sampleBuffer, samplesToGenerate * 4, &bytesWritten, portMAX_DELAY);
+        samplesWritten += samplesToGenerate;
+    }
+    i2s_zero_dma_buffer(I2S_NUM_0);
+}
+
+/**
+ * @brief Decodes and plays a Ring Tone Text Transfer Language (RTTTL) string via I2S.
+ * @param p Pointer to the null-terminated RTTTL melody specification string.
+ * @details Parses header parameters (default duration, octave, BPM) and note tokens.
+ */
+void playRTTTL(const char* p) {
+    while (*p && *p != ':') p++;
+    if (!*p) return;
+    p++;
+    int default_dur = 4, default_oct = 6, bpm = 63;
+    int num;
+    while (*p && *p != ':') {
+        if (*p == 'd') {
+            p += 2;
+            num = 0;
+            while (isdigit(*p)) {
+                num = (num * 10) + (*p++ - '0');
+            }
+            if (num > 0) default_dur = num;
+        }
+        if (*p == 'o') {
+            p += 2;
+            num = 0;
+            while (isdigit(*p)) {
+                num = (num * 10) + (*p++ - '0');
+            }
+            if (num >= 3 && num <= 7) default_oct = num;
+        }
+        if (*p == 'b') {
+            p += 2;
+            num = 0;
+            while (isdigit(*p)) {
+                num = (num * 10) + (*p++ - '0');
+            }
+            bpm = num;
+        }
+        while (*p == ',') p++;
+    }
+    p++;
+    long wholenote = (60 * 1000L / bpm) * 4;
+    while (*p) {
+        num = 0;
+        while (isdigit(*p)) {
+            num = (num * 10) + (*p++ - '0');
+        }
+        int duration = num ? num : default_dur;
+        int note = 0;
+        switch (*p) {
+            case 'c':
+                note = 1;
+                break;
+            case 'd':
+                note = 3;
+                break;
+            case 'e':
+                note = 5;
+                break;
+            case 'f':
+                note = 6;
+                break;
+            case 'g':
+                note = 8;
+                break;
+            case 'a':
+                note = 10;
+                break;
+            case 'b':
+                note = 12;
+                break;
+            case 'p':
+            default:
+                note = 0;
+                break;
+        }
+        p++;
+        if (*p == '#') {
+            note++;
+            p++;
+        }
+        if (*p == '.') {
+            duration += duration / 2;
+            p++;
+        }
+        int octave = isdigit(*p) ? (*p++ - '0') : default_oct;
+        if (*p == ',') p++;
+        long durationMs = wholenote / duration;
+        if (note == 0)
+            playTone(0, durationMs);
+        else {
+            float frequency = 440.0 * pow(2.0, ((note - 10) + (octave - 4) * 12) / 12.0);
+            playTone(frequency, durationMs);
+        }
+        vTaskDelay(10 / portTICK_PERIOD_MS);
+    }
+}
+
+/**
+ * @brief Dedicated FreeRTOS worker task pinned to ESP32 Core 0 for audio synthesis.
+ * @param pvParameters FreeRTOS task argument pointer (unused).
+ * @details Polls audio trigger flags (quarterChimesToPlay, hourStrikesToPlay) and plays
+ *          Westminster chime melodies and hour gongs without causing audio stuttering or jitter.
+ */
+void audioTask(void* pvParameters) {
+    setupI2S();
+    for (;;) {
+        if (quarterChimesToPlay > 0 || hourStrikesToPlay > 0) {
+            if (isBackgroundSyncing) {
+                Serial.println("⚠️ [CORE 0] Audio Priority Override! Killing WiFi connection attempt.");
+                WiFi.disconnect(true);
+                WiFi.mode(WIFI_OFF);
+                isBackgroundSyncing = false;
+            }
+
+            if (quarterChimesToPlay > 0) {
+                playRTTTL(quarterMelody);
+                quarterChimesToPlay--;
+                if (quarterChimesToPlay > 0)
+                    vTaskDelay(1000 / portTICK_PERIOD_MS);
+                else if (hourStrikesToPlay > 0)
+                    vTaskDelay(1500 / portTICK_PERIOD_MS);
+            } else if (hourStrikesToPlay > 0) {
+                playRTTTL(hourStrike);
+                hourStrikesToPlay--;
+                if (hourStrikesToPlay > 0) vTaskDelay(500 / portTICK_PERIOD_MS);
+            }
+        } else {
+            handleBackgroundSyncCore0();
+            vTaskDelay(50 / portTICK_PERIOD_MS);
+        }
+    }
+}
+
+// ==============================
+// 5. LED & CLOCK SYSTEM (Core 1)
+// ==============================
+
+// --- NIGHT MODE LOGIC ---
+/**
+ * @brief Evaluates whether audio chimes should be silenced based on schedule (e.g. night hours).
+ * @param currentHour 24-hour format clock hour (0-23).
+ * @param currentMinute Clock minute (0-59).
+ * @return true if chime output is suppressed, false if permitted.
+ */
+bool isAudioMuted(int currentHour, int currentMinute) {
+    if (currentHour == 23 && currentMinute > 0) return true;
+    if (currentHour >= 0 && currentHour < 6) return true;
+    if (currentHour == 6 && currentMinute < 30) return true;
+    return false;
+}
+
+/**
+ * @brief Updates clock hand and dial marker color palettes based on the time of day.
+ * @param hour24 Current hour in 24-hour format.
+ * @details Shifts colors between daytime, twilight, and nighttime ambient palettes.
+ */
+void updateColorPalette(int hour24) {
+    if (hour24 >= 0 && hour24 < 6) {
+        MARKER_COLOR = CRGB(0x88BBFF);
+        HOUR_COLOR = CRGB(0x8800FF);
+        MINUTE_COLOR = CRGB(0x00FFCC);
+        SECOND_COLOR = CRGB(0xFF00AA);
+    } else if (hour24 >= 6 && hour24 < 12) {
+        MARKER_COLOR = CRGB(0xFFF8DC);
+        HOUR_COLOR = CRGB(0xFF4444);
+        MINUTE_COLOR = CRGB(0x33FF33);
+        SECOND_COLOR = CRGB(0xFFFF00);
+    } else if (hour24 >= 12 && hour24 < 18) {
+        MARKER_COLOR = CRGB(0xFF88FF);
+        HOUR_COLOR = CRGB(0xFF6600);
+        MINUTE_COLOR = CRGB(0x00AAFF);
+        SECOND_COLOR = CRGB(0xCCFF00);
+    } else {
+        MARKER_COLOR = CRGB(0xFFB800);
+        HOUR_COLOR = CRGB(0xFF3388);
+        MINUTE_COLOR = CRGB(0x00FF88);
+        SECOND_COLOR = CRGB(0x4400FF);
+    }
+}
+
+int getPhysicalIndex(int block, int logicalIndex) {
+    if (block % 2 == 0)
+        return (block * 7) + logicalIndex;
+    else
+        return (block * 7) + (6 - logicalIndex);
+}
+
+/**
+ * @brief Hardware initialization lifecycle hook executed on boot.
+ * @details Sets up Serial, I2C, FastLED, DS1307 RTC, performs initial NTP boot sync,
+ *          and spawns the dedicated audio synthesis FreeRTOS task on Core 0.
+ */
 void setup() {
     Serial.begin(115200);
-    unsigned long startWait = millis();
-    while (!Serial && (millis() - startWait < 1000)) {
-        // Wait up to 1 second for serial
+
+    FastLED.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
+    FastLED.setBrightness(BRIGHTNESS);
+    FastLED.clear();
+    FastLED.show();
+
+    Wire.begin(21, 22);
+    if (!rtc.begin()) {
+        Serial.println("❌ ERROR: RTC not found!");
     }
 
-    Serial.println();
-    Serial.println("==================================================");
-    Serial.println("  PixelGift Clock & Timer Engine (Task B08)       ");
-    Serial.println("==================================================");
+    initialBootSync();
 
-    pinMode(BOOT_BUTTON_PIN, INPUT_PULLUP);
-    pinMode(BUZZER_PIN, OUTPUT);
-    digitalWrite(BUZZER_PIN, LOW);
+    xTaskCreatePinnedToCore(audioTask, "AudioTask", 10000, NULL, 1, NULL, 0);
 
-    matrixInit();
-    effectsInit();
-    storageInit();
-    audioInit();
-    birthdayInit();
-    clockTimerInit();
-    scenesSchedulerInit();
-    otaInit();
-
-    matrixSetBrightness(state.brightness);
-    bleInit();
-
-    lastRenderTime = millis();
-    Serial.println("[SYSTEM] Ready! Type 'clock', 'sync', 'timer', or 'bday' in serial.\n");
+    quarterChimesToPlay = 1;
+    Serial.println("\n⌚ Smart Clock is Live! Ticking started...\n");
 }
 
+/**
+ * @brief Primary superloop executed continuously on Core 1.
+ * @details Reads current time from DS1307 RTC, renders hands and markers to the 84-LED ring,
+ *          triggers Westminster chimes on quarter hours, and monitors background NTP synchronization.
+ */
 void loop() {
-    uint32_t now = millis();
+    DateTime now = rtc.now();
+    sharedUnixTime = now.unixtime();
+    h = now.hour();
+    m = now.minute();
+    s = now.second();
 
-    // 1. Check recovery boot button and serial commands
-    checkBootButton();
-    checkSerialCommands();
-
-    // 2. Dispatch queued BLE commands
-    ParsedCommand cmd;
-    while (blePopCommand(cmd)) {
-        processIncomingCommand(cmd);
+    if (newNtpTimeAvailable) {
+        rtc.adjust(DateTime(ntpYear, ntpMonth, ntpDay, ntpHour, ntpMinute, ntpSecond));
+        newNtpTimeAvailable = false;
+        Serial.println("✅ [CORE 1] Hardware RTC successfully updated with atomic time from Core 0.");
     }
 
-    // 3. Audio, Storage, Scheduler, Sleep, Music & OTA non-blocking loop steps
-    audioLoop();
-    storageLoop();
-    schedulerLoop(now);
-    sleepTimerLoop(now);
-    musicLoop(now);
-    otaLoop();
+    if (millis() - lastSerialPrint >= 1000) {
+        lastSerialPrint = millis();
+    }
 
-    // 4. Render loop (~60 FPS non-blocking)
-    if (now - lastRenderTime >= FRAME_INTERVAL_MS) {
-        lastRenderTime = now;
-
-        if (isOtaRunning()) {
-            otaRender(now, matrixGetLeds());
-        } else if (isBirthdayRunning()) {
-            birthdayRender(now, matrixGetLeds());
-        } else if (isTimerRunning() || isTimerAlerting()) {
-            renderTimer(now, matrixGetLeds());
-        } else if (state.mode == MODE_CLOCK) {
-            renderClock(now, matrixGetLeds());
-        } else if (state.mode == MODE_SOLID) {
-            matrixFill(state.color);
-        } else if (state.mode == MODE_EFFECT) {
-            effectsRender(now, state.effect, matrixGetLeds());
-        } else if (state.mode == MODE_DRAW) {
-            renderDraw(matrixGetLeds());
-        } else if (state.mode == MODE_MUSIC) {
-            renderMusic(now, matrixGetLeds());
-        } else if (state.mode == MODE_OFF) {
-            matrixClear();
+    if (m != lastChimeMinute) {
+        if (!isAudioMuted(h, m)) {
+            if (m == 15)
+                quarterChimesToPlay = 1;
+            else if (m == 30)
+                quarterChimesToPlay = 2;
+            else if (m == 45)
+                quarterChimesToPlay = 3;
+            else if (m == 0) {
+                quarterChimesToPlay = 4;
+                hourStrikesToPlay = (h % 12 == 0) ? 12 : (h % 12);
+            }
         } else {
-            effectsRender(now, state.effect, matrixGetLeds());
+            if (m == 0 || m == 15 || m == 30 || m == 45) {
+                Serial.println("🤫 Night Mode Active: Audio bypassed for sleep window.");
+            }
         }
-
-        matrixShow();
+        lastChimeMinute = m;
     }
+
+    updateColorPalette(h);
+
+    int currentHourBlock = h % 12;
+    if (m >= 45) {
+        currentHourBlock = (currentHourBlock + 1) % 12;
+    }
+
+    int currentMinuteBlock = m / 5;
+    int currentSecondBlock = s / 5;
+
+    for (int b = 0; b < 12; b++) {
+        leds[getPhysicalIndex(b, 6)] = MARKER_COLOR;
+
+        if (b == currentSecondBlock) {
+            for (int i = 0; i < 6; i++) leds[getPhysicalIndex(b, i)] = SECOND_COLOR;
+        } else {
+            if (b == currentHourBlock && b == currentMinuteBlock) {
+                leds[getPhysicalIndex(b, 0)] = HOUR_COLOR;
+                leds[getPhysicalIndex(b, 1)] = HOUR_COLOR;
+                leds[getPhysicalIndex(b, 2)] = HOUR_COLOR;
+                leds[getPhysicalIndex(b, 3)] = HOUR_COLOR;
+                leds[getPhysicalIndex(b, 4)] = MINUTE_COLOR;
+                leds[getPhysicalIndex(b, 5)] = MINUTE_COLOR;
+            } else if (b == currentHourBlock) {
+                for (int i = 0; i < 4; i++) leds[getPhysicalIndex(b, i)] = HOUR_COLOR;
+                for (int i = 4; i < 6; i++) leds[getPhysicalIndex(b, i)] = DEFAULT_COLOR;
+            } else if (b == currentMinuteBlock) {
+                for (int i = 0; i < 6; i++) leds[getPhysicalIndex(b, i)] = MINUTE_COLOR;
+            } else {
+                for (int i = 0; i < 6; i++) leds[getPhysicalIndex(b, i)] = DEFAULT_COLOR;
+            }
+        }
+    }
+
+    // --- BACKGROUND WIFI SYNC INDICATOR ---
+    // Visually overlay a spinning cyan dot if Core 0 is currently syncing in the background
+    if (isBackgroundSyncing) {
+        int spinPos = (millis() / 150) % 12;
+        leds[getPhysicalIndex(spinPos, 6)] = CRGB(0x00AAFF);
+    }
+
+    FastLED.show();
+    delay(50);
 }

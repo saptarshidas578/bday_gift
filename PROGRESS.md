@@ -44,6 +44,7 @@ Hardware verification on phone: test effect colors, rainbow color mode, and conn
 ## Decisions
 
 (date, decision, why)
+- 2026-11-04: Resolved solid-white LED lock. Restored DATA_PIN to GPIO 5 (D5) and buzzer to GPIO 18. Removed WRITE_ENC and READ_ENC gates on BLE characteristics so phone writes execute reliably regardless of bonding/encryption state. Added NVS boot guards and reset stale NVS state to Rainbow Wave effect (#6, Rainbow mode). Verified live color animation over serial.
 - 2026-11-02: Fixed effect color rendering and BLE stability. Added getEffectColor() across all 66 effects in effects_static, effects_motion, effects_particles, effects_geometric, effects_celebration, effects_retro, and effects_gradient so every effect responds dynamically to custom colors, dual blend, palette, and rainbow mode. Prevented accidental disconnect when tapping top connection chip. Flash verified on ESP32 (COM8) and app installed on phone.
 - 2026-11-02: Completed Task QA-1. Fixed 14 bugs across Areas A-K: BLE scanner collision stopping prior to connect, real device address handling on connection chip (preventing app crash), awaiting onDeviceReady for pairing success, removing redundant back-to-back SetMode packets, adding getEffectColor support for rainbow/dual/palette effect modes, and 3-digit HEX parsing.
 - 2026-11-02: Completed Task C04. Built signed release APK (PixelGift-release.apk) with external keystore outside git, published user guide (docs/user-guide.md), power validation at 2500 mA cap, and tagged v1.0-gift.

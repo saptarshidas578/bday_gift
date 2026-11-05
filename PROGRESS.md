@@ -4,7 +4,7 @@ Agent: update this at the end of every task, then commit. Keep it terse. Legend:
 
 ## Next step
 
-Hardware verification on ESP32 & phone: Connect phone via USB to install updated 10x10 APK (`cd app; .\gradlew installDebug`), plug in ESP32 to flash firmware (`pio run -t upload`), verify Draw Mode (10x10 canvas, 300B frame), custom text message scrolling (`SET_TEXT` / `SHOW_MESSAGE`), and Batch 3 effects (#54-#66) on live hardware.
+Hardware verification on ESP32 & phone: App installed and launched on phone (SM-N981U). Plug in ESP32 to flash updated firmware (`& "$env:USERPROFILE\.platformio\penv\Scripts\pio.exe" run -d firmware -t upload`), verify Draw Mode (10×10 canvas, 300B frame), custom text message scrolling (`SET_TEXT` / `SHOW_MESSAGE`), and Batch 3 effects (#54–#66) on live hardware.
 
 ## Phases
 

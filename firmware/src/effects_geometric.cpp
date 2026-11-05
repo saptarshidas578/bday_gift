@@ -1,5 +1,6 @@
 #include "effects.h"
 #include "matrix.h"
+#include "storage.h"
 
 // 47. Ripple
 void renderRipple(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
@@ -11,7 +12,25 @@ void renderRipple(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
         for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
             float dist = sqrtf((x - cx) * (x - cx) + (y - cy) * (y - cy));
             uint8_t wave = sin8((uint8_t)((dist * 40.0f) - (t * 40.0f)));
-            matrixSetPixel(x, y, CHSV(140 + (wave / 4), 220, wave));
+            CRGB col;
+            if (params.colorMode == 1) {
+                CRGB c1 = (params.c1 == CRGB(0,0,0)) ? CRGB::Cyan : params.c1;
+                CRGB c2 = (params.c2 == CRGB(0,0,0)) ? CRGB::DarkBlue : params.c2;
+                col = blend(c1, c2, wave);
+            } else if (params.colorMode == 2 && state.paletteCount > 0) {
+                uint16_t total = (uint16_t)(wave * state.paletteCount);
+                uint8_t step = (total >> 8) % state.paletteCount;
+                uint8_t nextStep = (step + 1) % state.paletteCount;
+                col = blend(state.palette[step], state.palette[nextStep], total & 0xFF);
+            } else if (params.colorMode == 3) {
+                col = CHSV((uint8_t)(140 + (wave / 4) + (t_ms * spd / 30)), 220, 255);
+            } else if (params.c1 != CRGB(0,0,0)) {
+                col = params.c1;
+            } else {
+                col = CHSV(140 + (wave / 4), 220, 255);
+            }
+            col.nscale8_video(wave);
+            matrixSetPixel(x, y, col);
         }
     }
 }
@@ -43,7 +62,23 @@ void renderPlasma(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
             float v2 = sinf(y * 0.6f + t * 1.2f);
             float v3 = sinf((x + y) * 0.5f + t * 0.8f);
             uint8_t hue = (uint8_t)((v1 + v2 + v3 + 3.0f) * 42.0f);
-            matrixSetPixel(x, y, CHSV(hue, 220, 255));
+            CRGB col;
+            if (params.colorMode == 1) {
+                CRGB c1 = (params.c1 == CRGB(0,0,0)) ? CRGB::Magenta : params.c1;
+                CRGB c2 = (params.c2 == CRGB(0,0,0)) ? CRGB::Cyan : params.c2;
+                col = blend(c1, c2, sin8(hue));
+            } else if (params.colorMode == 2 && state.paletteCount > 0) {
+                uint16_t total = (uint16_t)(hue * state.paletteCount);
+                uint8_t step = (total >> 8) % state.paletteCount;
+                uint8_t nextStep = (step + 1) % state.paletteCount;
+                col = blend(state.palette[step], state.palette[nextStep], total & 0xFF);
+            } else if (params.colorMode == 0 && params.c1 != CRGB(0,0,0)) {
+                col = params.c1;
+                col.nscale8_video(sin8(hue));
+            } else {
+                col = CHSV(hue, 220, 255);
+            }
+            matrixSetPixel(x, y, col);
         }
     }
 }
@@ -56,7 +91,7 @@ void renderKaleidoscope(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     for (uint8_t y = 0; y < 5; y++) {
         for (uint8_t x = 0; x < 5; x++) {
             uint8_t hue = inoise8(x * 50, y * 50 + t);
-            CRGB col = CHSV(hue, 230, 255);
+            CRGB col = getEffectColor(params, t_ms, hue, CHSV(hue, 230, 255));
             matrixSetPixel(x, y, col);
             matrixSetPixel(MATRIX_WIDTH - 1 - x, y, col);
             matrixSetPixel(x, MATRIX_HEIGHT - 1 - y, col);

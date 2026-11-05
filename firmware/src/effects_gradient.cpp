@@ -171,7 +171,24 @@ void renderPaletteScroll(uint32_t t_ms, const EffectParams& params, CRGB* leds) 
     uint8_t step = (t_ms * spd / 30) & 0xFF;
     for (uint8_t y = 0; y < MATRIX_HEIGHT; y++) {
         for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
-            matrixSetPixel(x, y, ColorFromPalette(RainbowColors_p, step + (x * 12) + (y * 12)));
+            uint8_t pos = (step + (x * 14) + (y * 14)) & 0xFF;
+            CRGB pixelCol;
+            if (params.colorMode == 1) {
+                CRGB c1 = (params.c1 == CRGB(0,0,0)) ? CRGB::Cyan : params.c1;
+                CRGB c2 = (params.c2 == CRGB(0,0,0)) ? CRGB::Magenta : params.c2;
+                pixelCol = blend(c1, c2, sin8(pos));
+            } else if (params.colorMode == 2 && state.paletteCount > 0) {
+                uint16_t total = (uint16_t)(pos * state.paletteCount);
+                uint8_t pStep = (total >> 8) % state.paletteCount;
+                uint8_t nextStep = (pStep + 1) % state.paletteCount;
+                pixelCol = blend(state.palette[pStep], state.palette[nextStep], total & 0xFF);
+            } else if (params.colorMode == 0 && params.c1 != CRGB(0,0,0)) {
+                pixelCol = params.c1;
+                pixelCol.nscale8_video(sin8(pos));
+            } else {
+                pixelCol = CHSV(pos, 240, 255);
+            }
+            matrixSetPixel(x, y, pixelCol);
         }
     }
 }

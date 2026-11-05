@@ -66,12 +66,27 @@ void renderLava(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
         for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
             uint8_t n = inoise8(x * 50, (y * 50) + (t_ms * spd / 30));
             CRGB col;
-            if (n < 130) {
-                col = blend(CRGB(20, 0, 0), CRGB(180, 20, 0), map(n, 0, 130, 0, 255));
-            } else if (n < 200) {
-                col = blend(CRGB(180, 20, 0), CRGB(255, 120, 0), map(n, 130, 200, 0, 255));
+            if (params.colorMode == 1) {
+                CRGB c1 = (params.c1 == CRGB(0,0,0)) ? CRGB(180, 20, 0) : params.c1;
+                CRGB c2 = (params.c2 == CRGB(0,0,0)) ? CRGB(255, 230, 50) : params.c2;
+                col = blend(c1, c2, n);
+            } else if (params.colorMode == 2 && state.paletteCount > 0) {
+                uint16_t total = (uint16_t)(n * state.paletteCount);
+                uint8_t step = (total >> 8) % state.paletteCount;
+                uint8_t nextStep = (step + 1) % state.paletteCount;
+                col = blend(state.palette[step], state.palette[nextStep], total & 0xFF);
+            } else if (params.colorMode == 3) {
+                col = CHSV((n + (t_ms * spd / 35)) & 0xFF, 240, 255);
+            } else if (params.c1 != CRGB(0,0,0)) {
+                col = blend(CRGB(20, 0, 0), params.c1, n);
             } else {
-                col = blend(CRGB(255, 120, 0), CRGB(255, 230, 50), map(n, 200, 255, 0, 255));
+                if (n < 130) {
+                    col = blend(CRGB(20, 0, 0), CRGB(180, 20, 0), map(n, 0, 130, 0, 255));
+                } else if (n < 200) {
+                    col = blend(CRGB(180, 20, 0), CRGB(255, 120, 0), map(n, 130, 200, 0, 255));
+                } else {
+                    col = blend(CRGB(255, 120, 0), CRGB(255, 230, 50), map(n, 200, 255, 0, 255));
+                }
             }
             matrixSetPixel(x, y, col);
         }
@@ -84,7 +99,23 @@ void renderOcean(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     for (uint8_t y = 0; y < MATRIX_HEIGHT; y++) {
         for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
             uint8_t n = inoise8(x * 45, (y * 45) + (t_ms * spd / 25));
-            CRGB col = blend(CRGB(0, 20, 120), CRGB(0, 180, 200), n);
+            CRGB col;
+            if (params.colorMode == 1) {
+                CRGB c1 = (params.c1 == CRGB(0,0,0)) ? CRGB(0, 20, 120) : params.c1;
+                CRGB c2 = (params.c2 == CRGB(0,0,0)) ? CRGB(0, 180, 200) : params.c2;
+                col = blend(c1, c2, n);
+            } else if (params.colorMode == 2 && state.paletteCount > 0) {
+                uint16_t total = (uint16_t)(n * state.paletteCount);
+                uint8_t step = (total >> 8) % state.paletteCount;
+                uint8_t nextStep = (step + 1) % state.paletteCount;
+                col = blend(state.palette[step], state.palette[nextStep], total & 0xFF);
+            } else if (params.colorMode == 3) {
+                col = CHSV((n + (t_ms * spd / 30)) & 0xFF, 240, 255);
+            } else if (params.c1 != CRGB(0,0,0)) {
+                col = blend(CRGB(0, 5, 25), params.c1, n);
+            } else {
+                col = blend(CRGB(0, 20, 120), CRGB(0, 180, 200), n);
+            }
             matrixSetPixel(x, y, col);
         }
     }
@@ -102,7 +133,8 @@ void renderLightning(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
         nextFlash = t_ms + random16(1500, 4000);
     }
     if (t_ms < flashUntil) {
-        fill_solid(leds, NUM_LEDS, CRGB(200, 220, 255));
+        CRGB col = getEffectColor(params, t_ms, 0, CRGB(200, 220, 255));
+        fill_solid(leds, NUM_LEDS, col);
     }
 }
 
@@ -112,7 +144,23 @@ void renderNorthernLights(uint32_t t_ms, const EffectParams& params, CRGB* leds)
     for (uint8_t y = 0; y < MATRIX_HEIGHT; y++) {
         for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
             uint8_t n = inoise8(x * 35, (y * 25) + (t_ms * spd / 30));
-            CRGB col = blend(CRGB(0, 180, 80), CRGB(160, 0, 200), n);
+            CRGB col;
+            if (params.colorMode == 1) {
+                CRGB c1 = (params.c1 == CRGB(0,0,0)) ? CRGB(0, 180, 80) : params.c1;
+                CRGB c2 = (params.c2 == CRGB(0,0,0)) ? CRGB(160, 0, 200) : params.c2;
+                col = blend(c1, c2, n);
+            } else if (params.colorMode == 2 && state.paletteCount > 0) {
+                uint16_t total = (uint16_t)(n * state.paletteCount);
+                uint8_t step = (total >> 8) % state.paletteCount;
+                uint8_t nextStep = (step + 1) % state.paletteCount;
+                col = blend(state.palette[step], state.palette[nextStep], total & 0xFF);
+            } else if (params.colorMode == 3) {
+                col = CHSV((n + (t_ms * spd / 30)) & 0xFF, 240, 255);
+            } else if (params.c1 != CRGB(0,0,0)) {
+                col = blend(CRGB(0, 20, 10), params.c1, n);
+            } else {
+                col = blend(CRGB(0, 180, 80), CRGB(160, 0, 200), n);
+            }
             col.nscale8_video(scale8(n, 200) + 55);
             matrixSetPixel(x, y, col);
         }
@@ -125,12 +173,29 @@ void renderEmbers(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     for (uint8_t y = 0; y < MATRIX_HEIGHT; y++) {
         for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
             uint8_t n = inoise8(x * 60, (y * 60) + (t_ms * spd / 20));
-            CRGB col = blend(CRGB(40, 5, 0), CRGB(255, 60, 0), n);
+            CRGB col;
+            if (params.colorMode == 1) {
+                CRGB c1 = (params.c1 == CRGB(0,0,0)) ? CRGB(255, 60, 0) : params.c1;
+                CRGB c2 = (params.c2 == CRGB(0,0,0)) ? CRGB(255, 200, 80) : params.c2;
+                col = blend(c1, c2, n);
+            } else if (params.colorMode == 2 && state.paletteCount > 0) {
+                uint16_t total = (uint16_t)(n * state.paletteCount);
+                uint8_t step = (total >> 8) % state.paletteCount;
+                uint8_t nextStep = (step + 1) % state.paletteCount;
+                col = blend(state.palette[step], state.palette[nextStep], total & 0xFF);
+            } else if (params.colorMode == 3) {
+                col = CHSV((n + (t_ms * spd / 30)) & 0xFF, 240, 255);
+            } else if (params.c1 != CRGB(0,0,0)) {
+                col = blend(CRGB(15, 0, 0), params.c1, n);
+            } else {
+                col = blend(CRGB(40, 5, 0), CRGB(255, 60, 0), n);
+            }
             matrixSetPixel(x, y, col);
         }
     }
     if (random8() < 40) {
-        matrixSetPixel(random8(MATRIX_WIDTH), random8(MATRIX_HEIGHT), CRGB(255, 200, 80));
+        CRGB sparkCol = getEffectColor(params, t_ms, random8(), CRGB(255, 200, 80));
+        matrixSetPixel(random8(MATRIX_WIDTH), random8(MATRIX_HEIGHT), sparkCol);
     }
 }
 
@@ -140,11 +205,26 @@ void renderStorm(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     for (uint8_t y = 0; y < MATRIX_HEIGHT; y++) {
         for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
             uint8_t n = inoise8(x * 40, (y * 40) + (t_ms * spd / 20));
-            CRGB col = CRGB(scale8(n, 20), scale8(n, 40), scale8(n, 80));
+            CRGB col;
+            if (params.colorMode == 1) {
+                CRGB c1 = (params.c1 == CRGB(0,0,0)) ? CRGB(20, 40, 80) : params.c1;
+                CRGB c2 = (params.c2 == CRGB(0,0,0)) ? CRGB(80, 160, 220) : params.c2;
+                col = blend(c1, c2, n);
+            } else if (params.colorMode == 2 && state.paletteCount > 0) {
+                uint16_t total = (uint16_t)(n * state.paletteCount);
+                uint8_t step = (total >> 8) % state.paletteCount;
+                uint8_t nextStep = (step + 1) % state.paletteCount;
+                col = blend(state.palette[step], state.palette[nextStep], total & 0xFF);
+            } else if (params.colorMode == 3) {
+                col = CHSV((n + (t_ms * spd / 30)) & 0xFF, 240, 255);
+            } else if (params.c1 != CRGB(0,0,0)) {
+                col = blend(CRGB(5, 5, 10), params.c1, n);
+            } else {
+                col = CRGB(scale8(n, 20), scale8(n, 40), scale8(n, 80));
+            }
             matrixSetPixel(x, y, col);
         }
     }
-    // Occasional micro-flash
     if (random8() < 5) {
         matrixSetPixel(random8(MATRIX_WIDTH), random8(MATRIX_HEIGHT), CRGB::White);
     }
@@ -159,6 +239,7 @@ void renderWind(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     for (uint8_t y = 0; y < MATRIX_HEIGHT; y++) {
         uint8_t offset = inoise8(y * 40, step * 4);
         uint8_t x = map(offset, 0, 255, 0, MATRIX_WIDTH - 1);
-        matrixSetPixel(x, y, CRGB(180, 220, 255));
+        CRGB col = getEffectColor(params, t_ms, y * 25, CRGB(180, 220, 255));
+        matrixSetPixel(x, y, col);
     }
 }

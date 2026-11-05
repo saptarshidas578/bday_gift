@@ -143,14 +143,14 @@
     "id": 21,
     "name": "Wipe",
     "category": "Motion",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": false },
+    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
     "defaults": { "speed": 50, "dir": 1, "mirror": 0, "colorMode": 0 }
   },
   {
     "id": 22,
     "name": "Bounce",
     "category": "Motion",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": false },
+    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
     "defaults": { "speed": 55, "dir": 3, "mirror": 0, "colorMode": 0 }
   },
   {
@@ -164,35 +164,14 @@
     "id": 24,
     "name": "Radar",
     "category": "Motion",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": false },
-    "defaults": { "speed": 65, "dir": 1, "mirror": 0, "colorMode": 0 }
-  },
-  {
-    "id": 25,
-    "name": "Rain",
-    "category": "Motion",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": false },
-    "defaults": { "speed": 60, "dir": 3, "mirror": 0, "colorMode": 0 }
-  },
-  {
-    "id": 26,
-    "name": "Waterfall",
-    "category": "Motion",
     "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 55, "dir": 3, "mirror": 0, "colorMode": 0 }
-  },
-  {
-    "id": 27,
-    "name": "Snake Path",
-    "category": "Motion",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": false },
-    "defaults": { "speed": 60, "dir": 1, "mirror": 0, "colorMode": 0 }
+    "defaults": { "speed": 65, "dir": 1, "mirror": 0, "colorMode": 0 }
   },
   {
     "id": 28,
     "name": "Comet",
     "category": "Motion",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": false },
+    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
     "defaults": { "speed": 70, "dir": 1, "mirror": 0, "colorMode": 0 }
   },
   {
@@ -206,7 +185,7 @@
     "id": 30,
     "name": "Row Sweep",
     "category": "Motion",
-    "supports": { "dir": true, "mirror": true, "colors": true, "palette": false },
+    "supports": { "dir": true, "mirror": true, "colors": true, "palette": true },
     "defaults": { "speed": 55, "dir": 2, "mirror": 0, "colorMode": 0 }
   },
   {
@@ -220,7 +199,7 @@
     "id": 32,
     "name": "Fireflies",
     "category": "Particles",
-    "supports": { "dir": false, "mirror": false, "colors": true, "palette": false },
+    "supports": { "dir": false, "mirror": false, "colors": true, "palette": true },
     "defaults": { "speed": 45, "dir": 0, "mirror": 0, "colorMode": 0 }
   },
   {
@@ -234,36 +213,29 @@
     "id": 34,
     "name": "Snow",
     "category": "Particles",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": false },
+    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
     "defaults": { "speed": 40, "dir": 3, "mirror": 0, "colorMode": 0 }
   },
   {
     "id": 35,
     "name": "Confetti",
     "category": "Particles",
-    "supports": { "dir": true, "mirror": false, "colors": false, "palette": true },
+    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
     "defaults": { "speed": 55, "dir": 3, "mirror": 0, "colorMode": 2 }
   },
   {
     "id": 36,
     "name": "Meteor",
     "category": "Particles",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": false },
+    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
     "defaults": { "speed": 75, "dir": 3, "mirror": 0, "colorMode": 0 }
   },
   {
     "id": 37,
     "name": "Bubbles",
     "category": "Particles",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": false },
+    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
     "defaults": { "speed": 45, "dir": 2, "mirror": 0, "colorMode": 0 }
-  },
-  {
-    "id": 38,
-    "name": "Glitter",
-    "category": "Particles",
-    "supports": { "dir": false, "mirror": false, "colors": true, "palette": false },
-    "defaults": { "speed": 60, "dir": 0, "mirror": 0, "colorMode": 0 }
   },
   {
     "id": 39,
@@ -276,49 +248,49 @@
     "id": 40,
     "name": "Lava",
     "category": "Nature/fire",
-    "supports": { "dir": true, "mirror": false, "colors": false, "palette": true },
+    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
     "defaults": { "speed": 35, "dir": 3, "mirror": 0, "colorMode": 2 }
   },
   {
     "id": 41,
     "name": "Ocean",
     "category": "Nature/fire",
-    "supports": { "dir": true, "mirror": false, "colors": false, "palette": true },
+    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
     "defaults": { "speed": 40, "dir": 1, "mirror": 0, "colorMode": 2 }
   },
   {
     "id": 42,
     "name": "Lightning",
     "category": "Nature/fire",
-    "supports": { "dir": false, "mirror": false, "colors": true, "palette": false },
+    "supports": { "dir": false, "mirror": false, "colors": true, "palette": true },
     "defaults": { "speed": 85, "dir": 0, "mirror": 0, "colorMode": 0 }
   },
   {
     "id": 43,
     "name": "Northern Lights",
     "category": "Nature/fire",
-    "supports": { "dir": true, "mirror": true, "colors": false, "palette": true },
+    "supports": { "dir": true, "mirror": true, "colors": true, "palette": true },
     "defaults": { "speed": 40, "dir": 1, "mirror": 1, "colorMode": 2 }
   },
   {
     "id": 44,
     "name": "Embers",
     "category": "Nature/fire",
-    "supports": { "dir": true, "mirror": false, "colors": false, "palette": true },
+    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
     "defaults": { "speed": 45, "dir": 2, "mirror": 0, "colorMode": 2 }
   },
   {
     "id": 45,
     "name": "Storm",
     "category": "Nature/fire",
-    "supports": { "dir": false, "mirror": false, "colors": true, "palette": false },
+    "supports": { "dir": false, "mirror": false, "colors": true, "palette": true },
     "defaults": { "speed": 70, "dir": 0, "mirror": 0, "colorMode": 0 }
   },
   {
     "id": 46,
     "name": "Wind",
     "category": "Nature/fire",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": false },
+    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
     "defaults": { "speed": 60, "dir": 1, "mirror": 0, "colorMode": 0 }
   },
   {
@@ -329,17 +301,10 @@
     "defaults": { "speed": 50, "dir": 5, "mirror": 0, "colorMode": 0 }
   },
   {
-    "id": 48,
-    "name": "Expanding Squares",
-    "category": "Geometric",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 55, "dir": 5, "mirror": 0, "colorMode": 0 }
-  },
-  {
     "id": 49,
     "name": "Plasma",
     "category": "Geometric",
-    "supports": { "dir": false, "mirror": false, "colors": false, "palette": true },
+    "supports": { "dir": false, "mirror": false, "colors": true, "palette": true },
     "defaults": { "speed": 45, "dir": 0, "mirror": 0, "colorMode": 2 }
   },
   {

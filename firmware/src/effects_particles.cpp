@@ -21,7 +21,7 @@ void renderTwinkle(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
         for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
             uint8_t n = inoise8(x * 90, (y * 90) + (t_ms * spd / 50));
             uint8_t b = (n > 180) ? map(n, 180, 255, 0, 255) : 0;
-            CRGB col = (params.c1 == CRGB(0,0,0)) ? CRGB::Gold : params.c1;
+            CRGB col = getEffectColor(params, t_ms, x * MATRIX_WIDTH + y, CRGB::Gold);
             col.nscale8_video(b);
             matrixSetPixel(x, y, col);
         }
@@ -39,7 +39,15 @@ void renderFireflies(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
         int8_t y = (int8_t)(4.5f + cosf(t * 0.9f + f * 2.3f) * 3.8f);
         if (x >= 0 && x < MATRIX_WIDTH && y >= 0 && y < MATRIX_HEIGHT) {
             uint8_t glow = sin8((uint8_t)(t * 100 + f * 60));
-            CRGB col = CRGB(glow, glow, 20);
+            CRGB col;
+            if (params.colorMode == 1) {
+                CRGB c1 = (params.c1 == CRGB(0,0,0)) ? CRGB::Yellow : params.c1;
+                CRGB c2 = (params.c2 == CRGB(0,0,0)) ? CRGB::Green : params.c2;
+                col = (f % 2 == 0) ? c1 : c2;
+            } else {
+                col = getEffectColor(params, t_ms, f * 60, CRGB(glow, glow, 20));
+            }
+            col.nscale8_video(glow);
             matrixSetPixel(x, y, col);
         }
     }
@@ -55,7 +63,8 @@ void renderFireworks(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     if (phase < 600) {
         // Rocket rising
         uint8_t y = map(phase, 0, 600, MATRIX_HEIGHT - 1, 3);
-        matrixSetPixel(4, y, CRGB::White);
+        CRGB rk = (params.c1 != CRGB(0,0,0)) ? params.c1 : CRGB::White;
+        matrixSetPixel(4, y, rk);
     } else {
         // Explosion burst
         float r = map(phase, 600, cycle, 0, 45) / 10.0f;
@@ -65,7 +74,8 @@ void renderFireworks(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
             int8_t x = (int8_t)(4.5f + cosf(ang) * r);
             int8_t y = (int8_t)(3.5f + sinf(ang) * r);
             if (x >= 0 && x < MATRIX_WIDTH && y >= 0 && y < MATRIX_HEIGHT) {
-                CRGB col = CHSV(a * 32, 220, fade);
+                CRGB col = getEffectColor(params, t_ms, a * 30, CHSV(a * 32, 220, 255));
+                col.nscale8_video(fade);
                 matrixSetPixel(x, y, col);
             }
         }
@@ -117,7 +127,15 @@ void renderMeteor(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
         int8_t x = step - k;
         int8_t y = step - k;
         if (x >= 0 && x < MATRIX_WIDTH && y >= 0 && y < MATRIX_HEIGHT) {
-            matrixSetPixel(x, y, (k == 0) ? CRGB::White : CRGB(0, 180, 255));
+            CRGB col;
+            if (params.colorMode == 1) {
+                CRGB c1 = (params.c1 == CRGB(0,0,0)) ? CRGB::White : params.c1;
+                CRGB c2 = (params.c2 == CRGB(0,0,0)) ? CRGB(0, 180, 255) : params.c2;
+                col = (k == 0) ? c1 : c2;
+            } else {
+                col = getEffectColor(params, t_ms, (step + k) * 30, (k == 0) ? CRGB::White : CRGB(0, 180, 255));
+            }
+            matrixSetPixel(x, y, col);
         }
     }
 }
@@ -132,7 +150,8 @@ void renderBubbles(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
         int8_t x = (int8_t)(3.0f + b * 2.5f + sinf(t + b) * 1.2f);
         int8_t y = (int8_t)(MATRIX_HEIGHT - 1 - fmodf(t * 2.0f + b * 3.0f, (float)MATRIX_HEIGHT));
         if (x >= 0 && x < MATRIX_WIDTH && y >= 0 && y < MATRIX_HEIGHT) {
-            matrixSetPixel(x, y, CRGB(100, 200, 255));
+            CRGB col = getEffectColor(params, t_ms, b * 70, CRGB(100, 200, 255));
+            matrixSetPixel(x, y, col);
         }
     }
 }
@@ -156,6 +175,7 @@ void renderStardust(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
         uint8_t rx = random8(MATRIX_WIDTH);
         uint8_t ry = random8(MATRIX_HEIGHT);
         uint8_t hue = (t_ms * spd / 60 + s * 40) & 0xFF;
-        matrixSetPixel(rx, ry, CHSV(hue, 180, 255));
+        CRGB col = getEffectColor(params, t_ms, rx * MATRIX_WIDTH + ry, CHSV(hue, 180, 255));
+        matrixSetPixel(rx, ry, col);
     }
 }

@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -22,7 +23,12 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.pixelgift.app.data.repository.AssetEffectCatalogRepository
 import com.pixelgift.app.data.repository.DataStoreAppDataRepository
+import com.pixelgift.app.ui.DeviceViewModelFactory
+import com.pixelgift.app.ui.EffectsViewModelFactory
+import com.pixelgift.app.ui.MagicViewModelFactory
 import com.pixelgift.app.ui.MainViewModel
+import com.pixelgift.app.ui.StudioViewModelFactory
+import com.pixelgift.app.ui.TimeViewModelFactory
 import com.pixelgift.app.ui.components.PixelGiftBottomBar
 import com.pixelgift.app.ui.components.PixelGiftTopBar
 import com.pixelgift.app.ui.device.DeviceViewModel
@@ -61,19 +67,27 @@ fun PixelGiftApp(
     val statusSnapshot by activeViewModel.statusSnapshot.collectAsState()
 
     val appDataRepository = remember { DataStoreAppDataRepository(context) }
-    val studioViewModel = remember { StudioViewModel(activeViewModel.transport, appDataRepository) }
+    val studioViewModel: StudioViewModel = viewModel(
+        factory = StudioViewModelFactory(activeViewModel.transport, appDataRepository)
+    )
 
     val effectCatalogRepository = remember { AssetEffectCatalogRepository(context) }
-    val effectsViewModel = remember {
-        EffectsViewModel(
+    val effectsViewModel: EffectsViewModel = viewModel(
+        factory = EffectsViewModelFactory(
             transport = activeViewModel.transport,
             catalogRepository = effectCatalogRepository,
             appDataRepository = appDataRepository
         )
-    }
-    val magicViewModel = remember { MagicViewModel(activeViewModel.transport) }
-    val timeViewModel = remember { TimeViewModel(activeViewModel.transport) }
-    val deviceViewModel = remember { DeviceViewModel(activeViewModel.transport) }
+    )
+    val magicViewModel: MagicViewModel = viewModel(
+        factory = MagicViewModelFactory(activeViewModel.transport)
+    )
+    val timeViewModel: TimeViewModel = viewModel(
+        factory = TimeViewModelFactory(activeViewModel.transport)
+    )
+    val deviceViewModel: DeviceViewModel = viewModel(
+        factory = DeviceViewModelFactory(activeViewModel.transport)
+    )
 
     LaunchedEffect(statusSnapshot) {
         timeViewModel.updateFromSnapshot(statusSnapshot)
@@ -87,18 +101,7 @@ fun PixelGiftApp(
         }
     }
 
-    val studioSelectedColor by studioViewModel.selectedColor.collectAsState()
-    val studioCommittedColor by studioViewModel.committedColor.collectAsState()
-    val studioBrightness by studioViewModel.brightness.collectAsState()
-    val studioFavoriteColors by studioViewModel.favoriteColors.collectAsState()
-    val studioRecentColors by studioViewModel.recentColors.collectAsState()
     val studioPalettes by studioViewModel.palettes.collectAsState()
-    val studioActiveScene by studioViewModel.activeScene.collectAsState()
-    val studioSceneFeedback by studioViewModel.sceneFeedback.collectAsState()
-    val studioHexInput by studioViewModel.hexInput.collectAsState()
-    val studioRInput by studioViewModel.rInput.collectAsState()
-    val studioGInput by studioViewModel.gInput.collectAsState()
-    val studioBInput by studioViewModel.bInput.collectAsState()
 
     val currentScreen = Screen.bottomNavItems.find { it.route == currentRoute } ?: Screen.Studio
     val currentTitle = stringResource(currentScreen.titleRes)
@@ -143,47 +146,7 @@ fun PixelGiftApp(
                     .widthIn(max = 840.dp)
             ) {
                 composable(Screen.Studio.route) {
-                    StudioScreen(
-                        selectedColor = studioSelectedColor,
-                        committedColor = studioCommittedColor,
-                        brightness = studioBrightness,
-                        favoriteColors = studioFavoriteColors,
-                        recentColors = studioRecentColors,
-                        palettes = studioPalettes,
-                        activeScene = studioActiveScene,
-                        sceneFeedback = studioSceneFeedback,
-                        hexInput = studioHexInput,
-                        rInput = studioRInput,
-                        gInput = studioGInput,
-                        bInput = studioBInput,
-                        onColorDragged = { studioViewModel.onColorDragged(it) },
-                        onBrightnessChanged = { studioViewModel.onBrightnessChanged(it) },
-                        onHexChanged = { studioViewModel.onHexChanged(it) },
-                        onRgbChanged = { r, g, b -> studioViewModel.onRgbChannelChanged(r, g, b) },
-                        onRecentColorSelected = { studioViewModel.onRecentColorSelected(it) },
-                        onFavoriteSelected = { studioViewModel.onFavoriteSelected(it) },
-                        onToggleFavorite = {
-                            if (studioViewModel.isFavorite()) {
-                                studioViewModel.onRemoveFavorite(studioSelectedColor)
-                            } else {
-                                studioViewModel.onAddFavorite(studioSelectedColor)
-                            }
-                        },
-                        isFavorite = studioViewModel.isFavorite(studioSelectedColor),
-                        onLoadScene = { studioViewModel.onLoadScene(it) },
-                        onSaveScene = { studioViewModel.onSaveScene(it) },
-                        onClearSceneFeedback = { studioViewModel.clearSceneFeedback() },
-                        onPaletteSelected = { studioViewModel.onPaletteSelected(it) },
-                        onCreatePalette = { name, colors -> studioViewModel.onCreatePalette(name, colors) },
-                        onRenamePalette = { id, newName -> studioViewModel.onRenamePalette(id, newName) },
-                        onDeletePalette = { studioViewModel.onDeletePalette(it) },
-                        onReorderPalettes = { studioViewModel.onReorderPalettes(it) },
-                        onAddColorToPalette = { studioViewModel.onAddColorToPalette(it) },
-                        onExportJson = { studioViewModel.exportJson() },
-                        onImportJson = { studioViewModel.importJson(it) },
-                        onCancel = { studioViewModel.onCancel() },
-                        onOk = { studioViewModel.onCommitOk() }
-                    )
+                    StudioRoute(viewModel = studioViewModel)
                 }
                 composable(Screen.Effects.route) {
                     EffectsScreen(

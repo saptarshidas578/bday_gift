@@ -7,6 +7,20 @@ build/
 local.properties
 *.jks
 *.keystore
+*.apk
+*.aab
+output-metadata.json
+
+# OS metadata
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+# Python artifacts
+*.pyc
+*.pyo
+__pycache__/
 
 # Secrets
 firmware/include/secrets.h

@@ -135,3 +135,4 @@
 6. **Remote Internet Glow ("Thinking of You")**: Should PixelGift remain **strictly offline BLE-only** (zero network setup, long-term privacy), or would you like **optional home WiFi connectivity** to send remote heart glows over the internet?
 7. **Screen File Refactoring**: May I proceed in the next session with **decoupling the 1000-line screen files** into modular sub-250-line files to improve token efficiency and maintenance?
 8. **App Onboarding Passkey Card**: In the pairing screen, should we show an illustration of the **handwritten gift card with the passkey**, or a direct automatic device list?
+

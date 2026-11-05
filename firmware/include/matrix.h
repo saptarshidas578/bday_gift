@@ -29,11 +29,14 @@ void matrixClear();
 // Push pixel buffer to LEDs via FastLED.show()
 void matrixShow();
 
-// Set brightness safely clamped to [0, 255]
+// Set brightness safely clamped to [0, 255] with CIE 1931 perceptual curve
 void matrixSetBrightness(uint8_t brightness);
 
 // Get current brightness
 uint8_t matrixGetBrightness();
+
+// Map linear 0..255 brightness to human-perceptual CIE 1931 brightness
+uint8_t matrixCieGamma(uint8_t input);
 
 // Direct pointer to the CRGB buffer
 CRGB* matrixGetLeds();

@@ -14,6 +14,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cake
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Send
+import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Button
@@ -46,8 +50,19 @@ fun BirthdaySection(
     onPlayShow: () -> Unit,
     onStopShow: () -> Unit,
     onSaveContent: () -> Unit,
+    onSendHeartbeat: () -> Unit = {},
+    onSendSecretNote: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val countdownNotes = listOf(
+        "Day 1 (Jan 18)" to "A little spark of joy for the most wonderful person.",
+        "Day 2 (Jan 19)" to "Counting down the days until we celebrate your 19th!",
+        "Day 3 (Jan 20)" to "Every moment with you shines brighter than 100 LEDs.",
+        "Day 4 (Jan 21)" to "Thank you for being the sweetest warmth in my life.",
+        "Day 5 (Jan 22)" to "Almost there! Your smile lights up every room.",
+        "Day 6 (Jan 23)" to "Tomorrow is your big day - get ready for magic!",
+        "Day 7 (Jan 24)" to "Happy 19th Birthday Madhumitha! You mean the world to me."
+    )
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(PixelGiftSpacing.lg)
@@ -166,6 +181,77 @@ fun BirthdaySection(
                     Icon(Icons.Default.Save, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Save Name & Greeting to Device")
+                }
+            }
+        }
+
+        // Feature #16: "Thinking of You" Heartbeat Tap
+        Card(
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+            shape = MaterialTheme.shapes.large,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(PixelGiftSpacing.lg),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Thinking of You Tap", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text("Send an immediate glowing heartbeat pulse across her matrix right now.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Spacer(modifier = Modifier.width(PixelGiftSpacing.md))
+                Button(
+                    onClick = onSendHeartbeat,
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF2D55)),
+                    modifier = Modifier.defaultMinSize(minHeight = 48.dp)
+                ) {
+                    Icon(Icons.Default.Favorite, contentDescription = null, tint = Color.White)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Tap")
+                }
+            }
+        }
+
+        // Feature #4: 7-Day Countdown Daily Secret Gift Notes
+        Card(
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+            shape = MaterialTheme.shapes.large,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(PixelGiftSpacing.lg),
+                verticalArrangement = Arrangement.spacedBy(PixelGiftSpacing.md)
+            ) {
+                Text("Daily Secret Countdown Notes (Jan 18 - Jan 24)", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text("Tap any secret message to display and scroll it across the 10x10 matrix.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+
+                countdownNotes.forEach { (day, note) ->
+                    Card(
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        shape = MaterialTheme.shapes.medium,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(PixelGiftSpacing.md),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(day, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                Text(note, style = MaterialTheme.typography.bodySmall)
+                            }
+                            IconButton(onClick = { onSendSecretNote(note) }) {
+                                Icon(Icons.Default.Send, contentDescription = "Send Note", tint = MaterialTheme.colorScheme.primary)
+                            }
+                        }
+                    }
                 }
             }
         }

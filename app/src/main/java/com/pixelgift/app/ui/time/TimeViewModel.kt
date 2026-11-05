@@ -250,6 +250,27 @@ class TimeViewModel(
         onSetSleepTimer(0)
     }
 
+    // --- 5. Feature #13: Bedside Auto-Dimmer ---
+    private val _isAutoDimmerActive = MutableStateFlow(false)
+    val isAutoDimmerActive: StateFlow<Boolean> = _isAutoDimmerActive.asStateFlow()
+
+    fun onToggleAutoDimmer() {
+        val next = !_isAutoDimmerActive.value
+        _isAutoDimmerActive.value = next
+        sendCountForTesting++
+        if (next) {
+            _feedback.value = "Bedside Auto-Dimmer enabled (gentle <5% night glow)"
+            scope.launch {
+                transport.send(Command.SetBrightness(12))
+            }
+        } else {
+            _feedback.value = "Bedside Auto-Dimmer disabled"
+            scope.launch {
+                transport.send(Command.SetBrightness(40))
+            }
+        }
+    }
+
     fun clearFeedback() {
         _feedback.value = null
     }

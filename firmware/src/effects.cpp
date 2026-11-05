@@ -2,7 +2,7 @@
 #include "matrix.h"
 #include "storage.h"
 
-static EffectEntry effectTable[66];
+static EffectEntry effectTable[75];
 static size_t registeredCount = 0;
 
 void effectsInit() {
@@ -63,6 +63,7 @@ void effectsInit() {
     effectTable[registeredCount++] = {44, "Embers",            "Nature/fire",      renderEmbers};
     effectTable[registeredCount++] = {45, "Storm",             "Nature/fire",      renderStorm};
     effectTable[registeredCount++] = {46, "Wind",              "Nature/fire",      renderWind};
+    effectTable[registeredCount++] = {67, "Bioluminescent Ocean", "Nature/fire",   renderBioOcean};
 
     // --- Category 6: Geometric ---
     effectTable[registeredCount++] = {47, "Ripple",            "Geometric",        renderRipple};

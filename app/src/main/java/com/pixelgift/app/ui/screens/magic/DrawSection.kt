@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -62,6 +63,8 @@ fun DrawSection(
     onCommit: () -> Unit,
     onPromptSave: () -> Unit,
     onLoadDrawing: (PixelDrawing) -> Unit,
+    onPlayMemoriesReel: () -> Unit = {},
+    onEvolveLife: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val paletteOptions = listOf(
@@ -198,14 +201,35 @@ fun DrawSection(
                 }
             }
 
+            // Feature #12: Interactive Life Sandbox
+            OutlinedButton(
+                onClick = onEvolveLife,
+                modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 42.dp)
+            ) {
+                Text("🧬 Evolve Seed in Game of Life Sandbox", style = MaterialTheme.typography.labelMedium)
+            }
+
             feedback?.let {
                 Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
             }
 
-            // Saved Favorites Row
+            // Saved Favorites Row & Feature #5: Memories Reel
             if (savedDrawings.isNotEmpty()) {
                 Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(PixelGiftSpacing.xs)) {
-                    Text("Favorite & Preset Drawings", style = MaterialTheme.typography.labelMedium)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Favorite & Preset Drawings", style = MaterialTheme.typography.labelMedium)
+                        OutlinedButton(
+                            onClick = onPlayMemoriesReel,
+                            modifier = Modifier.defaultMinSize(minHeight = 36.dp)
+                        ) {
+                            Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Text("Play Memories Reel", style = MaterialTheme.typography.labelSmall)
+                        }
+                    }
                     Row(
                         modifier = Modifier.horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(PixelGiftSpacing.sm)

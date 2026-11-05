@@ -5,6 +5,9 @@
 
 void clockTimerInit();
 
+// Non-blocking background time & beacon checks
+void clockTimerLoop(uint32_t now);
+
 // Time sync (OP_SYNC_TIME)
 void syncTime(uint32_t epochUtc, int16_t tzOffsetMinutes);
 bool isTimeSynced();

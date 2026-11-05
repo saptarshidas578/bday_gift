@@ -93,6 +93,7 @@ void renderNorthernLights(uint32_t t_ms, const EffectParams& p, CRGB* leds);
 void renderEmbers(uint32_t t_ms, const EffectParams& p, CRGB* leds);
 void renderStorm(uint32_t t_ms, const EffectParams& p, CRGB* leds);
 void renderWind(uint32_t t_ms, const EffectParams& p, CRGB* leds);
+void renderBioOcean(uint32_t t_ms, const EffectParams& p, CRGB* leds);
 
 // --- Category 6: Geometric (47-55) ---
 void renderRipple(uint32_t t_ms, const EffectParams& p, CRGB* leds);

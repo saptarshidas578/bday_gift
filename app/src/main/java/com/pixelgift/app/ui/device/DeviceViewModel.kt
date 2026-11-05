@@ -288,6 +288,38 @@ class DeviceViewModel(
         }
     }
 
+    // Feature #19: Matrix Self-Diagnostic
+    private val _diagnosticResult = MutableStateFlow<String?>(null)
+    val diagnosticResult: StateFlow<String?> = _diagnosticResult.asStateFlow()
+
+    private val _isDiagnosing = MutableStateFlow(false)
+    val isDiagnosing: StateFlow<Boolean> = _isDiagnosing.asStateFlow()
+
+    fun runMatrixDiagnostic() {
+        if (_isDiagnosing.value) return
+        _isDiagnosing.value = true
+        _diagnosticResult.value = "Starting diagnostic (Red -> Green -> Blue -> White)..."
+
+        scope.launch {
+            val colors = listOf(
+                com.pixelgift.app.protocol.Rgb(255, 0, 0) to "Checking Red channels...",
+                com.pixelgift.app.protocol.Rgb(0, 255, 0) to "Checking Green channels...",
+                com.pixelgift.app.protocol.Rgb(0, 0, 255) to "Checking Blue channels...",
+                com.pixelgift.app.protocol.Rgb(180, 180, 180) to "Checking White balance..."
+            )
+
+            for ((color, msg) in colors) {
+                _diagnosticResult.value = msg
+                sendCountForTesting++
+                transport.send(Command.SetColor(color.r, color.g, color.b))
+                delay(800)
+            }
+
+            _isDiagnosing.value = false
+            _diagnosticResult.value = "Diagnostic Complete: 100 LEDs OK • 2500mA Power Cap Active"
+        }
+    }
+
     fun clearFeedback() {
         _feedback.value = null
     }

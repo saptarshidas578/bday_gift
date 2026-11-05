@@ -76,5 +76,40 @@ data class PixelDrawing(
             }
             PixelDrawing("preset_smile", "Smile", p)
         }
+
+        val STAR_PRESET: PixelDrawing by lazy {
+            val p = BLANK_CANVAS.toMutableList()
+            val gold = Rgb(255, 215, 0)
+            val starIndices = listOf(
+                4, 5,
+                14, 15,
+                21, 22, 23, 24, 25, 26, 27, 28,
+                32, 33, 34, 35, 36, 37,
+                43, 44, 45, 46,
+                52, 53, 56, 57,
+                61, 62, 67, 68,
+                70, 71, 78, 79
+            )
+            for (idx in starIndices) {
+                if (idx in 0 until ProtocolConstants.MATRIX_LED_COUNT) p[idx] = gold
+            }
+            PixelDrawing("preset_star", "Star", p)
+        }
+
+        val GIFT_PRESET: PixelDrawing by lazy {
+            val p = BLANK_CANVAS.toMutableList()
+            val cyan = Rgb(0, 229, 255)
+            val ribbon = Rgb(255, 45, 85)
+            for (y in 4..8) {
+                for (x in 2..7) {
+                    p[y * 10 + x] = if (x == 4 || x == 5 || y == 6) ribbon else cyan
+                }
+            }
+            p[24] = ribbon
+            p[25] = ribbon
+            p[33] = ribbon
+            p[36] = ribbon
+            PixelDrawing("preset_gift", "Gift Box", p)
+        }
     }
 }

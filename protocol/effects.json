@@ -1035,5 +1035,22 @@
       "mirror": 0,
       "colorMode": 0
     }
+  },
+  {
+    "id": 67,
+    "name": "Bioluminescent Ocean",
+    "category": "Nature/fire",
+    "supports": {
+      "dir": true,
+      "mirror": true,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 45,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 1
+    }
   }
 ]

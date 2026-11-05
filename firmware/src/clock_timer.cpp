@@ -3,6 +3,7 @@
 #include "font.h"
 #include "storage.h"
 #include "audio.h"
+#include "birthday.h"
 #include <sys/time.h>
 #include <time.h>
 
@@ -198,4 +199,28 @@ void renderTimer(uint32_t now, CRGB* leds) {
         drawDigit3x4(mins % 10, 5, 3, CRGB::Green);
     }
 }
+
+void clockTimerLoop(uint32_t now) {
+    if (!timeSynced || isBirthdayRunning()) return;
+
+    static uint32_t lastCheck = 0;
+    if (now - lastCheck < 1000) return;
+    lastCheck = now;
+
+    time_t rawSec = time(nullptr) + (state.tzOffsetMinutes * 60);
+    struct tm* ti = gmtime(&rawSec);
+    if (!ti) return;
+
+    // Feature #6: Midnight Birthday Beacon
+    // Triggers at 00:00 on January 24th (Madhumitha's birthday)
+    if (ti->tm_mon == 0 && ti->tm_mday == 24 && ti->tm_hour == 0 && ti->tm_min == 0) {
+        static int lastTriggeredYear = 0;
+        if (lastTriggeredYear != ti->tm_year) {
+            lastTriggeredYear = ti->tm_year;
+            Serial.println("\n[BEACON] *** MIDNIGHT BIRTHDAY BEACON! Triggering birthday show! ***");
+            birthdayStart();
+        }
+    }
+}
+
 

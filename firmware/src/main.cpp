@@ -355,6 +355,7 @@ void loop() {
     // 3. Audio, Storage, Scheduler, Sleep, Music & OTA non-blocking loop steps
     audioLoop();
     storageLoop();
+    clockTimerLoop(now);
     schedulerLoop(now);
     sleepTimerLoop(now);
     musicLoop(now);
@@ -386,6 +387,14 @@ void loop() {
             matrixClear();
         } else {
             effectsRender(now, state.effect, matrixGetLeds());
+        }
+
+        // Soft Disconnect Beacon: gentle corner amber breathing pulse when disconnected
+        if (!bleIsConnected() && !isOtaRunning()) {
+            uint8_t breath = beatsin8(20, 6, 45, now);
+            CRGB beacon = CRGB(255, 140, 0);
+            beacon.nscale8_video(breath);
+            matrixSetPixel(0, 0, beacon);
         }
 
         matrixShow();

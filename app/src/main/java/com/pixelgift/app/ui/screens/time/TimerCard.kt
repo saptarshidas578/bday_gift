@@ -29,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -154,6 +155,27 @@ fun TimerCard(
                     ) {
                         Text("${presetMin}m", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodySmall)
                     }
+                }
+            }
+
+            // Feature #9: Pomodoro Focus Ring (36-edge LED countdown)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(PixelGiftSpacing.sm)
+            ) {
+                Button(
+                    onClick = { onStartTimer(25 * 60L) },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676)),
+                    modifier = Modifier.weight(1f).defaultMinSize(minHeight = 44.dp)
+                ) {
+                    Text("🍅 25m Focus Ring", fontWeight = FontWeight.Bold, color = Color.Black)
+                }
+                Button(
+                    onClick = { onStartTimer(5 * 60L) },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E5FF)),
+                    modifier = Modifier.weight(1f).defaultMinSize(minHeight = 44.dp)
+                ) {
+                    Text("☕ 5m Break Ring", fontWeight = FontWeight.Bold, color = Color.Black)
                 }
             }
 

@@ -121,7 +121,9 @@ fun MagicScreen(
                     onGreetingChanged = { editGreetingText = it },
                     onPlayShow = { viewModel.onPlayBirthday() },
                     onStopShow = { viewModel.onStopShow() },
-                    onSaveContent = { viewModel.onSaveBirthdayContent(editNameText, editGreetingText) }
+                    onSaveContent = { viewModel.onSaveBirthdayContent(editNameText, editGreetingText) },
+                    onSendHeartbeat = { viewModel.onSendHeartbeat() },
+                    onSendSecretNote = { viewModel.onSendSecretNote(it) }
                 )
 
                 1 -> MessageSection(
@@ -148,7 +150,9 @@ fun MagicScreen(
                         newDrawingName = ""
                         showSaveDrawingDialog = true
                     },
-                    onLoadDrawing = { viewModel.onLoadDrawing(it) }
+                    onLoadDrawing = { viewModel.onLoadDrawing(it) },
+                    onPlayMemoriesReel = { viewModel.onPlayMemoriesReel() },
+                    onEvolveLife = { viewModel.onEvolveLife() }
                 )
 
                 3 -> MusicSection(

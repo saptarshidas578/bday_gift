@@ -150,13 +150,18 @@ fun StudioScreen(
             onBrightnessChanged = onBrightnessChanged
         )
 
-        // 3. Hardware Scenes Row
+        // 3. Hardware Scenes Row & Feature #18 Curated Moods
         ScenesSection(
             activeScene = activeScene,
             sceneFeedback = sceneFeedback,
             onLoadScene = onLoadScene,
             onSaveScene = onSaveScene,
-            onClearSceneFeedback = onClearSceneFeedback
+            onClearSceneFeedback = onClearSceneFeedback,
+            onSelectMood = { _, rgb, br ->
+                onColorDragged(rgb)
+                onBrightnessChanged(br)
+                onOk()
+            }
         )
 
         // 4. Custom Canvas Paint Color Wheel

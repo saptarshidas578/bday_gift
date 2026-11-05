@@ -52,6 +52,7 @@ fun TimeScreen(
 
     val schedules by viewModel.schedules.collectAsState()
     val activeSleepMinutes by viewModel.activeSleepMinutes.collectAsState()
+    val isAutoDimmerActive by viewModel.isAutoDimmerActive.collectAsState()
     val feedback by viewModel.feedback.collectAsState()
 
     // Clear feedback toast after 4s
@@ -127,11 +128,13 @@ fun TimeScreen(
             onEditSchedule = { editingSchedule = it }
         )
 
-        // --- 5. Sleep Timer Section ---
+        // --- 5. Sleep Timer Section & Feature #13: Bedside Auto-Dimmer ---
         SleepTimerCard(
             activeMinutes = activeSleepMinutes,
             onSetSleepTimer = { viewModel.onSetSleepTimer(it) },
-            onCancelSleepTimer = { viewModel.onCancelSleepTimer() }
+            onCancelSleepTimer = { viewModel.onCancelSleepTimer() },
+            isAutoDimmerActive = isAutoDimmerActive,
+            onToggleAutoDimmer = { viewModel.onToggleAutoDimmer() }
         )
 
         Spacer(modifier = Modifier.height(PixelGiftSpacing.xl))

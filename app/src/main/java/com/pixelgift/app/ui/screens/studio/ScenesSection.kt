@@ -21,6 +21,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.FilterChip
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
@@ -34,6 +35,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.pixelgift.app.R
+import com.pixelgift.app.protocol.Rgb
 import com.pixelgift.app.ui.theme.PixelGiftSpacing
 import kotlinx.coroutines.delay
 
@@ -45,6 +47,7 @@ fun ScenesSection(
     onLoadScene: (Int) -> Unit,
     onSaveScene: (Int) -> Unit,
     onClearSceneFeedback: () -> Unit,
+    onSelectMood: ((name: String, rgb: Rgb, brightness: Int) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val haptic = LocalHapticFeedback.current
@@ -149,6 +152,41 @@ fun ScenesSection(
                             fontWeight = FontWeight.Bold,
                             color = if (isSelected) MaterialTheme.colorScheme.onPrimary
                             else MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                }
+            }
+
+            // Feature #18: Curated Mood Bundles
+            onSelectMood?.let { selectMood ->
+                val moods = listOf(
+                    Triple("☕ Cozy Amber", Rgb(255, 160, 40), 90),
+                    Triple("🌹 Romantic Glow", Rgb(255, 30, 80), 80),
+                    Triple("💡 Deep Focus", Rgb(0, 229, 255), 110),
+                    Triple("🌊 Midnight Calm", Rgb(0, 200, 160), 40)
+                )
+
+                Text(
+                    text = "Curated Mood Presets",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(PixelGiftSpacing.sm)
+                ) {
+                    moods.forEach { (name, rgb, br) ->
+                        FilterChip(
+                            selected = false,
+                            onClick = {
+                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                selectMood(name, rgb, br)
+                            },
+                            label = { Text(name, style = MaterialTheme.typography.labelSmall) }
                         )
                     }
                 }

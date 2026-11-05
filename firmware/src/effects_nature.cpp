@@ -243,3 +243,54 @@ void renderWind(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
         matrixSetPixel(x, y, col);
     }
 }
+
+// 67. Bioluminescent Ocean
+void renderBioOcean(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
+    uint8_t spd = params.speed ? params.speed : 45;
+    uint32_t waveOffset = t_ms * spd / 30;
+
+    for (uint8_t y = 0; y < MATRIX_HEIGHT; y++) {
+        for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
+            uint8_t nx = x * 28;
+            uint8_t ny = y * 28;
+            uint8_t noise = inoise8(nx + waveOffset, ny + (waveOffset / 2));
+
+            CRGB baseCol = (params.c1 == CRGB(0,0,0)) ? CRGB(0, 10, 35) : params.c1;
+            CRGB glowCol = (params.c2 == CRGB(0,0,0)) ? CRGB(0, 240, 200) : params.c2;
+
+            CRGB pixelCol;
+            if (params.colorMode == 1) {
+                pixelCol = blend(baseCol, glowCol, noise);
+            } else if (params.colorMode == 2 && state.paletteCount > 0) {
+                uint16_t total = (uint16_t)(noise * state.paletteCount);
+                uint8_t step = (total >> 8) % state.paletteCount;
+                uint8_t nextStep = (step + 1) % state.paletteCount;
+                pixelCol = blend(state.palette[step], state.palette[nextStep], total & 0xFF);
+            } else if (params.colorMode == 3) {
+                uint8_t hue = 135 + scale8(noise, 55);
+                pixelCol = CHSV(hue, 230, noise);
+            } else {
+                if (params.c1 != CRGB(0,0,0)) {
+                    pixelCol = blend(CRGB(0, 4, 15), params.c1, noise);
+                } else {
+                    pixelCol = blend(baseCol, glowCol, noise);
+                }
+            }
+
+            if (noise > 195) {
+                uint8_t boost = (noise - 195) * 4;
+                pixelCol = blend(pixelCol, CRGB(160, 255, 240), boost);
+            }
+
+            matrixSetPixel(x, y, pixelCol);
+        }
+    }
+
+    if (random8() < 25) {
+        uint8_t rx = random8(MATRIX_WIDTH);
+        uint8_t ry = random8(MATRIX_HEIGHT);
+        CRGB spark = (params.c2 != CRGB(0,0,0)) ? params.c2 : CRGB(120, 255, 230);
+        matrixSetPixel(rx, ry, spark);
+    }
+}
+

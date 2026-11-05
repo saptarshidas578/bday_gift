@@ -85,6 +85,8 @@ fun DeviceScreen(
     val statusSnapshot by viewModel.statusSnapshot.collectAsState()
     val autoReconnect by viewModel.autoReconnect.collectAsState()
     val feedback by viewModel.feedback.collectAsState()
+    val diagnosticResult by viewModel.diagnosticResult.collectAsState()
+    val isDiagnosing by viewModel.isDiagnosing.collectAsState()
 
     val isConnected = connectionState is ConnectionState.Connected
     val isConnecting = connectionState is ConnectionState.Connecting
@@ -267,6 +269,43 @@ fun DeviceScreen(
                             .defaultMinSize(minHeight = 48.dp)
                     ) {
                         Text("Pair Device…")
+                    }
+                }
+
+                // Feature #19: Matrix Self-Diagnostic
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(PixelGiftSpacing.md),
+                        verticalArrangement = Arrangement.spacedBy(PixelGiftSpacing.xs)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Matrix Self-Diagnostic", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                            OutlinedButton(
+                                onClick = { viewModel.runMatrixDiagnostic() },
+                                enabled = !isDiagnosing && isConnected,
+                                modifier = Modifier.defaultMinSize(minHeight = 36.dp)
+                            ) {
+                                Text(if (isDiagnosing) "Testing…" else "Run Test", style = MaterialTheme.typography.labelSmall)
+                            }
+                        }
+                        diagnosticResult?.let { result ->
+                            Text(
+                                result,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
             }

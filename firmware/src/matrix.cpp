@@ -3,10 +3,35 @@
 static CRGB leds[NUM_LEDS];
 static uint8_t currentBrightness = DEFAULT_BRIGHTNESS;
 
+// Standard CIE 1931 perceptual lightness curve (scaled to 0..255)
+// Converts linear input into logarithmic human-eye perceptual brightness
+static const uint8_t PROGMEM CIE1931[256] = {
+    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   1,   1,   1,   1,   1,   1,
+    1,   1,   2,   2,   2,   2,   2,   2,   3,   3,   3,   3,   4,   4,   4,   4,
+    5,   5,   5,   5,   6,   6,   6,   7,   7,   7,   8,   8,   8,   9,   9,  10,
+   10,  10,  11,  11,  12,  12,  13,  13,  14,  14,  15,  15,  16,  16,  17,  17,
+   18,  19,  19,  20,  20,  21,  22,  22,  23,  24,  24,  25,  26,  26,  27,  28,
+   29,  29,  30,  31,  32,  33,  33,  34,  35,  36,  37,  38,  39,  39,  40,  41,
+   42,  43,  44,  45,  46,  47,  48,  49,  50,  51,  52,  53,  54,  55,  56,  57,
+   59,  60,  61,  62,  63,  64,  66,  67,  68,  69,  71,  72,  73,  75,  76,  77,
+   79,  80,  81,  83,  84,  86,  87,  89,  90,  92,  93,  95,  96,  98,  99, 101,
+  103, 104, 106, 108, 109, 111, 113, 115, 116, 118, 120, 122, 124, 126, 128, 130,
+  131, 133, 135, 138, 140, 142, 144, 146, 148, 150, 153, 155, 157, 159, 162, 164,
+  166, 169, 171, 173, 176, 178, 181, 183, 186, 188, 191, 193, 196, 198, 201, 204,
+  206, 209, 212, 215, 217, 220, 223, 226, 229, 232, 235, 238, 241, 244, 247, 250,
+  253, 255
+};
+
+uint8_t matrixCieGamma(uint8_t input) {
+    uint8_t val = pgm_read_byte(&CIE1931[input]);
+    if (input > 0 && val == 0) return 1;
+    return val;
+}
+
 void matrixInit() {
     FastLED.addLeds<WS2812B, DATA_PIN, COLOR_ORDER>(leds, NUM_LEDS);
     FastLED.setMaxPowerInVoltsAndMilliamps(LED_VOLTS, LED_MAX_MA);
-    FastLED.setBrightness(DEFAULT_BRIGHTNESS);
+    matrixSetBrightness(DEFAULT_BRIGHTNESS);
     FastLED.clear(true);
 }
 
@@ -63,7 +88,8 @@ void matrixShow() {
 
 void matrixSetBrightness(uint8_t brightness) {
     currentBrightness = brightness;
-    FastLED.setBrightness(brightness);
+    uint8_t gammaBrightness = matrixCieGamma(brightness);
+    FastLED.setBrightness(gammaBrightness);
 }
 
 uint8_t matrixGetBrightness() {

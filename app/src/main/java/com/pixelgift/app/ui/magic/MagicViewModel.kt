@@ -62,7 +62,9 @@ class MagicViewModel(
     private val _savedDrawings = MutableStateFlow(
         listOf(
             PixelDrawing.HEART_PRESET,
-            PixelDrawing.SMILE_PRESET
+            PixelDrawing.STAR_PRESET,
+            PixelDrawing.SMILE_PRESET,
+            PixelDrawing.GIFT_PRESET
         )
     )
     val savedDrawings: StateFlow<List<PixelDrawing>> = _savedDrawings.asStateFlow()
@@ -133,6 +135,41 @@ class MagicViewModel(
             }
         }
         return true
+    }
+
+    // Feature #16: "Thinking of You" Tap (Local BLE)
+    fun onSendHeartbeat() {
+        _birthdayFeedback.value = "Sending glowing Heartbeat to matrix..."
+        scope.launch {
+            sendCountForTesting++
+            transport.send(
+                Command.SetEffect(
+                    base = 4, // Heartbeat effect
+                    speed = 60,
+                    dir = 0,
+                    mirror = 0,
+                    colorMode = 0,
+                    c1 = Rgb(255, 45, 85),
+                    c2 = Rgb(255, 120, 150)
+                )
+            )
+            _birthdayFeedback.value = "Heartbeat glowing on matrix ❤️"
+        }
+    }
+
+    // Feature #4: Daily Secret Gift Notes
+    fun onSendSecretNote(noteText: String) {
+        _birthdayFeedback.value = "Sending secret note..."
+        scope.launch {
+            val chunks = ProtocolCodec.chunkText(target = 0, noteText)
+            for (chunk in chunks) {
+                sendCountForTesting++
+                transport.send(chunk)
+            }
+            sendCountForTesting++
+            transport.send(Command.ShowMessage(45))
+            _birthdayFeedback.value = "Secret note scrolling on matrix ✨"
+        }
     }
 
     // --- Custom Message Actions ---
@@ -235,6 +272,46 @@ class MagicViewModel(
         undoHistory.addLast(_canvasPixels.value)
         _canvasPixels.value = drawing.pixels
         onCommitDrawing()
+    }
+
+    // Feature #5: Animated Memories Reel
+    fun onPlayMemoriesReel() {
+        _drawFeedback.value = "Playing Animated Memories Reel..."
+        scope.launch {
+            val frames = listOf(
+                PixelDrawing.HEART_PRESET,
+                PixelDrawing.STAR_PRESET,
+                PixelDrawing.SMILE_PRESET,
+                PixelDrawing.GIFT_PRESET
+            )
+            for (frame in frames) {
+                undoHistory.addLast(_canvasPixels.value)
+                _canvasPixels.value = frame.pixels
+                onCommitDrawing()
+                kotlinx.coroutines.delay(1200)
+            }
+            _drawFeedback.value = "Memories Reel complete"
+        }
+    }
+
+    // Feature #12: Interactive Life Sandbox
+    fun onEvolveLife() {
+        onCommitDrawing()
+        scope.launch {
+            kotlinx.coroutines.delay(400)
+            transport.send(
+                Command.SetEffect(
+                    base = 57, // Game of Life
+                    speed = 40,
+                    dir = 0,
+                    mirror = 0,
+                    colorMode = 0,
+                    c1 = _selectedDrawColor.value,
+                    c2 = Rgb(0, 229, 255)
+                )
+            )
+            _drawFeedback.value = "Conway's Life evolving on matrix ✨"
+        }
     }
 
     // --- Music Reactive Actions ---

@@ -17,11 +17,11 @@ uint16_t XY(uint8_t x, uint8_t y) {
 
 #if MATRIX_SERPENTINE
     if (y & 0x01) {
-        // Odd rows run backwards (right to left)
-        return (y * MATRIX_WIDTH) + (MATRIX_WIDTH - 1 - x);
-    } else {
-        // Even rows run forward (left to right)
+        // Odd rows run forward (left to right)
         return (y * MATRIX_WIDTH) + x;
+    } else {
+        // Even rows run backwards (right to left)
+        return (y * MATRIX_WIDTH) + (MATRIX_WIDTH - 1 - x);
     }
 #else
     return (y * MATRIX_WIDTH) + x;

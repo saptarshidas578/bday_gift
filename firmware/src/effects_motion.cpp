@@ -10,7 +10,7 @@ void renderScanner(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     uint16_t step = (t_ms * spd / 50) % cycle;
     uint8_t pos = (step < MATRIX_WIDTH) ? step : (cycle - step);
 
-    CRGB col = (params.colorMode == 3) ? CHSV((t_ms * spd / 40) & 0xFF, 240, 255) : params.c1;
+    CRGB col = getEffectColor(params, t_ms, pos, CRGB::Red);
     if (params.dir == 2) {
         for (uint8_t x = 0; x < MATRIX_WIDTH; x++) matrixSetPixel(x, pos, col);
     } else {
@@ -24,7 +24,7 @@ void renderChase(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     for (int i = 0; i < NUM_LEDS; i++) leds[i].nscale8(170);
 
     uint16_t head = (t_ms * spd / 40) % NUM_LEDS;
-    CRGB col = (params.c1 == CRGB(0,0,0)) ? CRGB::Cyan : params.c1;
+    CRGB col = getEffectColor(params, t_ms, head, CRGB::Cyan);
     matrixSetPixelRaw(head, col);
 }
 

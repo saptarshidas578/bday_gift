@@ -1,5 +1,6 @@
 package com.pixelgift.app.ui.effects
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -34,6 +35,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -255,25 +257,21 @@ fun EffectDetailSheet(
                                 .horizontalScroll(rememberScrollState()),
                             horizontalArrangement = Arrangement.spacedBy(PixelGiftSpacing.sm)
                         ) {
-                            if (effect.supports.colors) {
-                                FilterChip(
-                                    selected = colorMode == 0,
-                                    onClick = { onColorModeChanged(0) },
-                                    label = { Text("Single") }
-                                )
-                                FilterChip(
-                                    selected = colorMode == 1,
-                                    onClick = { onColorModeChanged(1) },
-                                    label = { Text("Dual") }
-                                )
-                            }
-                            if (effect.supports.palette) {
-                                FilterChip(
-                                    selected = colorMode == 2,
-                                    onClick = { onColorModeChanged(2) },
-                                    label = { Text("Palette") }
-                                )
-                            }
+                            FilterChip(
+                                selected = colorMode == 0,
+                                onClick = { onColorModeChanged(0) },
+                                label = { Text("Single") }
+                            )
+                            FilterChip(
+                                selected = colorMode == 1,
+                                onClick = { onColorModeChanged(1) },
+                                label = { Text("Dual") }
+                            )
+                            FilterChip(
+                                selected = colorMode == 2,
+                                onClick = { onColorModeChanged(2) },
+                                label = { Text("Palette") }
+                            )
                             FilterChip(
                                 selected = colorMode == 3,
                                 onClick = { onColorModeChanged(3) },
@@ -281,9 +279,34 @@ fun EffectDetailSheet(
                             )
                         }
 
+                        val activeColors = selectedPalette?.colors ?: availablePalettes.firstOrNull()?.colors ?: emptyList()
+
                         // Color 1 selection
-                        if (colorMode in 0..1 && effect.supports.colors) {
+                        if (colorMode in 0..1) {
                             Text("Primary Color (${ColorMath.rgbToHex(c1)})", style = MaterialTheme.typography.labelMedium)
+                            if (activeColors.isNotEmpty()) {
+                                Text(
+                                    "From Palette (${selectedPalette?.name ?: "Active"})",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .horizontalScroll(rememberScrollState()),
+                                    horizontalArrangement = Arrangement.spacedBy(PixelGiftSpacing.sm)
+                                ) {
+                                    activeColors.forEach { rgb ->
+                                        ColorDot(
+                                            rgb = rgb,
+                                            isSelected = c1 == rgb,
+                                            onClick = { onC1Changed(rgb) }
+                                        )
+                                    }
+                                }
+                            }
+
+                            Text("Preset Colors", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -301,9 +324,32 @@ fun EffectDetailSheet(
                         }
 
                         // Color 2 selection
-                        if (colorMode == 1 && effect.supports.colors) {
+                        if (colorMode == 1) {
                             Spacer(modifier = Modifier.height(4.dp))
                             Text("Secondary Color (${ColorMath.rgbToHex(c2)})", style = MaterialTheme.typography.labelMedium)
+                            if (activeColors.isNotEmpty()) {
+                                Text(
+                                    "From Palette (${selectedPalette?.name ?: "Active"})",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .horizontalScroll(rememberScrollState()),
+                                    horizontalArrangement = Arrangement.spacedBy(PixelGiftSpacing.sm)
+                                ) {
+                                    activeColors.forEach { rgb ->
+                                        ColorDot(
+                                            rgb = rgb,
+                                            isSelected = c2 == rgb,
+                                            onClick = { onC2Changed(rgb) }
+                                        )
+                                    }
+                                }
+                            }
+
+                            Text("Preset Colors", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -321,7 +367,7 @@ fun EffectDetailSheet(
                         }
 
                         // Palette selection
-                        if (colorMode == 2 && effect.supports.palette) {
+                        if (colorMode == 2) {
                             Spacer(modifier = Modifier.height(4.dp))
                             Text("Choose Palette", style = MaterialTheme.typography.labelMedium)
                             Row(
@@ -331,13 +377,43 @@ fun EffectDetailSheet(
                                 horizontalArrangement = Arrangement.spacedBy(PixelGiftSpacing.sm)
                             ) {
                                 availablePalettes.forEach { p ->
-                                    FilterChip(
-                                        selected = selectedPalette?.id == p.id,
-                                        onClick = { onPaletteSelected(p) },
-                                        label = { Text(p.name) }
+                                    PaletteChip(
+                                        palette = p,
+                                        isSelected = selectedPalette?.id == p.id,
+                                        onClick = { onPaletteSelected(p) }
                                     )
                                 }
                             }
+
+                            val currentPalette = selectedPalette ?: availablePalettes.firstOrNull()
+                            if (currentPalette != null && currentPalette.colors.isNotEmpty()) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text("Palette Swatches (Tap to pick color)", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .horizontalScroll(rememberScrollState()),
+                                    horizontalArrangement = Arrangement.spacedBy(PixelGiftSpacing.sm)
+                                ) {
+                                    currentPalette.colors.forEach { rgb ->
+                                        ColorDot(
+                                            rgb = rgb,
+                                            isSelected = c1 == rgb,
+                                            onClick = { onC1Changed(rgb) }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        // Rainbow info
+                        if (colorMode == 3) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                "Rainbow Mode: Matrix dynamically cycles across the full spectrum.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
                 }
@@ -357,6 +433,46 @@ fun EffectDetailSheet(
                 Icon(Icons.Default.PlayArrow, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Play Effect Now", style = MaterialTheme.typography.titleMedium)
+            }
+        }
+    }
+}
+
+@Composable
+private fun PaletteChip(
+    palette: NamedPalette,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(8.dp),
+        color = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+        border = BorderStroke(
+            width = if (isSelected) 2.dp else 1.dp,
+            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
+        ),
+        modifier = Modifier.defaultMinSize(minHeight = 44.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = palette.name,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+                palette.colors.forEach { rgb ->
+                    Box(
+                        modifier = Modifier
+                            .size(12.dp)
+                            .clip(CircleShape)
+                            .background(ColorMath.rgbToComposeColor(rgb))
+                    )
+                }
             }
         }
     }

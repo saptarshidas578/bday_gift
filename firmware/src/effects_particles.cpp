@@ -9,8 +9,7 @@ void renderSparkle(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     uint8_t count = map(spd, 0, 255, 1, 4);
     for (uint8_t c = 0; c < count; c++) {
         uint8_t rx = random8(MATRIX_WIDTH), ry = random8(MATRIX_HEIGHT);
-        CRGB col = (params.colorMode == 3) ? CHSV(random8(), 200, 255) : params.c1;
-        if (col == CRGB(0,0,0)) col = CRGB::White;
+        CRGB col = getEffectColor(params, t_ms, random8(), CRGB::White);
         matrixSetPixel(rx, ry, col);
     }
 }

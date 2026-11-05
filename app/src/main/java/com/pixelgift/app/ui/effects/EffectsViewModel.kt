@@ -131,6 +131,13 @@ class EffectsViewModel(
         _dir.value = effect.defaults.dir
         _mirror.value = effect.defaults.mirror != 0
         _colorMode.value = effect.defaults.colorMode
+        if (effect.defaults.colorMode == 2) {
+            _selectedPalette.value?.let { p ->
+                scope.launch {
+                    transport.send(Command.SetPalette(p.colors.take(8)))
+                }
+            }
+        }
         applyEffect()
     }
 
@@ -155,6 +162,13 @@ class EffectsViewModel(
 
     fun onColorModeChanged(mode: Int) {
         _colorMode.value = mode.coerceIn(0, 3)
+        if (_colorMode.value == 2) {
+            _selectedPalette.value?.let { p ->
+                scope.launch {
+                    transport.send(Command.SetPalette(p.colors.take(8)))
+                }
+            }
+        }
         throttleDispatchEffect()
     }
 

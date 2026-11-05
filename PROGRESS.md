@@ -4,7 +4,7 @@ Agent: update this at the end of every task, then commit. Keep it terse. Legend:
 
 ## Next step
 
-Hardware verification on phone: test effect colors, rainbow color mode, and connection chip stability with the newly flashed ESP32 and installed app.
+Hardware verification on ESP32 & phone: Plug in ESP32 to flash the updated firmware (`pio run -t upload`), verify physical matrix orientation is inverted right-to-left, test palette selection & color swatches in app, and await user feedback for Batch 2 effects.
 
 ## Phases
 
@@ -44,6 +44,7 @@ Hardware verification on phone: test effect colors, rainbow color mode, and conn
 ## Decisions
 
 (date, decision, why)
+- 2026-11-05: Resolved Matrix R→L physical orientation, palette choosing, and Batch 1 (effects 1-5, 8-17) color controls. Inverted serpentine parity in `matrix.cpp`. Added smooth palette interpolation to `getEffectColor` and updated renderers in `effects_static`, `effects_motion`, `effects_particles`, `effects_nature`, and `effects_gradient` for full Single, Dual tone, Palette, and Rainbow support. Updated `protocol/effects.json` and `EffectDetailSheet.kt` to allow choosing named palettes with preview chips, selecting individual colors from active palettes for Primary/Secondary colors, and switching between all color modes. Verified firmware build (0 errors) and 75 Android unit tests passing, and deployed updated app to phone.
 - 2026-11-05: Established **working checkpoint one** at commit `ffd8036` (tags `working-checkpoint-one` / `working-checkpoint-1`, branch `working-checkpoint-one`). Clean compile, 0 errors, build cache active. Whenever the human instructs to "go back to the working version", revert to this exact checkpoint. No further checkpoints to be created without explicit instruction.
 - 2026-11-04: Resolved solid-white LED lock. Restored DATA_PIN to GPIO 5 (D5) and buzzer to GPIO 18. Removed WRITE_ENC and READ_ENC gates on BLE characteristics so phone writes execute reliably regardless of bonding/encryption state. Added NVS boot guards and reset stale NVS state to Rainbow Wave effect (#6, Rainbow mode). Verified live color animation over serial.
 - 2026-11-02: Fixed effect color rendering and BLE stability. Added getEffectColor() across all 66 effects in effects_static, effects_motion, effects_particles, effects_geometric, effects_celebration, effects_retro, and effects_gradient so every effect responds dynamically to custom colors, dual blend, palette, and rainbow mode. Prevented accidental disconnect when tapping top connection chip. Flash verified on ESP32 (COM8) and app installed on phone.

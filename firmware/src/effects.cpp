@@ -132,8 +132,11 @@ CRGB getEffectColor(const EffectParams& p, uint32_t t_ms, uint8_t index, CRGB fa
         }
         case 2: { // Palette
             if (state.paletteCount > 0) {
-                uint8_t palIdx = ((t_ms * spd / 300) + index) % state.paletteCount;
-                return state.palette[palIdx];
+                uint16_t total = (uint16_t)((t_ms * spd / 30) + (index * (256 / state.paletteCount)));
+                uint8_t step = (total >> 8) % state.paletteCount;
+                uint8_t nextStep = (step + 1) % state.paletteCount;
+                uint8_t frac = total & 0xFF;
+                return blend(state.palette[step], state.palette[nextStep], frac);
             }
             return (p.c1 == CRGB(0,0,0)) ? fallback : p.c1;
         }

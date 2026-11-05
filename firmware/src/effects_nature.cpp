@@ -1,5 +1,6 @@
 #include "effects.h"
 #include "matrix.h"
+#include "storage.h"
 
 // 10. Fire
 void renderFire(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
@@ -31,7 +32,29 @@ void renderFire(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
 
     for (uint8_t y = 0; y < MATRIX_HEIGHT; y++) {
         for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
-            matrixSetPixel(x, y, HeatColor(heat[x][y]));
+            uint8_t h = heat[x][y];
+            CRGB pixelCol;
+            if (params.colorMode == 1) {
+                CRGB c1 = (params.c1 == CRGB(0,0,0)) ? CRGB(255, 30, 0) : params.c1;
+                CRGB c2 = (params.c2 == CRGB(0,0,0)) ? CRGB(255, 200, 0) : params.c2;
+                pixelCol = blend(c1, c2, h);
+                pixelCol.nscale8_video(h);
+            } else if (params.colorMode == 2 && state.paletteCount > 0) {
+                uint16_t total = (uint16_t)(h * state.paletteCount);
+                uint8_t step = (total >> 8) % state.paletteCount;
+                uint8_t nextStep = (step + 1) % state.paletteCount;
+                uint8_t frac = total & 0xFF;
+                pixelCol = blend(state.palette[step], state.palette[nextStep], frac);
+                pixelCol.nscale8_video(h);
+            } else if (params.colorMode == 3) {
+                pixelCol = CHSV((h + (t_ms * spd / 30)) & 0xFF, 240, h);
+            } else if (params.c1 != CRGB(0,0,0)) {
+                pixelCol = params.c1;
+                pixelCol.nscale8_video(h);
+            } else {
+                pixelCol = HeatColor(h);
+            }
+            matrixSetPixel(x, y, pixelCol);
         }
     }
 }

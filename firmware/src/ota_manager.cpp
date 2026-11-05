@@ -8,6 +8,18 @@ static uint32_t totalExpectedBytes = 0;
 static uint32_t writtenBytes = 0;
 static uint16_t expectedSeq = 0;
 
+static uint32_t otaCrc32 = 0xFFFFFFFF;
+
+static uint32_t updateCrc32(uint32_t crc, const uint8_t* data, size_t len) {
+    while (len--) {
+        crc ^= *data++;
+        for (int k = 0; k < 8; k++) {
+            crc = (crc >> 1) ^ (0xEDB88320 & (-(crc & 1)));
+        }
+    }
+    return crc;
+}
+
 static bool rebootPending = false;
 static uint32_t rebootTime = 0;
 
@@ -69,6 +81,7 @@ uint8_t otaHandleBegin(uint32_t totalBytes, uint8_t major, uint8_t minor, uint8_
     totalExpectedBytes = totalBytes;
     writtenBytes = 0;
     expectedSeq = 0;
+    otaCrc32 = 0xFFFFFFFF;
     isOtaActive = true;
     Serial.printf("[OTA] Started OTA update: %lu bytes, target v%u.%u.%u\n",
                   (unsigned long)totalBytes, major, minor, patch);
@@ -91,6 +104,7 @@ uint8_t otaHandleChunk(uint16_t chunkSeq, const uint8_t* data, size_t len) {
         return ERR_OTA_WRITE;
     }
 
+    otaCrc32 = updateCrc32(otaCrc32, data, len);
     expectedSeq++;
     writtenBytes += len;
 
@@ -103,6 +117,17 @@ uint8_t otaHandleChunk(uint16_t chunkSeq, const uint8_t* data, size_t len) {
 
 uint8_t otaHandleCommit(uint32_t expectedCrc) {
     if (!isOtaActive) return ERR_BUSY;
+
+    if (expectedCrc != 0) {
+        uint32_t finalCrc = ~otaCrc32;
+        if (finalCrc != expectedCrc) {
+            Serial.printf("[OTA] CRC mismatch! Calculated 0x%08X, expected 0x%08X\n", (unsigned int)finalCrc, (unsigned int)expectedCrc);
+            Update.abort();
+            isOtaActive = false;
+            return ERR_OTA_WRITE;
+        }
+        Serial.printf("[OTA] CRC verified: 0x%08X\n", (unsigned int)finalCrc);
+    }
 
     if (!Update.end(true)) {
         Serial.printf("[OTA] Update.end() failed: error %u\n", Update.getError());
@@ -130,6 +155,7 @@ void otaHandleAbort() {
         Update.abort();
         isOtaActive = false;
         writtenBytes = 0;
+        otaCrc32 = 0xFFFFFFFF;
         Serial.println("[OTA] Update aborted by request.");
     }
 }

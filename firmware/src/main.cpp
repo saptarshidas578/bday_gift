@@ -38,41 +38,52 @@ void checkBootButton() {
 }
 
 void checkSerialCommands() {
-    if (Serial.available()) {
-        String cmd = Serial.readStringUntil('\n');
-        cmd.trim();
-        if (cmd.equalsIgnoreCase("bday") || cmd == "b") {
-            Serial.println("[SERIAL] Starting Birthday Show...");
-            birthdayStart();
-        } else if (cmd.equalsIgnoreCase("stop") || cmd == "s") {
-            Serial.println("[SERIAL] Stopping Birthday Show / Timer...");
-            if (isBirthdayRunning()) birthdayStop();
-            if (isTimerRunning() || isTimerAlerting()) cancelTimer();
-        } else if (cmd.equalsIgnoreCase("clock") || cmd == "c") {
-            state.mode = MODE_CLOCK;
-            Serial.println("[SERIAL] Switched to CLOCK mode.");
-        } else if (cmd.equalsIgnoreCase("sync")) {
-            // Example UTC sync to 12:34:56
-            syncTime(1700000000, 330); // IST (+5:30 = 330 mins)
-            state.mode = MODE_CLOCK;
-            Serial.println("[SERIAL] Synced time to sample epoch.");
-        } else if (cmd.startsWith("timer")) {
-            startTimer(10); // 10 second test countdown
-            Serial.println("[SERIAL] Started 10-second test timer.");
-        } else if (cmd.startsWith("scene save ")) {
-            uint8_t slot = cmd.substring(11).toInt();
-            saveScene(slot);
-        } else if (cmd.startsWith("scene load ")) {
-            uint8_t slot = cmd.substring(11).toInt();
-            loadScene(slot);
-        } else if (cmd.startsWith("sleep ")) {
-            uint16_t m = cmd.substring(6).toInt();
-            startSleepTimer(m);
-        } else if (cmd.equalsIgnoreCase("music")) {
-            // Demo burst of 10 levels
-            uint8_t demo[10] = { 40, 90, 150, 220, 255, 230, 180, 120, 70, 30 };
-            feedMusicLevels(demo, 10);
-            Serial.println("[SERIAL] Fed demo music levels.");
+    static char serialBuf[64];
+    static size_t bufIdx = 0;
+
+    while (Serial.available()) {
+        char c = (char)Serial.read();
+        if (c == '\r') continue;
+        if (c == '\n') {
+            serialBuf[bufIdx] = '\0';
+            String cmd = String(serialBuf);
+            cmd.trim();
+            bufIdx = 0;
+            if (cmd.length() == 0) continue;
+
+            if (cmd.equalsIgnoreCase("bday") || cmd == "b") {
+                Serial.println("[SERIAL] Starting Birthday Show...");
+                birthdayStart();
+            } else if (cmd.equalsIgnoreCase("stop") || cmd == "s") {
+                Serial.println("[SERIAL] Stopping Birthday Show / Timer...");
+                if (isBirthdayRunning()) birthdayStop();
+                if (isTimerRunning() || isTimerAlerting()) cancelTimer();
+            } else if (cmd.equalsIgnoreCase("clock") || cmd == "c") {
+                state.mode = MODE_CLOCK;
+                Serial.println("[SERIAL] Switched to CLOCK mode.");
+            } else if (cmd.equalsIgnoreCase("sync")) {
+                syncTime(1700000000, 330); // IST (+5:30 = 330 mins)
+                state.mode = MODE_CLOCK;
+                Serial.println("[SERIAL] Switched to CLOCK mode.");
+            } else if (cmd.startsWith("timer")) {
+                startTimer(10); // 10 second test countdown
+                Serial.println("[SERIAL] Started 10-second test timer.");
+            } else if (cmd.startsWith("scene save ")) {
+                uint8_t slot = cmd.substring(11).toInt();
+                saveScene(slot);
+            } else if (cmd.startsWith("scene load ")) {
+                uint8_t slot = cmd.substring(11).toInt();
+                loadScene(slot);
+            } else if (cmd.startsWith("sleep ")) {
+                uint16_t m = cmd.substring(6).toInt();
+                startSleepTimer(m);
+            } else if (cmd.equalsIgnoreCase("music")) {
+                uint8_t demo[10] = { 40, 90, 150, 220, 255, 230, 180, 120, 70, 30 };
+                feedMusicLevels(demo, 10);
+                Serial.println("[SERIAL] Fed demo music levels.");
+            }
+        } else if (bufIdx < sizeof(serialBuf) - 1) {
+            serialBuf[bufIdx++] = c;
         }
     }
 }

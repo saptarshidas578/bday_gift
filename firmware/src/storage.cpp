@@ -85,6 +85,10 @@ void storageInit() {
         state.isMuted = prefs.getUChar("muted", 0);
         state.sleepDefaultMinutes = prefs.getUShort("sleep_def", 30);
 
+        state.paletteCount = prefs.getUChar("pal_cnt", 4);
+        if (state.paletteCount > 8) state.paletteCount = 4;
+        prefs.getBytes("pal", state.palette, sizeof(state.palette));
+
         prefs.getString("msg", state.customMessage, sizeof(state.customMessage));
         prefs.getString("bday_name", state.birthdayName, sizeof(state.birthdayName));
         prefs.getString("bday_greet", state.birthdayGreeting, sizeof(state.birthdayGreeting));
@@ -131,6 +135,9 @@ void storageForceSave() {
     prefs.putShort("tz_offset", state.tzOffsetMinutes);
     prefs.putUChar("muted", state.isMuted);
     prefs.putUShort("sleep_def", state.sleepDefaultMinutes);
+
+    prefs.putUChar("pal_cnt", state.paletteCount);
+    prefs.putBytes("pal", state.palette, sizeof(state.palette));
 
     prefs.putString("msg", state.customMessage);
     prefs.putString("bday_name", state.birthdayName);

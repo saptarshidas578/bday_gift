@@ -15,7 +15,7 @@ uint8_t parseCommandPacket(const uint8_t* data, size_t len, ParsedCommand& out) 
     out.payloadLen = (uint8_t)payloadLen;
 
     // Validate opcode range
-    if (opcode < 1 || opcode > 24) {
+    if (opcode < 1 || opcode > 28) {
         return ERR_UNKNOWN_OP;
     }
 

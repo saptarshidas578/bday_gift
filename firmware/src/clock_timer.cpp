@@ -49,6 +49,18 @@ static void drawDigit3x4(uint8_t digit, uint8_t startX, uint8_t startY, CRGB col
     }
 }
 
+static void drawDigit4x5(uint8_t digit, uint8_t startX, uint8_t startY, CRGB color) {
+    if (digit > 9) digit = 0;
+    for (uint8_t c = 0; c < 4; c++) {
+        uint8_t colBits = DIGITS_4x5[digit][c];
+        for (uint8_t r = 0; r < 5; r++) {
+            if (colBits & (1 << r)) {
+                matrixSetPixel(startX + c, startY + r, color);
+            }
+        }
+    }
+}
+
 void renderClock(uint32_t now, CRGB* leds) {
     if (!timeSynced) {
         drawSyncNeededGlyph(now);
@@ -67,19 +79,23 @@ void renderClock(uint32_t now, CRGB* leds) {
     CRGB minColor  = CRGB(0, 180, 255);  // Electric cyan
     CRGB dotColor  = CRGB::White;
 
-    // Hours (Rows 0..3)
-    drawDigit3x4(hh / 10, 1, 0, hourColor); // Tens (cols 1..3)
-    drawDigit3x4(hh % 10, 5, 0, hourColor); // Units (cols 5..7)
+    // Hours (Rows 0..4) - 4x5 digits centered with 2-col gap
+    drawDigit4x5(hh / 10, 0, 0, hourColor); // Tens (cols 0..3)
+    drawDigit4x5(hh % 10, 6, 0, hourColor); // Units (cols 6..9)
 
-    // Blinking seconds colon on row 4
+    // Blinking seconds colon in center gap (cols 4, 5)
     if ((ss % 2) == 0) {
-        matrixSetPixel(4, 4, dotColor);
-        matrixSetPixel(5, 4, dotColor);
+        // Upper colon dot (row 2)
+        matrixSetPixel(4, 2, dotColor);
+        matrixSetPixel(5, 2, dotColor);
+        // Lower colon dot (row 7)
+        matrixSetPixel(4, 7, dotColor);
+        matrixSetPixel(5, 7, dotColor);
     }
 
-    // Minutes (Rows 5..8)
-    drawDigit3x4(mm / 10, 1, 5, minColor); // Tens (cols 1..3)
-    drawDigit3x4(mm % 10, 5, 5, minColor); // Units (cols 5..7)
+    // Minutes (Rows 5..9) - 4x5 digits centered with 2-col gap
+    drawDigit4x5(mm / 10, 0, 5, minColor); // Tens (cols 0..3)
+    drawDigit4x5(mm % 10, 6, 5, minColor); // Units (cols 6..9)
 }
 
 void startTimer(uint32_t seconds) {

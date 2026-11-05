@@ -2,6 +2,8 @@
 #include <NimBLEDevice.h>
 #include "secrets.h"
 #include "storage.h"
+#include "clock_timer.h"
+#include "birthday.h"
 #include "config.h"
 #include <esp_mac.h>
 
@@ -128,6 +130,9 @@ void bleSendSnapshot() {
 
     uint8_t flags = 0;
     if (state.isMuted) flags |= FLAG_MUTED;
+    if (isTimeSynced()) flags |= FLAG_TIME_SYNCED;
+    if (isTimerRunning()) flags |= FLAG_TIMER_RUNNING;
+    if (isBirthdayRunning()) flags |= FLAG_SHOW_RUNNING;
     flags |= FLAG_POWER_CAPPED; // FastLED 2500mA hardware cap active
 
     snapshot[9] = flags;

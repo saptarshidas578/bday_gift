@@ -17,13 +17,13 @@ class AudioFftProcessor(
         require((fftSize and (fftSize - 1)) == 0) { "FFT size must be a power of 2, got $fftSize" }
     }
 
-    // 9 frequency band boundary edges (in Hz)
+    // 10 frequency band boundary edges (in Hz) for 10x10 matrix
     val bandEdgesHz = doubleArrayOf(
-        40.0, 120.0, 250.0, 500.0, 1000.0, 2000.0, 4000.0, 7000.0, 11000.0, 16000.0
+        40.0, 100.0, 220.0, 450.0, 900.0, 1800.0, 3500.0, 6500.0, 10500.0, 15000.0, 20000.0
     )
 
     /**
-     * Processes PCM 16-bit audio samples (e.g. from AudioRecord) and computes 9 band levels (0..255).
+     * Processes PCM 16-bit audio samples (e.g. from AudioRecord) and computes 10 band levels (0..255).
      */
     fun processSamples(samples: ShortArray): ByteArray {
         val n = fftSize
@@ -49,16 +49,17 @@ class AudioFftProcessor(
             magnitudes[i] = sqrt(real[i] * real[i] + imag[i] * imag[i])
         }
 
-        return mapMagnitudesTo9Bands(magnitudes, binWidth)
+        return mapMagnitudesToBands(magnitudes, binWidth)
     }
 
     /**
-     * Maps FFT bin magnitudes into 9 frequency bands.
+     * Maps FFT bin magnitudes into frequency bands.
      */
-    fun mapMagnitudesTo9Bands(magnitudes: DoubleArray, binWidth: Double): ByteArray {
-        val result = ByteArray(9)
+    fun mapMagnitudesToBands(magnitudes: DoubleArray, binWidth: Double): ByteArray {
+        val bandCount = bandEdgesHz.size - 1
+        val result = ByteArray(bandCount)
 
-        for (band in 0 until 9) {
+        for (band in 0 until bandCount) {
             val lowFreq = bandEdgesHz[band]
             val highFreq = bandEdgesHz[band + 1]
 

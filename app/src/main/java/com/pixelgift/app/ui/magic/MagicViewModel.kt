@@ -50,7 +50,7 @@ class MagicViewModel(
     private val _messageFeedback = MutableStateFlow<String?>(null)
     val messageFeedback: StateFlow<String?> = _messageFeedback.asStateFlow()
 
-    // --- 3. Draw Canvas State (9x9 = 81 pixels) ---
+    // --- 3. Draw Canvas State (10x10 = 100 pixels) ---
     private val _canvasPixels = MutableStateFlow(PixelDrawing.BLANK_CANVAS)
     val canvasPixels: StateFlow<List<Rgb>> = _canvasPixels.asStateFlow()
 
@@ -74,7 +74,7 @@ class MagicViewModel(
     private val _isMusicActive = MutableStateFlow(false)
     val isMusicActive: StateFlow<Boolean> = _isMusicActive.asStateFlow()
 
-    private val _liveLevels = MutableStateFlow(ByteArray(9))
+    private val _liveLevels = MutableStateFlow(ByteArray(com.pixelgift.app.protocol.ProtocolConstants.MATRIX_WIDTH))
     val liveLevels: StateFlow<ByteArray> = _liveLevels.asStateFlow()
 
     private val fftProcessor = AudioFftProcessor(sampleRate = 44100, fftSize = 512)
@@ -263,7 +263,7 @@ class MagicViewModel(
         _isMusicActive.value = false
         activeAudioSource?.stop()
         activeAudioSource = null
-        _liveLevels.value = ByteArray(9)
+        _liveLevels.value = ByteArray(com.pixelgift.app.protocol.ProtocolConstants.MATRIX_WIDTH)
     }
 
     fun clearFeedback() {

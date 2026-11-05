@@ -16,8 +16,8 @@ class AudioFftProcessorTest {
 
         val levels = processor.processSamples(silence)
 
-        assertEquals(9, levels.size)
-        for (i in 0 until 9) {
+        assertEquals(10, levels.size)
+        for (i in 0 until 10) {
             assertEquals("Band $i should be 0 on silence", 0.toByte(), levels[i])
         }
     }
@@ -31,10 +31,10 @@ class AudioFftProcessorTest {
 
     @Test
     fun processSamples_lowFrequencySineWave_peaksInLowBand() {
-        // Band 0: 40 Hz - 120 Hz. Inject 80 Hz sine wave.
+        // Band 0: 40 Hz - 100 Hz. Inject 70 Hz sine wave.
         val processor = AudioFftProcessor(sampleRate = 44100, fftSize = 512)
         val samples = ShortArray(512)
-        val freq = 80.0
+        val freq = 70.0
         for (i in samples.indices) {
             val t = i.toDouble() / 44100.0
             samples[i] = (sin(2.0 * PI * freq * t) * 30000.0).toInt().toShort()
@@ -42,16 +42,16 @@ class AudioFftProcessorTest {
 
         val levels = processor.processSamples(samples)
         val band0 = levels[0].toInt() and 0xFF
-        val band7 = levels[7].toInt() and 0xFF
         val band8 = levels[8].toInt() and 0xFF
+        val band9 = levels[9].toInt() and 0xFF
 
         assertTrue("Band 0 level ($band0) should be active (> 20)", band0 > 20)
-        assertTrue("High bands should be near zero on 80 Hz tone", band7 < band0 / 2 && band8 < band0 / 2)
+        assertTrue("High bands should be near zero on 70 Hz tone", band8 < band0 / 2 && band9 < band0 / 2)
     }
 
     @Test
     fun processSamples_midFrequencySineWave_peaksInMidBand() {
-        // Band 4: 1000 Hz - 2000 Hz. Inject 1400 Hz sine wave.
+        // Band 4: 900 Hz - 1800 Hz. Inject 1400 Hz sine wave.
         val processor = AudioFftProcessor(sampleRate = 44100, fftSize = 512)
         val samples = ShortArray(512)
         val freq = 1400.0
@@ -77,8 +77,8 @@ class AudioFftProcessorTest {
         }
 
         val levels = processor.processSamples(samples)
-        assertEquals(9, levels.size)
-        for (i in 0 until 9) {
+        assertEquals(10, levels.size)
+        for (i in 0 until 10) {
             val unsignedVal = levels[i].toInt() and 0xFF
             assertTrue("Band $i should be clamped within 0..255, got $unsignedVal", unsignedVal in 0..255)
         }

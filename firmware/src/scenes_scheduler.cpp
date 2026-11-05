@@ -1,6 +1,7 @@
 #include "scenes_scheduler.h"
 #include "matrix.h"
 #include "clock_timer.h"
+#include "font.h"
 #include <time.h>
 #include <string.h>
 
@@ -261,6 +262,87 @@ void drawCommit() {
     memcpy(activeDraw, stagedDraw, DRAW_BUFFER_BYTES);
     state.mode = MODE_DRAW;
     Serial.println("[DRAW] Frame committed. Mode set to DRAW.");
+}
+
+
+// -------------------------------------------------------------
+// Custom Message & Text Targets
+// -------------------------------------------------------------
+static uint8_t msgSpeed = 50;
+static uint32_t msgStartTime = 0;
+
+void setTextChunk(uint8_t target, uint8_t idx, uint8_t total, const uint8_t* data, uint8_t len) {
+    char* dst = nullptr;
+    size_t maxLen = 0;
+    if (target == 0) {
+        dst = state.customMessage;
+        maxLen = sizeof(state.customMessage) - 1;
+    } else if (target == 1) {
+        dst = state.birthdayName;
+        maxLen = sizeof(state.birthdayName) - 1;
+    } else if (target == 2) {
+        dst = state.birthdayGreeting;
+        maxLen = sizeof(state.birthdayGreeting) - 1;
+    } else {
+        return;
+    }
+
+    if (idx == 0) {
+        memset(dst, 0, maxLen + 1);
+    }
+
+    size_t currLen = strlen(dst);
+    for (uint8_t i = 0; i < len && (currLen + i) < maxLen; i++) {
+        dst[currLen + i] = (char)data[i];
+    }
+    dst[maxLen] = '\0';
+
+    if (idx + 1 >= total) {
+        storageMarkDirty();
+        Serial.printf("[TEXT] Target %u updated: \"%s\"\n", target, dst);
+    }
+}
+
+void showMessage(uint8_t speed) {
+    msgSpeed = speed ? speed : 50;
+    msgStartTime = millis();
+    state.mode = MODE_MESSAGE;
+    Serial.printf("[MESSAGE] Showing custom message at speed %u: \"%s\"\n", msgSpeed, state.customMessage);
+}
+
+void renderMessage(uint32_t now, CRGB* leds) {
+    matrixClear();
+    const char* text = state.customMessage;
+    if (!text || text[0] == '\0') {
+        text = "HELLO";
+    }
+
+    size_t len = strlen(text);
+    int16_t totalWidth = (int16_t)(len * 6);
+    uint32_t msPerPixel = map(constrain(msgSpeed, 1, 100), 1, 100, 140, 25);
+    uint32_t elapsed = now - msgStartTime;
+    int16_t totalTravel = MATRIX_WIDTH + totalWidth;
+    int16_t progress = (elapsed / msPerPixel) % totalTravel;
+    int16_t scrollX = MATRIX_WIDTH - progress;
+
+    CRGB col = (state.color == CRGB(0,0,0)) ? CRGB::Cyan : state.color;
+
+    int16_t cursorX = scrollX;
+    for (size_t i = 0; i < len; i++) {
+        const uint8_t* glyph = getFont5x7(text[i]);
+        for (uint8_t colIdx = 0; colIdx < 5; colIdx++) {
+            int16_t sx = cursorX + colIdx;
+            if (sx >= 0 && sx < MATRIX_WIDTH) {
+                uint8_t bits = glyph[colIdx];
+                for (uint8_t row = 0; row < 7; row++) {
+                    if (bits & (1 << row)) {
+                        matrixSetPixel(sx, row + 1, col);
+                    }
+                }
+            }
+        }
+        cursorX += 6;
+    }
 }
 
 void renderDraw(CRGB* leds) {

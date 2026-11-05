@@ -4,7 +4,7 @@ Agent: update this at the end of every task, then commit. Keep it terse. Legend:
 
 ## Next step
 
-Hardware verification on ESP32 & phone: Plug in ESP32 to flash updated firmware (`pio run -t upload`), connect phone to USB to install updated APK (`gradlew installDebug`), test Batch 2 effects (18-50), and await user feedback for Batch 3 effects.
+Hardware verification on ESP32 & phone: Connect phone via USB to install updated 10x10 APK (`cd app; .\gradlew installDebug`), plug in ESP32 to flash firmware (`pio run -t upload`), verify Draw Mode (10x10 canvas, 300B frame), custom text message scrolling (`SET_TEXT` / `SHOW_MESSAGE`), and Batch 3 effects (#54-#66) on live hardware.
 
 ## Phases
 
@@ -44,6 +44,7 @@ Hardware verification on ESP32 & phone: Plug in ESP32 to flash updated firmware 
 ## Decisions
 
 (date, decision, why)
+- 2026-11-05: Upgraded App to full 10x10 matrix (100 LEDs, 300-byte frame), implemented custom text message engine (`SET_TEXT` / `SHOW_MESSAGE` scrolling text on matrix), and updated Batch 3 effects (Pulse Rings #54, Noise Field #55, Matrix Code #56, Game of Life #57, Snake #58, Pong #59, Equalizer #60, Hearts #61, Candles #63, Confetti #64, Party Strobe #65, Starburst #66) with full dynamic Single color, Dual tone, Palette, and Rainbow support. Updated `protocol/effects.json` flags. Verified firmware build (`pio run`, 0 errors), 100% Android unit tests passing, and `assembleDebug` clean.
 - 2026-11-05: Completed Batch 2 effect improvements (effects 18-50). Added full dynamic color, dual tone, palette, and rainbow mode support across Palette Scroll (#18), Chase (#20), Wipe (#21), Bounce (#22), Spiral (#23), Radar (#24), Comet (#28), Theater Chase (#29), Row Sweep (#30), Twinkle (#31), Fireflies (#32), Fireworks (#33), Meteor (#36), Bubbles (#37), Stardust (#39), Lava (#40), Ocean (#41), Lightning (#42), Northern Lights (#43), Embers (#44), Storm (#45), Wind (#46), Ripple (#47), Plasma (#49), and Kaleidoscope (#50). Per user instruction, cleanly removed Rain (#25), Waterfall (#26), Snake Path (#27), Glitter (#38), and Expanding Squares (#48) from `effects.json`. Verified firmware build (`pio run`, 0 errors), 100% Android unit tests passing, and `assembleDebug` clean.
 - 2026-11-05: Resolved Matrix R→L physical orientation, palette choosing, and Batch 1 (effects 1-5, 8-17) color controls. Inverted serpentine parity in `matrix.cpp`. Added smooth palette interpolation to `getEffectColor` and updated renderers in `effects_static`, `effects_motion`, `effects_particles`, `effects_nature`, and `effects_gradient` for full Single, Dual tone, Palette, and Rainbow support. Updated `protocol/effects.json` and `EffectDetailSheet.kt` to allow choosing named palettes with preview chips, selecting individual colors from active palettes for Primary/Secondary colors, and switching between all color modes. Verified firmware build (0 errors) and 75 Android unit tests passing, and deployed updated app to phone.
 - 2026-11-05: Established **working checkpoint one** at commit `ffd8036` (tags `working-checkpoint-one` / `working-checkpoint-1`, branch `working-checkpoint-one`). Clean compile, 0 errors, build cache active. Whenever the human instructs to "go back to the working version", revert to this exact checkpoint. No further checkpoints to be created without explicit instruction.

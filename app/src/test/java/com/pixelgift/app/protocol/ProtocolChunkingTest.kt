@@ -89,41 +89,41 @@ class ProtocolChunkingTest {
     }
 
     @Test
-    fun chunkDrawFrame_valid243Bytes_splitsInto18Chunks() {
-        // 9x9 = 81 LEDs * 3 bytes (RGB) = 243 bytes
-        val testFrame = ByteArray(243) { i -> (i % 256).toByte() }
+    fun chunkDrawFrame_valid300Bytes_splitsInto22Chunks() {
+        // 10x10 = 100 LEDs * 3 bytes (RGB) = 300 bytes
+        val testFrame = ByteArray(ProtocolConstants.MATRIX_FRAME_BYTES) { i -> (i % 256).toByte() }
 
         val chunks = ProtocolCodec.chunkDrawFrame(testFrame)
 
-        // 243 = 17 * 14 (238) + 1 * 5 = 18 chunks total
-        assertEquals(18, chunks.size)
+        // 300 = 21 * 14 (294) + 1 * 6 = 22 chunks total
+        assertEquals(22, chunks.size)
 
         var expectedOffset = 0
-        val reassembled = ByteArray(243)
+        val reassembled = ByteArray(ProtocolConstants.MATRIX_FRAME_BYTES)
 
-        for (i in 0 until 18) {
+        for (i in 0 until 22) {
             val chunk = chunks[i]
             assertEquals(expectedOffset, chunk.offset)
-            if (i < 17) {
+            if (i < 21) {
                 assertEquals(14, chunk.data.size)
             } else {
-                assertEquals(5, chunk.data.size)
+                assertEquals(6, chunk.data.size)
             }
             System.arraycopy(chunk.data, 0, reassembled, chunk.offset, chunk.data.size)
             expectedOffset += chunk.data.size
         }
 
-        assertEquals(243, expectedOffset)
+        assertEquals(ProtocolConstants.MATRIX_FRAME_BYTES, expectedOffset)
         org.junit.Assert.assertArrayEquals(testFrame, reassembled)
     }
 
     @Test
     fun chunkDrawFrame_invalidSize_throwsIllegalArgumentException() {
         assertThrows(IllegalArgumentException::class.java) {
-            ProtocolCodec.chunkDrawFrame(ByteArray(242))
+            ProtocolCodec.chunkDrawFrame(ByteArray(ProtocolConstants.MATRIX_FRAME_BYTES - 1))
         }
         assertThrows(IllegalArgumentException::class.java) {
-            ProtocolCodec.chunkDrawFrame(ByteArray(244))
+            ProtocolCodec.chunkDrawFrame(ByteArray(ProtocolConstants.MATRIX_FRAME_BYTES + 1))
         }
     }
 }

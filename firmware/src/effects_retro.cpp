@@ -1,4 +1,5 @@
 #include "effects.h"
+#include "storage.h"
 #include "matrix.h"
 
 // 56. Matrix Code
@@ -13,15 +14,16 @@ void renderMatrixCode(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
         for (int y = MATRIX_HEIGHT - 1; y > 0; y--) {
             for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
                 CRGB above = matrixGetPixel(x, y - 1);
-                if (above.g > 15) {
-                    above.g = qsub8(above.g, 25);
+                if (above.r > 15 || above.g > 15 || above.b > 15) {
+                    above.nscale8(200);
                     matrixSetPixel(x, y, above);
                 }
             }
         }
-        // Spawn green lead drops
+        // Spawn lead drops with chosen effect color / palette / rainbow
         uint8_t rx = random8(MATRIX_WIDTH);
-        matrixSetPixel(rx, 0, CRGB(180, 255, 180));
+        CRGB leadCol = getEffectColor(params, t_ms, rx * 25, CRGB::Green);
+        matrixSetPixel(rx, 0, leadCol);
     }
 }
 
@@ -69,7 +71,17 @@ void renderGameOfLife(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
 
     for (uint8_t y = 0; y < MATRIX_HEIGHT; y++) {
         for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
-            matrixSetPixel(x, y, grid[x][y] ? CRGB::LimeGreen : CRGB::Black);
+            if (grid[x][y]) {
+                CRGB lifeCol = getEffectColor(params, t_ms, x * 15 + y * 15, CRGB::LimeGreen);
+                matrixSetPixel(x, y, lifeCol);
+            } else {
+                CRGB deadCol = CRGB::Black;
+                if (params.colorMode == 1 && params.c2 != CRGB(0,0,0)) {
+                    deadCol = params.c2;
+                    deadCol.nscale8(40);
+                }
+                matrixSetPixel(x, y, deadCol);
+            }
         }
     }
 }
@@ -105,9 +117,13 @@ void renderSnakeGameDemo(uint32_t t_ms, const EffectParams& params, CRGB* leds) 
     }
 
     matrixClear();
-    matrixSetPixel(foodX, foodY, CRGB::Red);
+    CRGB foodCol = (params.colorMode == 1 && params.c2 != CRGB(0,0,0)) ? params.c2 : CRGB::Red;
+    matrixSetPixel(foodX, foodY, foodCol);
     for (uint8_t i = 0; i < 8; i++) {
-        matrixSetPixel(snakeX[i], snakeY[i], (i == 0) ? CRGB::Yellow : CRGB::Green);
+        CRGB snakeCol = (i == 0)
+            ? getEffectColor(params, t_ms, 0, CRGB::Yellow)
+            : getEffectColor(params, t_ms, i * 28, CRGB::Green);
+        matrixSetPixel(snakeX[i], snakeY[i], snakeCol);
     }
 }
 
@@ -140,13 +156,16 @@ void renderPongDemo(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     }
 
     matrixClear();
+    CRGB p1Col = getEffectColor(params, t_ms, 0, CRGB::Blue);
+    CRGB p2Col = (params.colorMode == 1 && params.c2 != CRGB(0,0,0)) ? params.c2 : getEffectColor(params, t_ms, 128, CRGB::Red);
+    CRGB ballCol = CRGB::White;
     // Draw paddles
     for (int dy = -1; dy <= 1; dy++) {
-        matrixSetPixel(0, p1Y + dy, CRGB::Blue);
-        matrixSetPixel(MATRIX_WIDTH - 1, p2Y + dy, CRGB::Red);
+        matrixSetPixel(0, p1Y + dy, p1Col);
+        matrixSetPixel(MATRIX_WIDTH - 1, p2Y + dy, p2Col);
     }
     // Draw ball
-    matrixSetPixel((uint8_t)bx, (uint8_t)by, CRGB::White);
+    matrixSetPixel((uint8_t)bx, (uint8_t)by, ballCol);
 }
 
 // 60. Equalizer Demo
@@ -161,7 +180,8 @@ void renderEqualizerDemo(uint32_t t_ms, const EffectParams& params, CRGB* leds) 
 
         for (uint8_t y = 0; y < barH; y++) {
             uint8_t actualY = MATRIX_HEIGHT - 1 - y;
-            CRGB col = (y < 4) ? CRGB::Green : (y < 7 ? CRGB::Yellow : CRGB::Red);
+            CRGB fallbackCol = (y < 4) ? CRGB::Green : (y < 7 ? CRGB::Yellow : CRGB::Red);
+            CRGB col = getEffectColor(params, t_ms, x * 20 + y * 15, fallbackCol);
             matrixSetPixel(x, actualY, col);
         }
     }

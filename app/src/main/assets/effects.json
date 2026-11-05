@@ -3,427 +3,1037 @@
     "id": 1,
     "name": "Solid",
     "category": "Static/glow",
-    "supports": { "dir": false, "mirror": false, "colors": true, "palette": false },
-    "defaults": { "speed": 0, "dir": 0, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": false,
+      "mirror": false,
+      "colors": true,
+      "palette": false
+    },
+    "defaults": {
+      "speed": 0,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 2,
     "name": "Breathing",
     "category": "Static/glow",
-    "supports": { "dir": false, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 50, "dir": 0, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": false,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 50,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 3,
     "name": "Pulse",
     "category": "Static/glow",
-    "supports": { "dir": false, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 60, "dir": 0, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": false,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 60,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 4,
     "name": "Heartbeat",
     "category": "Static/glow",
-    "supports": { "dir": false, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 70, "dir": 0, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": false,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 70,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 5,
     "name": "Candle",
     "category": "Static/glow",
-    "supports": { "dir": false, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 40, "dir": 0, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": false,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 40,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 6,
     "name": "Rainbow Wave",
     "category": "Rainbow/gradient",
-    "supports": { "dir": true, "mirror": true, "colors": false, "palette": false },
-    "defaults": { "speed": 50, "dir": 1, "mirror": 0, "colorMode": 3 }
+    "supports": {
+      "dir": true,
+      "mirror": true,
+      "colors": false,
+      "palette": false
+    },
+    "defaults": {
+      "speed": 50,
+      "dir": 1,
+      "mirror": 0,
+      "colorMode": 3
+    }
   },
   {
     "id": 7,
     "name": "Rainbow Cycle",
     "category": "Rainbow/gradient",
-    "supports": { "dir": true, "mirror": false, "colors": false, "palette": false },
-    "defaults": { "speed": 45, "dir": 0, "mirror": 0, "colorMode": 3 }
+    "supports": {
+      "dir": true,
+      "mirror": false,
+      "colors": false,
+      "palette": false
+    },
+    "defaults": {
+      "speed": 45,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 3
+    }
   },
   {
     "id": 8,
     "name": "Scanner",
     "category": "Motion",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 65, "dir": 0, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": true,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 65,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 9,
     "name": "Sparkle",
     "category": "Particles",
-    "supports": { "dir": false, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 55, "dir": 0, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": false,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 55,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 10,
     "name": "Fire",
     "category": "Nature/fire",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 60, "dir": 2, "mirror": 0, "colorMode": 2 }
+    "supports": {
+      "dir": true,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 60,
+      "dir": 2,
+      "mirror": 0,
+      "colorMode": 2
+    }
   },
   {
     "id": 11,
     "name": "Strobe-Soft",
     "category": "Static/glow",
-    "supports": { "dir": false, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 80, "dir": 0, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": false,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 80,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 12,
     "name": "Fade-Two",
     "category": "Static/glow",
-    "supports": { "dir": false, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 40, "dir": 0, "mirror": 0, "colorMode": 1 }
+    "supports": {
+      "dir": false,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 40,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 1
+    }
   },
   {
     "id": 13,
     "name": "Flicker",
     "category": "Static/glow",
-    "supports": { "dir": false, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 65, "dir": 0, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": false,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 65,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 14,
     "name": "Diagonal Gradient",
     "category": "Rainbow/gradient",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 50, "dir": 0, "mirror": 0, "colorMode": 1 }
+    "supports": {
+      "dir": true,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 50,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 1
+    }
   },
   {
     "id": 15,
     "name": "Radial Gradient",
     "category": "Rainbow/gradient",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 50, "dir": 4, "mirror": 0, "colorMode": 1 }
+    "supports": {
+      "dir": true,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 50,
+      "dir": 4,
+      "mirror": 0,
+      "colorMode": 1
+    }
   },
   {
     "id": 16,
     "name": "Aurora",
     "category": "Rainbow/gradient",
-    "supports": { "dir": true, "mirror": true, "colors": true, "palette": true },
-    "defaults": { "speed": 40, "dir": 1, "mirror": 1, "colorMode": 2 }
+    "supports": {
+      "dir": true,
+      "mirror": true,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 40,
+      "dir": 1,
+      "mirror": 1,
+      "colorMode": 2
+    }
   },
   {
     "id": 17,
     "name": "Sunset",
     "category": "Rainbow/gradient",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 35, "dir": 3, "mirror": 0, "colorMode": 2 }
+    "supports": {
+      "dir": true,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 35,
+      "dir": 3,
+      "mirror": 0,
+      "colorMode": 2
+    }
   },
   {
     "id": 18,
     "name": "Palette Scroll",
     "category": "Rainbow/gradient",
-    "supports": { "dir": true, "mirror": true, "colors": true, "palette": true },
-    "defaults": { "speed": 50, "dir": 1, "mirror": 0, "colorMode": 2 }
+    "supports": {
+      "dir": true,
+      "mirror": true,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 50,
+      "dir": 1,
+      "mirror": 0,
+      "colorMode": 2
+    }
   },
   {
     "id": 19,
     "name": "Color Wheel Spin",
     "category": "Rainbow/gradient",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 60, "dir": 0, "mirror": 0, "colorMode": 3 }
+    "supports": {
+      "dir": true,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 60,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 3
+    }
   },
   {
     "id": 20,
     "name": "Chase",
     "category": "Motion",
-    "supports": { "dir": true, "mirror": true, "colors": true, "palette": true },
-    "defaults": { "speed": 60, "dir": 1, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": true,
+      "mirror": true,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 60,
+      "dir": 1,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 21,
     "name": "Wipe",
     "category": "Motion",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 50, "dir": 1, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": true,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 50,
+      "dir": 1,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 22,
     "name": "Bounce",
     "category": "Motion",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 55, "dir": 3, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": true,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 55,
+      "dir": 3,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 23,
     "name": "Spiral",
     "category": "Motion",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 50, "dir": 4, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": true,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 50,
+      "dir": 4,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 24,
     "name": "Radar",
     "category": "Motion",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 65, "dir": 1, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": true,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 65,
+      "dir": 1,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 28,
     "name": "Comet",
     "category": "Motion",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 70, "dir": 1, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": true,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 70,
+      "dir": 1,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 29,
     "name": "Theater Chase",
     "category": "Motion",
-    "supports": { "dir": true, "mirror": true, "colors": true, "palette": true },
-    "defaults": { "speed": 50, "dir": 1, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": true,
+      "mirror": true,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 50,
+      "dir": 1,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 30,
     "name": "Row Sweep",
     "category": "Motion",
-    "supports": { "dir": true, "mirror": true, "colors": true, "palette": true },
-    "defaults": { "speed": 55, "dir": 2, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": true,
+      "mirror": true,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 55,
+      "dir": 2,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 31,
     "name": "Twinkle",
     "category": "Particles",
-    "supports": { "dir": false, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 50, "dir": 0, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": false,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 50,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 32,
     "name": "Fireflies",
     "category": "Particles",
-    "supports": { "dir": false, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 45, "dir": 0, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": false,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 45,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 33,
     "name": "Fireworks",
     "category": "Particles",
-    "supports": { "dir": false, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 65, "dir": 0, "mirror": 0, "colorMode": 2 }
+    "supports": {
+      "dir": false,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 65,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 2
+    }
   },
   {
     "id": 34,
     "name": "Snow",
     "category": "Particles",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 40, "dir": 3, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": true,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 40,
+      "dir": 3,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 35,
     "name": "Confetti",
     "category": "Particles",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 55, "dir": 3, "mirror": 0, "colorMode": 2 }
+    "supports": {
+      "dir": true,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 55,
+      "dir": 3,
+      "mirror": 0,
+      "colorMode": 2
+    }
   },
   {
     "id": 36,
     "name": "Meteor",
     "category": "Particles",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 75, "dir": 3, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": true,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 75,
+      "dir": 3,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 37,
     "name": "Bubbles",
     "category": "Particles",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 45, "dir": 2, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": true,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 45,
+      "dir": 2,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 39,
     "name": "Stardust",
     "category": "Particles",
-    "supports": { "dir": false, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 50, "dir": 0, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": false,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 50,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 40,
     "name": "Lava",
     "category": "Nature/fire",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 35, "dir": 3, "mirror": 0, "colorMode": 2 }
+    "supports": {
+      "dir": true,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 35,
+      "dir": 3,
+      "mirror": 0,
+      "colorMode": 2
+    }
   },
   {
     "id": 41,
     "name": "Ocean",
     "category": "Nature/fire",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 40, "dir": 1, "mirror": 0, "colorMode": 2 }
+    "supports": {
+      "dir": true,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 40,
+      "dir": 1,
+      "mirror": 0,
+      "colorMode": 2
+    }
   },
   {
     "id": 42,
     "name": "Lightning",
     "category": "Nature/fire",
-    "supports": { "dir": false, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 85, "dir": 0, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": false,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 85,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 43,
     "name": "Northern Lights",
     "category": "Nature/fire",
-    "supports": { "dir": true, "mirror": true, "colors": true, "palette": true },
-    "defaults": { "speed": 40, "dir": 1, "mirror": 1, "colorMode": 2 }
+    "supports": {
+      "dir": true,
+      "mirror": true,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 40,
+      "dir": 1,
+      "mirror": 1,
+      "colorMode": 2
+    }
   },
   {
     "id": 44,
     "name": "Embers",
     "category": "Nature/fire",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 45, "dir": 2, "mirror": 0, "colorMode": 2 }
+    "supports": {
+      "dir": true,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 45,
+      "dir": 2,
+      "mirror": 0,
+      "colorMode": 2
+    }
   },
   {
     "id": 45,
     "name": "Storm",
     "category": "Nature/fire",
-    "supports": { "dir": false, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 70, "dir": 0, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": false,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 70,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 46,
     "name": "Wind",
     "category": "Nature/fire",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 60, "dir": 1, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": true,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 60,
+      "dir": 1,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 47,
     "name": "Ripple",
     "category": "Geometric",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 50, "dir": 5, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": true,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 50,
+      "dir": 5,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 49,
     "name": "Plasma",
     "category": "Geometric",
-    "supports": { "dir": false, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 45, "dir": 0, "mirror": 0, "colorMode": 2 }
+    "supports": {
+      "dir": false,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 45,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 2
+    }
   },
   {
     "id": 50,
     "name": "Kaleidoscope",
     "category": "Geometric",
-    "supports": { "dir": true, "mirror": true, "colors": true, "palette": true },
-    "defaults": { "speed": 50, "dir": 0, "mirror": 1, "colorMode": 2 }
+    "supports": {
+      "dir": true,
+      "mirror": true,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 50,
+      "dir": 0,
+      "mirror": 1,
+      "colorMode": 2
+    }
   },
   {
     "id": 51,
     "name": "Tunnel",
     "category": "Geometric",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 60, "dir": 4, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": true,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 60,
+      "dir": 4,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 52,
     "name": "Checker",
     "category": "Geometric",
-    "supports": { "dir": false, "mirror": false, "colors": true, "palette": false },
-    "defaults": { "speed": 40, "dir": 0, "mirror": 0, "colorMode": 1 }
+    "supports": {
+      "dir": false,
+      "mirror": false,
+      "colors": true,
+      "palette": false
+    },
+    "defaults": {
+      "speed": 40,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 1
+    }
   },
   {
     "id": 53,
     "name": "Diamonds",
     "category": "Geometric",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 50, "dir": 5, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": true,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 50,
+      "dir": 5,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 54,
     "name": "Pulse Rings",
     "category": "Geometric",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 55, "dir": 5, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": true,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 55,
+      "dir": 5,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 55,
     "name": "Noise Field",
     "category": "Geometric",
-    "supports": { "dir": false, "mirror": false, "colors": false, "palette": true },
-    "defaults": { "speed": 35, "dir": 0, "mirror": 0, "colorMode": 2 }
+    "supports": {
+      "dir": false,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 35,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 2
+    }
   },
   {
     "id": 56,
     "name": "Matrix Code",
     "category": "Retro",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": false },
-    "defaults": { "speed": 65, "dir": 3, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": true,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 65,
+      "dir": 3,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 57,
     "name": "Game of Life",
     "category": "Retro",
-    "supports": { "dir": false, "mirror": false, "colors": true, "palette": false },
-    "defaults": { "speed": 30, "dir": 0, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": false,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 30,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 58,
     "name": "Snake Game Demo",
     "category": "Retro",
-    "supports": { "dir": false, "mirror": false, "colors": true, "palette": false },
-    "defaults": { "speed": 50, "dir": 0, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": false,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 50,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 59,
     "name": "Pong Demo",
     "category": "Retro",
-    "supports": { "dir": false, "mirror": false, "colors": true, "palette": false },
-    "defaults": { "speed": 55, "dir": 0, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": false,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 55,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 60,
     "name": "Equalizer Demo",
     "category": "Retro",
-    "supports": { "dir": true, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 70, "dir": 2, "mirror": 0, "colorMode": 2 }
+    "supports": {
+      "dir": true,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 70,
+      "dir": 2,
+      "mirror": 0,
+      "colorMode": 2
+    }
   },
   {
     "id": 61,
     "name": "Hearts",
     "category": "Celebration",
-    "supports": { "dir": false, "mirror": false, "colors": true, "palette": false },
-    "defaults": { "speed": 50, "dir": 0, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": false,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 50,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 62,
     "name": "Balloons",
     "category": "Celebration",
-    "supports": { "dir": true, "mirror": false, "colors": false, "palette": true },
-    "defaults": { "speed": 45, "dir": 2, "mirror": 0, "colorMode": 2 }
+    "supports": {
+      "dir": true,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 45,
+      "dir": 2,
+      "mirror": 0,
+      "colorMode": 2
+    }
   },
   {
     "id": 63,
     "name": "Candles",
     "category": "Celebration",
-    "supports": { "dir": false, "mirror": false, "colors": true, "palette": false },
-    "defaults": { "speed": 40, "dir": 0, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": false,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 40,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 0
+    }
   },
   {
     "id": 64,
     "name": "Confetti Burst",
     "category": "Celebration",
-    "supports": { "dir": false, "mirror": false, "colors": false, "palette": true },
-    "defaults": { "speed": 65, "dir": 0, "mirror": 0, "colorMode": 2 }
+    "supports": {
+      "dir": false,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 65,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 2
+    }
   },
   {
     "id": 65,
     "name": "Party Strobe",
     "category": "Celebration",
-    "supports": { "dir": false, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 80, "dir": 0, "mirror": 0, "colorMode": 2 }
+    "supports": {
+      "dir": false,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 80,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 2
+    }
   },
   {
     "id": 66,
     "name": "Star Burst",
     "category": "Celebration",
-    "supports": { "dir": false, "mirror": false, "colors": true, "palette": true },
-    "defaults": { "speed": 60, "dir": 0, "mirror": 0, "colorMode": 0 }
+    "supports": {
+      "dir": false,
+      "mirror": false,
+      "colors": true,
+      "palette": true
+    },
+    "defaults": {
+      "speed": 60,
+      "dir": 0,
+      "mirror": 0,
+      "colorMode": 0
+    }
   }
 ]

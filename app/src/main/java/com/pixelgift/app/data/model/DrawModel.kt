@@ -48,16 +48,16 @@ data class PixelDrawing(
             val p = BLANK_CANVAS.toMutableList()
             val red = Rgb(255, 45, 85)
             val heartIndices = listOf(
-                10, 11, 15, 16,
-                18, 19, 20, 21, 23, 24, 25, 26,
-                27, 28, 29, 30, 31, 32, 33, 34, 35,
-                37, 38, 39, 40, 41, 42, 43,
-                47, 48, 49, 50, 51,
-                57, 58, 59,
-                67
+                12, 13, 16, 17,
+                21, 22, 23, 24, 25, 26, 27, 28,
+                31, 32, 33, 34, 35, 36, 37, 38,
+                41, 42, 43, 44, 45, 46, 47, 48,
+                52, 53, 54, 55, 56, 57,
+                63, 64, 65, 66,
+                74, 75
             )
             for (idx in heartIndices) {
-                if (idx in 0..80) p[idx] = red
+                if (idx in 0 until ProtocolConstants.MATRIX_LED_COUNT) p[idx] = red
             }
             PixelDrawing("preset_heart", "Heart", p)
         }
@@ -66,14 +66,13 @@ data class PixelDrawing(
             val p = BLANK_CANVAS.toMutableList()
             val yellow = Rgb(255, 214, 0)
             val smileIndices = listOf(
-                20, 24, // Eyes
-                38, 42, // Cheeks
-                46, 52,
-                56, 60,
-                66, 67, 68
+                22, 23, 26, 27, // Eyes
+                61, 68,         // Smile corners
+                72, 77,
+                83, 84, 85, 86  // Smile bottom
             )
             for (idx in smileIndices) {
-                if (idx in 0..80) p[idx] = yellow
+                if (idx in 0 until ProtocolConstants.MATRIX_LED_COUNT) p[idx] = yellow
             }
             PixelDrawing("preset_smile", "Smile", p)
         }

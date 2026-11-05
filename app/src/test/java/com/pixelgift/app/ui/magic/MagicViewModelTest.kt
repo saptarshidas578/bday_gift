@@ -104,11 +104,11 @@ class MagicViewModelTest {
         viewModel.onClearCanvas()
         assertEquals(Rgb.BLACK, viewModel.canvasPixels.value[0])
 
-        // Commit drawing (18 DRAW_CHUNK + 1 DRAW_COMMIT = 19 commands)
+        // Commit drawing (22 DRAW_CHUNK + 1 DRAW_COMMIT = 23 commands)
         val preCount = viewModel.sendCountForTesting
         viewModel.onCommitDrawing()
         delay(150)
-        assertEquals(preCount + 19, viewModel.sendCountForTesting)
+        assertEquals(preCount + 23, viewModel.sendCountForTesting)
 
         // Save drawing
         val initialSavedCount = viewModel.savedDrawings.value.size
@@ -130,7 +130,7 @@ class MagicViewModelTest {
         delay(200)
 
         val levels = viewModel.liveLevels.value
-        assertEquals(9, levels.size)
+        assertEquals(com.pixelgift.app.protocol.ProtocolConstants.MATRIX_WIDTH, levels.size)
         // Simulated sine wave should generate energy
         assertTrue("Live levels should have non-zero energy", levels.any { it.toInt() != 0 })
 

@@ -348,7 +348,7 @@ private fun ClockModeCard(
                             fontWeight = FontWeight.Bold
                         )
                         Text(
-                            text = if (isClockMode) "Active on 9×9 matrix" else "Inactive",
+                            text = if (isClockMode) "Active on 10×10 matrix" else "Inactive",
                             style = MaterialTheme.typography.bodySmall,
                             color = if (isClockMode) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
                         )

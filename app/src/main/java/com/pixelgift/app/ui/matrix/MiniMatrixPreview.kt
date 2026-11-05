@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.pixelgift.app.protocol.ProtocolConstants
 import com.pixelgift.app.protocol.Rgb
 import com.pixelgift.app.ui.color.ColorMath
 
@@ -51,7 +52,7 @@ fun MiniMatrixPreview(
     )
 
     Column(
-        modifier = modifier.semantics { contentDescription = "9 by 9 matrix live preview" },
+        modifier = modifier.semantics { contentDescription = "${ProtocolConstants.MATRIX_WIDTH} by ${ProtocolConstants.MATRIX_HEIGHT} matrix live preview" },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Box(
@@ -78,8 +79,8 @@ fun MiniMatrixPreview(
                     .fillMaxSize()
                     .aspectRatio(1f)
             ) {
-                val cols = 9
-                val rows = 9
+                val cols = ProtocolConstants.MATRIX_WIDTH
+                val rows = ProtocolConstants.MATRIX_HEIGHT
                 val cellW = size.width / cols
                 val cellH = size.height / rows
                 val radius = (minOf(cellW, cellH) * 0.36f)
@@ -124,7 +125,7 @@ fun MiniMatrixPreview(
         }
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-            text = "9×9 Live Matrix",
+            text = "${ProtocolConstants.MATRIX_WIDTH}×${ProtocolConstants.MATRIX_HEIGHT} Live Matrix",
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
         )

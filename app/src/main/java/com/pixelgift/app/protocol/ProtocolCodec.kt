@@ -428,10 +428,10 @@ object ProtocolCodec {
     }
 
     /**
-     * Splits a 243-byte RGB frame (9x9 = 81 pixels * 3 bytes) into 14-byte DRAW_CHUNK commands.
+     * Splits an RGB frame (10x10 = 100 pixels * 3 bytes = 300 bytes) into 14-byte DRAW_CHUNK commands.
      */
     fun chunkDrawFrame(frameRgb: ByteArray): List<Command.DrawChunk> {
-        require(frameRgb.size == 243) { "Frame RGB must be exactly 243 bytes, got ${frameRgb.size}" }
+        require(frameRgb.size == ProtocolConstants.MATRIX_FRAME_BYTES) { "Frame RGB must be exactly ${ProtocolConstants.MATRIX_FRAME_BYTES} bytes, got ${frameRgb.size}" }
         val chunkSize = 14
         val result = mutableListOf<Command.DrawChunk>()
         var offset = 0

@@ -82,8 +82,8 @@ data class OnboardingPageData(
 
 val ONBOARDING_PAGES = listOf(
     OnboardingPageData(
-        title = "81 Vibrant RGB LEDs",
-        subtitle = "9×9 Handmade Pixel Matrix",
+        title = "100 Vibrant RGB LEDs",
+        subtitle = "10×10 Handmade Pixel Matrix",
         description = "Experience 500+ hypnotic visual effect variations, custom paint-style color picking, and dynamic brightness control.",
         icon = Icons.Default.ColorLens,
         gradientColors = listOf(Color(0xFF6C5CE7), Color(0xFFFF7675))
@@ -324,7 +324,7 @@ fun OnboardingScreen(
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(PixelGiftSpacing.sm)) {
                     Text(
-                        "PixelGift connects over Bluetooth Low Energy (BLE) to control colors, effects, and text locally on your 9×9 matrix.",
+                        "PixelGift connects over Bluetooth Low Energy (BLE) to control colors, effects, and text locally on your 10×10 matrix.",
                         style = MaterialTheme.typography.bodyMedium
                     )
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {

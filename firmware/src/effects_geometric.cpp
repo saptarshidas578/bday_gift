@@ -149,14 +149,18 @@ void renderPulseRings(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     uint8_t spd = params.speed ? params.speed : 45;
     for (int i = 0; i < NUM_LEDS; i++) leds[i].nscale8(180);
 
-    float cx = 4.5f, cy = 4.5f;
-    float r = fmodf(t_ms * spd * 0.005f, 6.0f);
+    float cx = (MATRIX_WIDTH - 1) / 2.0f, cy = (MATRIX_HEIGHT - 1) / 2.0f;
+    float maxR = sqrtf(cx * cx + cy * cy) + 1.0f;
+    float r = fmodf(t_ms * spd * 0.005f, maxR);
+
+    uint8_t posIdx = (uint8_t)(r * 35.0f);
+    CRGB col = getEffectColor(params, t_ms, posIdx, CRGB::Cyan);
 
     for (uint8_t y = 0; y < MATRIX_HEIGHT; y++) {
         for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
             float d = sqrtf((x - cx) * (x - cx) + (y - cy) * (y - cy));
             if (fabsf(d - r) < 0.6f) {
-                matrixSetPixel(x, y, CRGB::Cyan);
+                matrixSetPixel(x, y, col);
             }
         }
     }
@@ -168,7 +172,8 @@ void renderNoiseField(uint32_t t_ms, const EffectParams& params, CRGB* leds) {
     for (uint8_t y = 0; y < MATRIX_HEIGHT; y++) {
         for (uint8_t x = 0; x < MATRIX_WIDTH; x++) {
             uint8_t n = inoise8(x * 55, y * 55, (t_ms * spd / 20));
-            matrixSetPixel(x, y, CHSV(n, 220, 255));
+            CRGB col = getEffectColor(params, t_ms, n, CHSV(n, 220, 255));
+            matrixSetPixel(x, y, col);
         }
     }
 }

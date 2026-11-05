@@ -198,6 +198,23 @@ void processIncomingCommand(const ParsedCommand& cmd) {
             break;
         }
 
+        
+        case OP_SET_TEXT: {
+            uint8_t target = cmd.payload[0];
+            uint8_t idx = cmd.payload[1];
+            uint8_t total = cmd.payload[2];
+            const uint8_t* textData = &cmd.payload[3];
+            uint8_t len = cmd.payloadLen - 3;
+            setTextChunk(target, idx, total, textData, len);
+            break;
+        }
+
+        case OP_SHOW_MESSAGE: {
+            if (isBirthdayRunning()) birthdayStop();
+            showMessage(cmd.payload[0]);
+            break;
+        }
+
         case OP_DRAW_CHUNK: {
             uint16_t offset = (uint16_t)cmd.payload[0] | ((uint16_t)cmd.payload[1] << 8);
             const uint8_t* chunk = &cmd.payload[2];
@@ -348,6 +365,8 @@ void loop() {
             matrixFill(state.color);
         } else if (state.mode == MODE_EFFECT) {
             effectsRender(now, state.effect, matrixGetLeds());
+        } else if (state.mode == MODE_MESSAGE) {
+            renderMessage(now, matrixGetLeds());
         } else if (state.mode == MODE_DRAW) {
             renderDraw(matrixGetLeds());
         } else if (state.mode == MODE_MUSIC) {

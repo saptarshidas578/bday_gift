@@ -1,5 +1,6 @@
 package com.pixelgift.app.ui.screens
 
+import com.pixelgift.app.protocol.ProtocolConstants
 import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -106,7 +107,7 @@ fun MagicScreen(
     val haptic = LocalHapticFeedback.current
 
     var selectedTabIndex by remember { mutableIntStateOf(0) }
-    val tabTitles = listOf("Birthday", "Message", "Draw (9×9)", "Music")
+    val tabTitles = listOf("Birthday", "Message", "Draw (10×10)", "Music")
 
     // Birthday state
     val isPlayingShow by viewModel.isPlayingShow.collectAsState()
@@ -546,9 +547,9 @@ private fun DrawModeTab(
             verticalArrangement = Arrangement.spacedBy(PixelGiftSpacing.md),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("9×9 Pixel Draw Canvas (243-Byte Frame)", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text("10×10 Pixel Draw Canvas (300-Byte Frame)", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
 
-            // 9x9 Interactive Canvas Grid
+            // 10x10 Interactive Canvas Grid
             Box(
                 modifier = Modifier
                     .size(240.dp)
@@ -563,31 +564,31 @@ private fun DrawModeTab(
                         .aspectRatio(1f)
                         .pointerInput(Unit) {
                             detectTapGestures { offset ->
-                                val cellW = size.width / 9f
-                                val cellH = size.height / 9f
-                                val col = (offset.x / cellW).toInt().coerceIn(0, 8)
-                                val row = (offset.y / cellH).toInt().coerceIn(0, 8)
-                                onPixelClicked(row * 9 + col)
+                                val cellW = size.width / ProtocolConstants.MATRIX_WIDTH.toFloat()
+                                val cellH = size.height / ProtocolConstants.MATRIX_HEIGHT.toFloat()
+                                val col = (offset.x / cellW).toInt().coerceIn(0, ProtocolConstants.MATRIX_WIDTH - 1)
+                                val row = (offset.y / cellH).toInt().coerceIn(0, ProtocolConstants.MATRIX_HEIGHT - 1)
+                                onPixelClicked(row * ProtocolConstants.MATRIX_WIDTH + col)
                             }
                         }
                         .pointerInput(Unit) {
                             detectDragGestures { change, _ ->
                                 change.consume()
-                                val cellW = size.width / 9f
-                                val cellH = size.height / 9f
-                                val col = (change.position.x / cellW).toInt().coerceIn(0, 8)
-                                val row = (change.position.y / cellH).toInt().coerceIn(0, 8)
-                                onPixelClicked(row * 9 + col)
+                                val cellW = size.width / ProtocolConstants.MATRIX_WIDTH.toFloat()
+                                val cellH = size.height / ProtocolConstants.MATRIX_HEIGHT.toFloat()
+                                val col = (change.position.x / cellW).toInt().coerceIn(0, ProtocolConstants.MATRIX_WIDTH - 1)
+                                val row = (change.position.y / cellH).toInt().coerceIn(0, ProtocolConstants.MATRIX_HEIGHT - 1)
+                                onPixelClicked(row * ProtocolConstants.MATRIX_WIDTH + col)
                             }
                         }
                 ) {
-                    val cellW = size.width / 9f
-                    val cellH = size.height / 9f
+                    val cellW = size.width / ProtocolConstants.MATRIX_WIDTH.toFloat()
+                    val cellH = size.height / ProtocolConstants.MATRIX_HEIGHT.toFloat()
                     val radius = minOf(cellW, cellH) * 0.42f
 
-                    for (r in 0 until 9) {
-                        for (c in 0 until 9) {
-                            val idx = r * 9 + c
+                    for (r in 0 until ProtocolConstants.MATRIX_HEIGHT) {
+                        for (c in 0 until ProtocolConstants.MATRIX_WIDTH) {
+                            val idx = r * ProtocolConstants.MATRIX_WIDTH + c
                             val pixelColor = ColorMath.rgbToComposeColor(canvasPixels[idx])
                             val center = Offset((c + 0.5f) * cellW, (r + 0.5f) * cellH)
 
@@ -735,7 +736,7 @@ private fun MusicReactiveTab(
                 contentAlignment = Alignment.BottomCenter
             ) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
-                    val cols = 9
+                    val cols = ProtocolConstants.MATRIX_WIDTH
                     val colWidth = size.width / (cols * 1.5f)
                     val spacing = (size.width - (cols * colWidth)) / (cols - 1)
 

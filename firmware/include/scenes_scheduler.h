@@ -31,6 +31,11 @@ bool drawChunk(uint16_t offset, const uint8_t* chunk, uint8_t len);
 void drawCommit();
 void renderDraw(CRGB* leds);
 
+// Custom Message & Text Targets
+void setTextChunk(uint8_t target, uint8_t idx, uint8_t total, const uint8_t* data, uint8_t len);
+void showMessage(uint8_t speed);
+void renderMessage(uint32_t now, CRGB* leds);
+
 // Music Levels (reactive visualizer with smoothing & timeout)
 void feedMusicLevels(const uint8_t* levels, uint8_t count);
 void musicLoop(uint32_t now);

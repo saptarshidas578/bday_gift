@@ -257,7 +257,9 @@ object ProtocolCodec {
                 Command.DrawCommit
             }
             ProtocolConstants.OP_MUSIC_LEVELS -> {
-                if (payload.size != 9) throw MalformedPacketException("MUSIC_LEVELS payload must be 9 bytes, got ${payload.size}")
+                if (payload.size != ProtocolConstants.MATRIX_WIDTH && payload.size != 9) {
+                    throw MalformedPacketException("MUSIC_LEVELS payload must be ${ProtocolConstants.MATRIX_WIDTH} or 9 bytes, got ${payload.size}")
+                }
                 Command.MusicLevels(payload)
             }
             ProtocolConstants.OP_SET_MUTE -> {

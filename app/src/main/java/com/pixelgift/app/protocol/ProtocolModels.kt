@@ -122,7 +122,9 @@ sealed class Command(val opcode: Int) {
 
     data class MusicLevels(val levels: ByteArray) : Command(ProtocolConstants.OP_MUSIC_LEVELS) {
         init {
-            require(levels.size == 9) { "Music levels must have 9 bytes, got ${levels.size}" }
+            require(levels.size == ProtocolConstants.MATRIX_WIDTH || levels.size == 9) {
+                "Music levels must have ${ProtocolConstants.MATRIX_WIDTH} or 9 bytes, got ${levels.size}"
+            }
         }
 
         override fun equals(other: Any?): Boolean {

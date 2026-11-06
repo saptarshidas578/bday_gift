@@ -11,12 +11,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -202,34 +204,67 @@ fun DrawSection(
             }
 
             // Feature #12: Interactive Life Sandbox
-            OutlinedButton(
-                onClick = onEvolveLife,
-                modifier = Modifier.fillMaxWidth().defaultMinSize(minHeight = 42.dp)
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text("🧬 Evolve Seed in Game of Life Sandbox", style = MaterialTheme.typography.labelMedium)
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(PixelGiftSpacing.md),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Interactive Life Sandbox", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                        Text("Evolves Conway's Game of Life on the matrix starting from your current drawn pixels.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Spacer(modifier = Modifier.width(PixelGiftSpacing.sm))
+                    Button(
+                        onClick = onEvolveLife,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00E676)),
+                        modifier = Modifier.defaultMinSize(minHeight = 44.dp)
+                    ) {
+                        Text("🧬 Evolve", fontWeight = FontWeight.Bold, color = Color.Black)
+                    }
+                }
             }
 
             feedback?.let {
                 Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
             }
 
-            // Saved Favorites Row & Feature #5: Memories Reel
+            // Feature #5: Memories Reel Banner
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(PixelGiftSpacing.md),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Animated Memories Reel", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                        Text("Slideshow: Heart → Star → Smile → Gift Box", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Spacer(modifier = Modifier.width(PixelGiftSpacing.sm))
+                    Button(
+                        onClick = onPlayMemoriesReel,
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                        modifier = Modifier.defaultMinSize(minHeight = 44.dp)
+                    ) {
+                        Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Play Reel")
+                    }
+                }
+            }
+
+            // Saved Favorites Row
             if (savedDrawings.isNotEmpty()) {
                 Column(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(PixelGiftSpacing.xs)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Favorite & Preset Drawings", style = MaterialTheme.typography.labelMedium)
-                        OutlinedButton(
-                            onClick = onPlayMemoriesReel,
-                            modifier = Modifier.defaultMinSize(minHeight = 36.dp)
-                        ) {
-                            Icon(Icons.Default.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Text("Play Memories Reel", style = MaterialTheme.typography.labelSmall)
-                        }
-                    }
+                    Text("Favorite & Preset Drawings", style = MaterialTheme.typography.labelMedium)
                     Row(
                         modifier = Modifier.horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(PixelGiftSpacing.sm)

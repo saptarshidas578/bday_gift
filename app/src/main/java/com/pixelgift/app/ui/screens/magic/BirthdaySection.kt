@@ -52,6 +52,7 @@ fun BirthdaySection(
     onSaveContent: () -> Unit,
     onSendHeartbeat: () -> Unit = {},
     onSendSecretNote: (String) -> Unit = {},
+    onPlayMemoriesReel: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val countdownNotes = listOf(
@@ -211,6 +212,36 @@ fun BirthdaySection(
                     Icon(Icons.Default.Favorite, contentDescription = null, tint = Color.White)
                     Spacer(modifier = Modifier.width(6.dp))
                     Text("Tap")
+                }
+            }
+        }
+
+        // Feature #5: Animated Memories Reel
+        Card(
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+            shape = MaterialTheme.shapes.large,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(PixelGiftSpacing.lg),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Animated Memories Reel", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Text("Plays a 4-frame animated sequence on the matrix (Heart → Star → Smile → Gift Box).", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Spacer(modifier = Modifier.width(PixelGiftSpacing.md))
+                Button(
+                    onClick = onPlayMemoriesReel,
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                    modifier = Modifier.defaultMinSize(minHeight = 48.dp)
+                ) {
+                    Icon(Icons.Default.PlayArrow, contentDescription = null)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Play Reel")
                 }
             }
         }

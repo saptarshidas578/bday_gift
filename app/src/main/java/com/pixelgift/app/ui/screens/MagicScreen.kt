@@ -123,7 +123,8 @@ fun MagicScreen(
                     onStopShow = { viewModel.onStopShow() },
                     onSaveContent = { viewModel.onSaveBirthdayContent(editNameText, editGreetingText) },
                     onSendHeartbeat = { viewModel.onSendHeartbeat() },
-                    onSendSecretNote = { viewModel.onSendSecretNote(it) }
+                    onSendSecretNote = { viewModel.onSendSecretNote(it) },
+                    onPlayMemoriesReel = { viewModel.onPlayMemoriesReel() }
                 )
 
                 1 -> MessageSection(

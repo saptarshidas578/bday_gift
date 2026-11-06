@@ -62,7 +62,7 @@ fun BirthdaySection(
         "Day 4 (Jan 21)" to "Thank you for being the sweetest warmth in my life.",
         "Day 5 (Jan 22)" to "Almost there! Your smile lights up every room.",
         "Day 6 (Jan 23)" to "Tomorrow is your big day - get ready for magic!",
-        "Day 7 (Jan 24)" to "Happy 19th Birthday Madhumitha! You mean the world to me."
+        "Day 7 (Jan 24)" to "Happy Birthday! You mean the world to me."
     )
     Column(
         modifier = modifier.fillMaxWidth(),

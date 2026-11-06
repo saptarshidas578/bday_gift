@@ -3,15 +3,15 @@
 Personalized configuration for the birthday gift.
 
 ## Recipient Details
-- **Recipient Name**: Madhumitha
-- **Display Name**: MADHUMITHA
-- **Age**: 19
+- **Recipient Name**: [Recipient]
+- **Display Name**: FRIEND
+- **Age**: [Age]
 - **Birthday Date**: January 24
 
 ## Message & Greeting
-- **Banner**: `HAPPY BIRTHDAY MADHUMITHA !`
-- **Scrolling Greeting**: `HAPPY 19TH BIRTHDAY \x01 24 JAN \x02 WISHING YOU JOY & LOVE !`
-- **Custom App Message**: `HAPPY 19TH BIRTHDAY MADHUMITHA!`
+- **Banner**: `HAPPY BIRTHDAY FRIEND !`
+- **Scrolling Greeting**: `HAPPY BIRTHDAY \x01 24 JAN \x02 WISHING YOU JOY & LOVE !`
+- **Custom App Message**: `HAPPY BIRTHDAY FRIEND!`
 
 ## Preferred Theme Colors
 - **Primary Color**: Cherry Red (`#D2042D`, RGB: `210, 4, 45`)

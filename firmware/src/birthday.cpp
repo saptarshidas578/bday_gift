@@ -82,7 +82,7 @@ void birthdayRender(uint32_t now, CRGB* leds) {
         matrixClear();
         char banner[64];
         snprintf(banner, sizeof(banner), "HAPPY BIRTHDAY %s ! \x01",
-                 (strlen(state.birthdayName) > 0) ? state.birthdayName : "MADHUMITHA");
+                 (strlen(state.birthdayName) > 0) ? state.birthdayName : "FRIEND");
 
         uint32_t phaseTime = elapsed - 6000;
         int16_t scrollX = MATRIX_WIDTH - (int16_t)(phaseTime / 85); // 85ms per col

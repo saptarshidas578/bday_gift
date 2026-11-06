@@ -1,6 +1,6 @@
 # PixelGift User Guide 🎁✨
 
-*A personalized, interactive smart LED matrix gift crafted with love for Madhumitha's 19th Birthday (January 24).*
+*A personalized, interactive smart LED matrix gift crafted with love for a special Birthday celebration.*
 
 ---
 
@@ -52,13 +52,13 @@ Choose from **60 base animation engines** generating over **500 unique visual lo
 
 ### 🎂 Magic Tab
 - **Birthday Show**:
-  - Tap **Play Birthday Show** to launch Madhumitha's personalized celebration timeline (~98 seconds):
+  - Tap **Play Birthday Show** to launch the personalized celebration timeline (~98 seconds):
     1. **Golden Intro Sparkle** (0–6s)
-    2. **Name Reveal Banner**: Scrolling `HAPPY BIRTHDAY MADHUMITHA ! ♥` (6–22s)
+    2. **Name Reveal Banner**: Scrolling `HAPPY BIRTHDAY FRIEND ! ♥` (6–22s)
     3. **Floating Hearts & Balloons** in Cherry Red and Gold (22–36s)
     4. **Celebration Fireworks** bursting across the 10×10 grid (36–52s)
     5. **Rainbow Shimmer** (52–66s)
-    6. **Custom Scrolling Greeting**: `HAPPY 19TH ♥ 24 JAN ★ WISHING YOU JOY & LOVE !` (66–94s)
+    6. **Custom Scrolling Greeting**: `HAPPY BIRTHDAY ♥ 24 JAN ★ WISHING YOU JOY & LOVE !` (66–94s)
     7. **Finale Glow**: Seamlessly settles into a soothing, soft Cherry Red ambient breathing glow.
   - *Offline resilience*: Even if your phone disconnects mid-show, the matrix continues running the entire show locally to completion.
 - **Custom Scrolling Message**: Type any message, pick a scroll speed, and watch it glide across the LEDs.
@@ -77,7 +77,7 @@ Choose from **60 base animation engines** generating over **500 unique visual lo
 
 ### 📱 Device Tab & System Features
 - **Auto-Reconnect**: The app automatically reconnects to your matrix whenever you open the app or bring your phone into range.
-- **About PixelGift**: View Madhumitha's personal 19th birthday dedication card and full hardware specifications.
+- **About PixelGift**: View the personal dedication card and full hardware specifications.
 - **Home-Screen Widget**: Add the PixelGift widget to your Android home screen for instant 1-tap **Power On/Off** and **Cherry Red** quick scene access.
 - **Quick-Settings Tile**: Swipe down your phone's notification shade and add the **PixelGift** tile for rapid toggle from anywhere on your phone.
 - **OTA Updates**: Safely stream wireless firmware updates with dual-partition automatic rollback protection.

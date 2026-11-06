@@ -94,8 +94,8 @@
     <string name="widget_action_cherry">Cherry Red</string>
     <string name="tile_label">PixelGift</string>
     <string name="tile_subtitle">Quick Controls</string>
-    <string name="about_personal_note_title">A Note for Madhumitha</string>
-    <string name="about_personal_note_body">Happy 19th Birthday Madhumitha! Wishing you boundless joy, brilliance, and warmth in every pixel of this year and always. Handcrafted with all my love.</string>
+    <string name="about_personal_note_title">A Note for You</string>
+    <string name="about_personal_note_body">Happy Birthday! Wishing you boundless joy, brilliance, and warmth in every pixel of this year and always. Handcrafted with all my love.</string>
     <string name="about_specs_title">Technical Specifications</string>
     <string name="about_specs_body">Hardware: ESP32 DevKit V1 • 10x10 (100 LEDs) WS2812B GRB Serpentine • 2500mA Power Cap • BLE 5.0 LE Secure Connections • Firmware v1.0.0 Dual-Partition OTA Rollback</string>
 </resources>

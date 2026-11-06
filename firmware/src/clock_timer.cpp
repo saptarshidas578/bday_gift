@@ -212,7 +212,7 @@ void clockTimerLoop(uint32_t now) {
     if (!ti) return;
 
     // Feature #6: Midnight Birthday Beacon
-    // Triggers at 00:00 on January 24th (Madhumitha's birthday)
+    // Triggers at 00:00 on January 24th (Birthday Beacon)
     if (ti->tm_mon == 0 && ti->tm_mday == 24 && ti->tm_hour == 0 && ti->tm_min == 0) {
         static int lastTriggeredYear = 0;
         if (lastTriggeredYear != ti->tm_year) {

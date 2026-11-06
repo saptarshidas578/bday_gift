@@ -33,9 +33,9 @@ void setDefaults() {
     state.isMuted = 0;
     state.sleepDefaultMinutes = 30;
 
-    strncpy(state.customMessage, "HAPPY 19TH BIRTHDAY MADHUMITHA!", sizeof(state.customMessage));
-    strncpy(state.birthdayName, "MADHUMITHA", sizeof(state.birthdayName));
-    strncpy(state.birthdayGreeting, "HAPPY 19TH \x01 24 JAN \x02 WISHING YOU JOY & LOVE !", sizeof(state.birthdayGreeting));
+    strncpy(state.customMessage, "HAPPY BIRTHDAY FRIEND!", sizeof(state.customMessage));
+    strncpy(state.birthdayName, "FRIEND", sizeof(state.birthdayName));
+    strncpy(state.birthdayGreeting, "HAPPY BIRTHDAY \x01 24 JAN \x02 WISHING YOU JOY & LOVE !", sizeof(state.birthdayGreeting));
 
     for (int i = 0; i < 8; i++) {
         state.scenes[i].isValid = 0;

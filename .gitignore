@@ -4,6 +4,7 @@
 # Android / Gradle / Build
 build/
 .gradle/
+.kotlin/
 local.properties
 *.jks
 *.keystore
@@ -24,6 +25,8 @@ __pycache__/
 
 # Secrets
 firmware/include/secrets.h
+keystore.properties
+*.log
 
 # IDEs
 .idea/

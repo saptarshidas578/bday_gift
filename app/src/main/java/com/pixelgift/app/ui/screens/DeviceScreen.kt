@@ -647,7 +647,7 @@ fun DeviceScreen(
                         textAlign = TextAlign.Center
                     )
                     Text(
-                        text = "Dedicated to Madhumitha • January 24",
+                        text = "Dedicated with Love • January 24",
                         style = MaterialTheme.typography.labelMedium,
                         color = Color(0xFFD2042D),
                         textAlign = TextAlign.Center

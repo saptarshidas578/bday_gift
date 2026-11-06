@@ -35,6 +35,12 @@ ESP32 + 9x9 WS2812B matrix (81 LEDs) + passive piezo, controlled by an Android a
 - Never commit secrets (pairing passkey lives in secrets.h, not in git).
 - Never rewrite published history. Never delete failing tests to get green.
 
+## GitHub publishing rules
+- Before every push: run a secret and size check across history and working tree (no Wi-Fi credentials, tokens, keystores, or >5MB files).
+- Keep repository private by default for personal gift content.
+- Commit small, push at the end of each verified phase, and tag milestones.
+- Never force-push or rewrite published history without human approval.
+
 ## Hardware gates: STOP and ask the human
 Stop and wait for the human to confirm before: first power-up of any new wiring, first full brightness test, flashing when the serial port or board is unknown, any step that changes power wiring, anything that could draw more current than the supply allows. Ask for exactly what you need to see (photo of wiring, serial output, "does the pixel walk in order?"). Never assume pins, board model or wiring. Read them from firmware/include/config.h. Always keep the software brightness and current cap active, including in tests.
 
